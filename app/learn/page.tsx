@@ -74,9 +74,9 @@ function cardStyle(): React.CSSProperties {
   return {
     background: COLORS.bg,
     border: `1px solid ${COLORS.border}`,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 20,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
   };
 }
 
@@ -87,15 +87,31 @@ export default function LearnPage() {
     <div style={{ background: COLORS.bg }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: 32 }}>
         <section>
+          <span
+            style={{
+              display: "inline-block",
+              fontSize: 11,
+              color: COLORS.orange,
+              fontWeight: 700,
+              border: `1px solid rgba(196,80,0,0.28)`,
+              borderRadius: 999,
+              padding: "4px 8px",
+              background: "rgba(196,80,0,0.06)",
+              letterSpacing: "0.03em",
+            }}
+          >
+            Pakistan Stock Exchange
+          </span>
           <h1
             style={{
+              margin: "10px 0 0",
               color: COLORS.text,
               fontSize: 34,
               fontWeight: 700,
               letterSpacing: "-0.02em",
             }}
           >
-            Learn Investing
+            Investor Education
           </h1>
           <p
             style={{
@@ -106,8 +122,8 @@ export default function LearnPage() {
               lineHeight: "24px",
             }}
           >
-            Understand core investing concepts and the Pakistan Stock Exchange in
-            simple terms before you place practice trades.
+            Build confidence with clear, practical guidance on investing concepts
+            and the PSX Market before you place your next simulated order.
           </p>
         </section>
 
@@ -159,7 +175,7 @@ export default function LearnPage() {
                     cursor: "pointer",
                   }}
                 >
-                  {open ? "Hide Lesson" : "Learn More"}
+                  {open ? "Close Brief" : "Read Brief"}
                 </button>
 
                 {open && (
@@ -200,7 +216,7 @@ export default function LearnPage() {
           }}
         >
           <h3 style={{ color: COLORS.text, fontSize: 20, fontWeight: 700 }}>
-            Ready to practice?
+            Ready to apply what you learned?
           </h3>
           <p
             style={{
@@ -210,8 +226,8 @@ export default function LearnPage() {
               lineHeight: "22px",
             }}
           >
-            Continue into the simulator and explore listed companies before
-            placing your next paper trade.
+            Continue to Perch's market view and review listed companies before
+            placing your next simulated trade.
           </p>
           <Link
             href="/stocks"

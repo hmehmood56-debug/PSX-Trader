@@ -38,16 +38,31 @@ export function Navbar() {
           href="/"
           style={{
             display: "flex",
-            alignItems: "baseline",
-            gap: 6,
+            alignItems: "center",
+            gap: 12,
             textDecoration: "none",
           }}
         >
-          <span style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 20 }}>
-            PSX
-          </span>
-          <span style={{ color: "#FFFFFF", fontWeight: 300, fontSize: 20 }}>
-            Trader
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+            <span style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 20 }}>
+              Perch
+            </span>
+            <span style={{ color: "rgba(255,255,255,0.82)", fontWeight: 400, fontSize: 13 }}>
+              Capital
+            </span>
+          </div>
+          <span
+            style={{
+              color: "#FFFFFF",
+              fontSize: 11,
+              fontWeight: 600,
+              border: "1px solid rgba(255,255,255,0.45)",
+              borderRadius: 999,
+              padding: "2px 8px",
+              letterSpacing: "0.02em",
+            }}
+          >
+            PSX Market
           </span>
         </Link>
 

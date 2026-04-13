@@ -51,9 +51,28 @@ function SearchHero({
         boxShadow: "0 8px 24px rgba(196,80,0,0.08)",
       }}
     >
-      <div style={{ fontSize: 13, color: COLORS.muted, fontWeight: 600 }}>
-        Discover PSX opportunities
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <div style={{ fontSize: 13, color: COLORS.muted, fontWeight: 600 }}>
+          Serving PSX investors
+        </div>
+        <span
+          style={{
+            fontSize: 11,
+            color: COLORS.orange,
+            fontWeight: 700,
+            border: `1px solid rgba(196,80,0,0.28)`,
+            borderRadius: 999,
+            padding: "4px 8px",
+            background: "rgba(196,80,0,0.06)",
+            letterSpacing: "0.03em",
+          }}
+        >
+          Pakistan Stock Exchange
+        </span>
       </div>
+      <h1 style={{ margin: "8px 0 0", fontSize: 30, color: COLORS.text, letterSpacing: "-0.02em" }}>
+        Explore the Perch market board
+      </h1>
       <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 220px", gap: 12 }}>
         <input
           value={q}
@@ -126,7 +145,7 @@ function MarketTickerTape({
       }}
     >
       <div style={{ padding: "10px 14px", fontSize: 12, color: COLORS.muted, fontWeight: 600 }}>
-        Live market strip
+        PSX Market pulse
       </div>
       <div
         style={{
@@ -342,19 +361,19 @@ export default function StocksPage() {
               color: COLORS.muted,
             }}
           >
-            No stocks match your search.
+            No PSX listings match your current filters.
           </div>
         ) : (
           <>
             <StockSection
               title={hasSearch ? "Search results" : "Trending now"}
-              subtitle={hasSearch ? `${filtered.length} matches` : "Largest movers today"}
+              subtitle={hasSearch ? `${filtered.length} listings found` : "Largest PSX movers today"}
               stocks={hasSearch ? filtered.slice(0, 8) : trending}
               onOpen={(ticker) => router.push(`/stock/${ticker}`)}
             />
             <StockSection
               title="Most active"
-              subtitle="Highest traded volume"
+              subtitle="Highest traded volume on PSX"
               stocks={mostActive}
               onOpen={(ticker) => router.push(`/stock/${ticker}`)}
             />

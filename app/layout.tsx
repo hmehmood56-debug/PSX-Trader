@@ -4,9 +4,9 @@ import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "PSX Trader",
+  title: "Perch | Perch Capital",
   description:
-    "Practice trading Pakistan Stock Exchange stocks with live-style prices.",
+    "Perch by Perch Capital helps investors practice with Pakistan Stock Exchange market simulations.",
 };
 
 export default function RootLayout({
