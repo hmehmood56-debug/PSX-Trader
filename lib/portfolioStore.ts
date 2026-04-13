@@ -22,8 +22,17 @@ export type Transaction = {
   timestamp: string;
 };
 
+export type AccountActivity = {
+  id: string;
+  kind: "DEPOSIT" | "WITHDRAWAL";
+  method: string;
+  amount: number;
+  timestamp: string;
+};
+
 const STORAGE_KEY = "psx_paper_portfolio_v1";
 const HISTORY_KEY = "psx_paper_transactions_v1";
+const ACCOUNT_ACTIVITY_KEY = "psx_paper_account_activity_v1";
 const STARTING_CASH = 1_000_000;
 
 function isBrowser(): boolean {
@@ -82,6 +91,29 @@ function saveHistory(txs: Transaction[]): void {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(txs));
 }
 
+function loadAccountActivity(): AccountActivity[] {
+  if (!isBrowser()) return [];
+  try {
+    const raw = localStorage.getItem(ACCOUNT_ACTIVITY_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw) as AccountActivity[];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAccountActivity(items: AccountActivity[]): void {
+  if (!isBrowser()) return;
+  localStorage.setItem(ACCOUNT_ACTIVITY_KEY, JSON.stringify(items));
+}
+
+function pushAccountActivity(item: AccountActivity): void {
+  const all = loadAccountActivity();
+  all.unshift(item);
+  saveAccountActivity(all.slice(0, 200));
+}
+
 function pushTransaction(t: Transaction): void {
   const all = loadHistory();
   all.unshift(t);
@@ -90,6 +122,10 @@ function pushTransaction(t: Transaction): void {
 
 export type TradeResult =
   | { ok: true }
+  | { ok: false; error: string };
+
+export type FundingResult =
+  | { ok: true; newCashBalance: number }
   | { ok: false; error: string };
 
 export function buyStock(
@@ -190,4 +226,65 @@ export function sellStock(
 
 export function getTransactionHistory(): Transaction[] {
   return loadHistory();
+}
+
+export function depositVirtualFunds(amount: number, method = "Manual Deposit"): FundingResult {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { ok: false, error: "Enter a valid funding amount." };
+  }
+
+  const roundedAmount = Number(amount.toFixed(2));
+  const p = getPortfolio();
+  const nextCash = Number((p.cash + roundedAmount).toFixed(2));
+  const next: Portfolio = {
+    cash: nextCash,
+    holdings: p.holdings,
+  };
+
+  savePortfolio(next);
+  pushAccountActivity({
+    id: crypto.randomUUID(),
+    kind: "DEPOSIT",
+    method,
+    amount: roundedAmount,
+    timestamp: new Date().toISOString(),
+  });
+  notifyPortfolioChanged();
+  return { ok: true, newCashBalance: nextCash };
+}
+
+export function withdrawVirtualFunds(
+  amount: number,
+  method = "Manual Withdrawal"
+): FundingResult {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { ok: false, error: "Enter a valid withdrawal amount." };
+  }
+
+  const roundedAmount = Number(amount.toFixed(2));
+  const p = getPortfolio();
+  if (roundedAmount > p.cash + 1e-9) {
+    return { ok: false, error: "Insufficient virtual cash for this withdrawal." };
+  }
+
+  const nextCash = Number((p.cash - roundedAmount).toFixed(2));
+  const next: Portfolio = {
+    cash: nextCash,
+    holdings: p.holdings,
+  };
+
+  savePortfolio(next);
+  pushAccountActivity({
+    id: crypto.randomUUID(),
+    kind: "WITHDRAWAL",
+    method,
+    amount: roundedAmount,
+    timestamp: new Date().toISOString(),
+  });
+  notifyPortfolioChanged();
+  return { ok: true, newCashBalance: nextCash };
+}
+
+export function getAccountActivity(): AccountActivity[] {
+  return loadAccountActivity();
 }
