@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   Line,
   LineChart,
@@ -18,8 +18,26 @@ import { usePortfolioState } from "@/hooks/usePortfolioState";
 
 type Point = { idx: number; price: number };
 
-const card =
-  "rounded-lg border border-fintech-border bg-white p-4 shadow-card";
+const COLORS = {
+  orange: "#C45000",
+  bg: "#FFFFFF",
+  bgSecondary: "#F7F7F7",
+  border: "#E8E8E8",
+  text: "#1A1A1A",
+  muted: "#6B6B6B",
+  gain: "#007A4C",
+  loss: "#C0392B",
+} as const;
+
+function cardStyle(): CSSProperties {
+  return {
+    background: COLORS.bg,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 12,
+    padding: 24,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+  };
+}
 
 function buildSimulatedHistory(endPrice: number): Point[] {
   const n = 30;
@@ -96,201 +114,346 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const up = change >= 0;
 
   return (
-    <div className="space-y-6">
-      <Link
-        href="/stocks"
-        className="text-sm font-medium text-fintech-muted hover:text-fintech-brand"
-      >
-        {"<- Back to stocks"}
-      </Link>
-
-      <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
-        <div className="space-y-6 lg:col-span-2">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-              {base.sector}
-            </p>
-            <h1 className="mt-1 text-lg font-semibold tracking-tight text-fintech-text">
-              {base.name}
-            </h1>
-            <p className="font-mono text-sm text-fintech-muted">{base.ticker}</p>
-          </div>
-
-          <div className="flex flex-wrap items-end gap-4">
-            <div>
-              <p className="text-xs font-medium text-fintech-muted">Last price</p>
-              <p className="text-2xl font-bold tabular-nums text-fintech-text">
-                {formatPKRWithSymbol(price)}
-              </p>
-            </div>
-            <div className={up ? "text-fintech-gain" : "text-fintech-loss"}>
-              <p className="text-sm font-semibold tabular-nums">
-                {up ? "+" : ""}
-                {change.toFixed(2)} ({up ? "+" : ""}
-                {changePct.toFixed(2)}%)
-              </p>
-              <p className="text-xs text-fintech-muted">vs. simulated open</p>
-            </div>
-          </div>
-
-          <div className={card}>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-              Price (simulated intraday)
-            </p>
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={history}>
-                  <XAxis dataKey="idx" hide />
-                  <YAxis
-                    domain={["auto", "auto"]}
-                    width={52}
-                    tick={{ fill: "#6B6B6B", fontSize: 11 }}
-                    tickFormatter={(v) => `${Math.round(Number(v))}`}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E8E8E8",
-                      borderRadius: 8,
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                    }}
-                    labelStyle={{ color: "#6B6B6B" }}
-                    formatter={(v: number) => [
-                      formatPKRWithSymbol(v),
-                      "Price",
-                    ]}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="price"
-                    stroke="#C45000"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className={card}>
-              <p className="text-xs font-medium text-fintech-muted">
-                52-week high
-              </p>
-              <p className="mt-1 font-mono text-base font-bold tabular-nums text-fintech-text">
-                {formatPKRWithSymbol(base.high52)}
-              </p>
-            </div>
-            <div className={card}>
-              <p className="text-xs font-medium text-fintech-muted">
-                52-week low
-              </p>
-              <p className="mt-1 font-mono text-base font-bold tabular-nums text-fintech-text">
-                {formatPKRWithSymbol(base.low52)}
-              </p>
-            </div>
-            <div className={card}>
-              <p className="text-xs font-medium text-fintech-muted">Volume</p>
-              <p className="mt-1 text-base font-semibold text-fintech-text">
-                {formatCompactPKR(base.volume)}
-              </p>
-            </div>
-            <div className={card}>
-              <p className="text-xs font-medium text-fintech-muted">
-                Market cap
-              </p>
-              <p className="mt-1 text-base font-semibold text-fintech-text">
-                {formatCompactPKR(base.marketCap)}
-              </p>
-            </div>
-          </div>
-
-          <section className={card}>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-              About
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-fintech-text">
-              {base.description}
-            </p>
-          </section>
+    <div style={{ background: COLORS.bg }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 32 }}>
+        <div style={{ marginBottom: 16 }}>
+          <Link
+            href="/stocks"
+            style={{ color: COLORS.muted, textDecoration: "none", fontSize: 14 }}
+          >
+            {"<- Back to stocks"}
+          </Link>
         </div>
 
-        <aside className="lg:col-span-1">
-          <div className="sticky top-6 space-y-4 rounded-lg border border-fintech-border bg-white p-4 shadow-card">
-            <p className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "65% 35%",
+            gap: 16,
+            alignItems: "start",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  color: COLORS.muted,
+                  fontWeight: 600,
+                }}
+              >
+                {base.sector}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 20, fontWeight: 700 }}>
+                {base.name}
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  color: COLORS.muted,
+                  fontFamily:
+                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                }}
+              >
+                {base.ticker}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 16 }}>
+              <div>
+                <div style={{ fontSize: 12, color: COLORS.muted }}>Last price</div>
+                <div
+                  style={{
+                    marginTop: 6,
+                    fontSize: 28,
+                    fontWeight: 700,
+                    color: COLORS.text,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {formatPKRWithSymbol(price)}
+                </div>
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: up ? COLORS.gain : COLORS.loss,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {up ? "+" : ""}
+                  {change.toFixed(2)} ({up ? "+" : ""}
+                  {changePct.toFixed(2)}%)
+                </div>
+                <div style={{ fontSize: 12, color: COLORS.muted, marginTop: 2 }}>
+                  vs. simulated open
+                </div>
+              </div>
+            </div>
+
+            <div style={cardStyle()}>
+              <div
+                style={{
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  color: COLORS.muted,
+                  fontWeight: 600,
+                  marginBottom: 12,
+                }}
+              >
+                Price (simulated intraday)
+              </div>
+              <div style={{ width: "100%", height: 320 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={history}>
+                    <XAxis dataKey="idx" hide />
+                    <YAxis
+                      domain={["auto", "auto"]}
+                      width={52}
+                      tick={{ fill: COLORS.muted, fontSize: 11 }}
+                      tickFormatter={(v) => `${Math.round(Number(v))}`}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#FFFFFF",
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: 8,
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                      }}
+                      labelStyle={{ color: COLORS.muted }}
+                      formatter={(v: number) => [formatPKRWithSymbol(v), "Price"]}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="price"
+                      stroke={COLORS.orange}
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div style={cardStyle()}>
+                <div style={{ fontSize: 12, color: COLORS.muted }}>52-week high</div>
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontFamily:
+                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontWeight: 700,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {formatPKRWithSymbol(base.high52)}
+                </div>
+              </div>
+              <div style={cardStyle()}>
+                <div style={{ fontSize: 12, color: COLORS.muted }}>52-week low</div>
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontFamily:
+                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontWeight: 700,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {formatPKRWithSymbol(base.low52)}
+                </div>
+              </div>
+              <div style={cardStyle()}>
+                <div style={{ fontSize: 12, color: COLORS.muted }}>Volume</div>
+                <div style={{ marginTop: 8, fontWeight: 700 }}>
+                  {formatCompactPKR(base.volume)}
+                </div>
+              </div>
+              <div style={cardStyle()}>
+                <div style={{ fontSize: 12, color: COLORS.muted }}>Market cap</div>
+                <div style={{ marginTop: 8, fontWeight: 700 }}>
+                  {formatCompactPKR(base.marketCap)}
+                </div>
+              </div>
+            </div>
+
+            <div style={cardStyle()}>
+              <div
+                style={{
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  color: COLORS.muted,
+                  fontWeight: 600,
+                }}
+              >
+                About
+              </div>
+              <div style={{ marginTop: 12, fontSize: 14, lineHeight: "22px" }}>
+                {base.description}
+              </div>
+            </div>
+          </div>
+
+          <div style={cardStyle()}>
+            <div
+              style={{
+                fontSize: 11,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: COLORS.muted,
+                fontWeight: 600,
+              }}
+            >
               Trade
-            </p>
-            <div className="flex gap-2 rounded-btn bg-fintech-card p-1">
+            </div>
+
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button
                 type="button"
                 onClick={() => setMode("BUY")}
-                className={`flex-1 rounded-btn py-2 text-sm font-semibold ${
-                  mode === "BUY"
-                    ? "bg-white text-fintech-brand shadow-card"
-                    : "text-fintech-muted"
-                }`}
+                style={{
+                  flex: 1,
+                  height: 36,
+                  borderRadius: 8,
+                  border: `1px solid ${mode === "BUY" ? COLORS.orange : COLORS.border}`,
+                  background: mode === "BUY" ? "#F5E6DC" : "#FFFFFF",
+                  color: mode === "BUY" ? COLORS.orange : COLORS.muted,
+                  fontWeight: 700,
+                }}
               >
                 Buy
               </button>
               <button
                 type="button"
                 onClick={() => setMode("SELL")}
-                className={`flex-1 rounded-btn py-2 text-sm font-semibold ${
-                  mode === "SELL"
-                    ? "bg-white text-fintech-loss shadow-card"
-                    : "text-fintech-muted"
-                }`}
+                style={{
+                  flex: 1,
+                  height: 36,
+                  borderRadius: 8,
+                  border: `1px solid ${mode === "SELL" ? COLORS.loss : COLORS.border}`,
+                  background: "#FFFFFF",
+                  color: mode === "SELL" ? COLORS.loss : COLORS.muted,
+                  fontWeight: 700,
+                }}
               >
                 Sell
               </button>
             </div>
 
-            <div>
-              <label className="text-xs font-semibold text-fintech-muted">
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 12, color: COLORS.muted, fontWeight: 600 }}>
                 Shares
-              </label>
+              </div>
               <input
                 inputMode="numeric"
                 value={sharesInput}
                 onChange={(e) => setSharesInput(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-fintech-border bg-white px-3 py-2 font-mono text-sm text-fintech-text outline-none focus:border-fintech-brand focus:ring-2 focus:ring-fintech-brand/25"
+                style={{
+                  marginTop: 8,
+                  width: "100%",
+                  height: 40,
+                  borderRadius: 8,
+                  border: `1px solid ${COLORS.border}`,
+                  padding: "0 12px",
+                  fontSize: 14,
+                  outline: "none",
+                  fontFamily:
+                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = COLORS.orange;
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(196,80,0,0.18)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = COLORS.border;
+                  e.currentTarget.style.boxShadow = "none";
+                }}
               />
             </div>
 
-            <div className="rounded-lg border border-fintech-border bg-fintech-card p-3 text-sm">
-              <div className="flex justify-between gap-2">
-                <span className="text-fintech-muted">
+            <div
+              style={{
+                marginTop: 16,
+                background: COLORS.bgSecondary,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 12,
+                padding: 12,
+                fontSize: 14,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                <div style={{ color: COLORS.muted }}>
                   {mode === "BUY" ? "Estimated cost" : "Estimated proceeds"}
-                </span>
-                <span className="font-mono font-semibold tabular-nums text-fintech-text">
+                </div>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    color: COLORS.text,
+                    fontVariantNumeric: "tabular-nums",
+                    fontFamily:
+                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  }}
+                >
                   {formatPKRWithSymbol(est)}
-                </span>
+                </div>
               </div>
-              <div className="mt-2 flex justify-between gap-2">
-                <span className="text-fintech-muted">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  marginTop: 8,
+                }}
+              >
+                <div style={{ color: COLORS.muted }}>
                   {mode === "BUY" ? "Available cash" : "Shares owned"}
-                </span>
-                <span className="font-mono font-semibold tabular-nums text-fintech-text">
+                </div>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    color: COLORS.text,
+                    fontVariantNumeric: "tabular-nums",
+                    fontFamily:
+                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  }}
+                >
                   {mode === "BUY"
                     ? formatPKRWithSymbol(portfolio.cash)
                     : `${holding?.shares ?? 0}`}
-                </span>
+                </div>
               </div>
             </div>
 
             {message && (
-              <p className="text-sm text-fintech-muted" role="status">
+              <div style={{ marginTop: 12, color: COLORS.muted, fontSize: 14 }} role="status">
                 {message}
-              </p>
+              </div>
             )}
 
             {mode === "BUY" ? (
               <button
                 type="button"
                 onClick={onConfirm}
-                className="w-full rounded-btn bg-fintech-brand py-3 text-sm font-semibold text-white"
+                style={{
+                  marginTop: 16,
+                  width: "100%",
+                  height: 44,
+                  borderRadius: 10,
+                  border: `1px solid ${COLORS.orange}`,
+                  background: COLORS.orange,
+                  color: "#FFFFFF",
+                  fontWeight: 700,
+                  fontSize: 14,
+                }}
               >
                 Buy {ticker}
               </button>
@@ -298,13 +461,23 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               <button
                 type="button"
                 onClick={onConfirm}
-                className="w-full rounded-btn border-2 border-fintech-loss bg-white py-3 text-sm font-semibold text-fintech-loss"
+                style={{
+                  marginTop: 16,
+                  width: "100%",
+                  height: 44,
+                  borderRadius: 10,
+                  border: `2px solid ${COLORS.loss}`,
+                  background: "#FFFFFF",
+                  color: COLORS.loss,
+                  fontWeight: 700,
+                  fontSize: 14,
+                }}
               >
                 Sell {ticker}
               </button>
             )}
           </div>
-        </aside>
+        </div>
       </div>
     </div>
   );

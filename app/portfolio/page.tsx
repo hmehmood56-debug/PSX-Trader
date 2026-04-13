@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 import {
   Cell,
   Pie,
@@ -28,8 +28,36 @@ const PIE_COLORS = [
   "#A85A24",
 ];
 
-const card =
-  "rounded-lg border border-fintech-border bg-white p-4 shadow-card";
+const COLORS = {
+  orange: "#C45000",
+  bg: "#FFFFFF",
+  bgSecondary: "#F7F7F7",
+  border: "#E8E8E8",
+  text: "#1A1A1A",
+  muted: "#6B6B6B",
+  gain: "#007A4C",
+  loss: "#C0392B",
+} as const;
+
+function cardStyle(): CSSProperties {
+  return {
+    background: COLORS.bg,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 12,
+    padding: 24,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+  };
+}
+
+function labelStyle(): CSSProperties {
+  return {
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    color: COLORS.muted,
+    fontWeight: 600,
+  };
+}
 
 export default function PortfolioPage() {
   const portfolio = usePortfolioState();
@@ -69,174 +97,164 @@ export default function PortfolioPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-fintech-muted">
-        Holdings, allocation, and transaction history.
-      </p>
+    <div style={{ background: COLORS.bg }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 32 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div style={cardStyle()}>
+            <div style={labelStyle()}>Cash balance</div>
+            <div style={{ marginTop: 10, fontSize: 28, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+              {formatPKRWithSymbol(portfolio.cash)}
+            </div>
+          </div>
+          <div style={cardStyle()}>
+            <div style={labelStyle()}>Holdings value</div>
+            <div style={{ marginTop: 10, fontSize: 28, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+              {formatPKRWithSymbol(holdingsValue)}
+            </div>
+          </div>
+          <div style={cardStyle()}>
+            <div style={labelStyle()}>Total portfolio value</div>
+            <div style={{ marginTop: 10, fontSize: 28, fontWeight: 700, color: COLORS.orange, fontVariantNumeric: "tabular-nums" }}>
+              {formatPKRWithSymbol(totalValue)}
+            </div>
+          </div>
+        </div>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <div className={card}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Cash balance
-          </p>
-          <p className="mt-2 text-xl font-bold tabular-nums text-fintech-text">
-            {formatPKRWithSymbol(portfolio.cash)}
-          </p>
-        </div>
-        <div className={card}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Holdings value
-          </p>
-          <p className="mt-2 text-xl font-bold tabular-nums text-fintech-text">
-            {formatPKRWithSymbol(holdingsValue)}
-          </p>
-        </div>
-        <div className={card}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Total portfolio value
-          </p>
-          <p className="mt-2 text-xl font-bold tabular-nums text-fintech-brand">
-            {formatPKRWithSymbol(totalValue)}
-          </p>
-        </div>
-      </section>
-
-      <section className={card}>
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-          Holdings
-        </h2>
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-fintech-border">
-                <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Stock
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Shares
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Avg buy
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Last
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Value
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  P&amp;L
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  P&amp;L %
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-3 py-8 text-center text-fintech-muted"
-                  >
-                    No open positions. Buy from the{" "}
-                    <Link
-                      href="/stocks"
-                      className="font-semibold text-fintech-brand hover:underline"
+        <div style={{ marginTop: 16, ...cardStyle(), padding: 0 }}>
+          <div style={{ padding: 24, borderBottom: `1px solid ${COLORS.border}` }}>
+            <div style={labelStyle()}>Holdings</div>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: COLORS.bgSecondary }}>
+                  {["Stock", "Shares", "Avg buy", "Last", "Value", "P&L", "P&L %"].map((h) => (
+                    <th
+                      key={h}
+                      style={{
+                        textAlign: h === "Stock" ? "left" : "right",
+                        fontSize: 11,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        color: COLORS.muted,
+                        fontWeight: 600,
+                        padding: "12px 16px",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                      }}
                     >
-                      stocks
-                    </Link>{" "}
-                    page.
-                  </td>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ) : (
-                rows.map((r) => {
-                  const up = r.pnl >= 0;
-                  return (
-                    <tr
-                      key={r.ticker}
-                      className="border-b border-fintech-border last:border-b-0 hover:bg-fintech-card"
-                    >
-                      <td className="px-3 py-3">
-                        <div className="font-mono font-bold text-fintech-brand">
-                          {r.ticker}
-                        </div>
-                        <div className="max-w-[200px] truncate text-xs text-fintech-muted">
-                          {r.name}
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 text-right font-mono tabular-nums text-fintech-text">
-                        {r.shares}
-                      </td>
-                      <td className="px-3 py-3 text-right font-mono font-semibold tabular-nums text-fintech-text">
-                        {formatPKRWithSymbol(r.avgBuyPrice)}
-                      </td>
-                      <td className="px-3 py-3 text-right font-mono font-semibold tabular-nums text-fintech-text">
-                        {formatPKRWithSymbol(r.px)}
-                      </td>
-                      <td className="px-3 py-3 text-right font-mono font-semibold tabular-nums text-fintech-text">
-                        {formatPKRWithSymbol(r.value)}
-                      </td>
-                      <td
-                        className={`px-3 py-3 text-right font-mono font-semibold tabular-nums ${
-                          up ? "text-fintech-gain" : "text-fintech-loss"
-                        }`}
-                      >
-                        {up ? "+" : ""}
-                        {formatPKRWithSymbol(r.pnl)}
-                      </td>
-                      <td
-                        className={`px-3 py-3 text-right font-mono font-semibold tabular-nums ${
-                          up ? "text-fintech-gain" : "text-fintech-loss"
-                        }`}
-                      >
-                        {up ? "+" : ""}
-                        {r.pnlPct.toFixed(2)}%
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ padding: 24, color: COLORS.muted }}>
+                      No open positions. Buy from the{" "}
+                      <Link href="/stocks" style={{ color: COLORS.orange, fontWeight: 600, textDecoration: "none" }}>
+                        stocks
+                      </Link>{" "}
+                      page.
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((r) => {
+                    const up = r.pnl >= 0;
+                    return (
+                      <tr key={r.ticker} style={{ height: 48 }}>
+                        <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}` }}>
+                          <div style={{ color: COLORS.orange, fontWeight: 700, fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" }}>
+                            {r.ticker}
+                          </div>
+                          <div style={{ color: COLORS.muted, fontSize: 12, maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {r.name}
+                          </div>
+                        </td>
+                        <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                          {r.shares}
+                        </td>
+                        <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>
+                          {formatPKRWithSymbol(r.avgBuyPrice)}
+                        </td>
+                        <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>
+                          {formatPKRWithSymbol(r.px)}
+                        </td>
+                        <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>
+                          {formatPKRWithSymbol(r.value)}
+                        </td>
+                        <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: up ? COLORS.gain : COLORS.loss }}>
+                          {up ? "+" : ""}
+                          {formatPKRWithSymbol(r.pnl)}
+                        </td>
+                        <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: up ? COLORS.gain : COLORS.loss }}>
+                          {up ? "+" : ""}
+                          {r.pnlPct.toFixed(2)}%
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className={card}>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Allocation by stock
-          </h2>
-          {pieData.length === 0 ? (
-            <p className="mt-6 text-sm text-fintech-muted">
-              Chart appears once you hold shares.
-            </p>
-          ) : (
-            <div className="mt-4 h-72 w-full">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
+          <div style={cardStyle()}>
+            <div style={labelStyle()}>Allocation by stock</div>
+            {pieData.length === 0 ? (
+              <div style={{ marginTop: 12, color: COLORS.muted, fontSize: 14 }}>
+                Chart appears once you hold shares.
+              </div>
+            ) : (
+              <div style={{ marginTop: 12, width: "100%", height: 300 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={56} outerRadius={92} paddingAngle={2}>
+                      {pieData.map((_, i) => (
+                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} stroke="#FFFFFF" strokeWidth={1} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(v: number) => formatPKRWithSymbol(v)}
+                      contentStyle={{
+                        background: "#FFFFFF",
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: 8,
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                      }}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+
+          <div style={cardStyle()}>
+            <div style={labelStyle()}>Cash vs invested</div>
+            <div style={{ marginTop: 12, width: "100%", height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={pieData}
+                    data={[
+                      { name: "Cash", value: portfolio.cash },
+                      { name: "Holdings", value: Math.max(0, holdingsValue) },
+                    ]}
                     dataKey="value"
                     nameKey="name"
                     innerRadius={56}
-                    outerRadius={88}
-                    paddingAngle={2}
+                    outerRadius={92}
                   >
-                    {pieData.map((_, i) => (
-                      <Cell
-                        key={i}
-                        fill={PIE_COLORS[i % PIE_COLORS.length]}
-                        stroke="#FFFFFF"
-                        strokeWidth={1}
-                      />
-                    ))}
+                    <Cell fill={COLORS.muted} stroke="#FFFFFF" strokeWidth={1} />
+                    <Cell fill={COLORS.orange} stroke="#FFFFFF" strokeWidth={1} />
                   </Pie>
                   <Tooltip
                     formatter={(v: number) => formatPKRWithSymbol(v)}
                     contentStyle={{
                       background: "#FFFFFF",
-                      border: "1px solid #E8E8E8",
+                      border: `1px solid ${COLORS.border}`,
                       borderRadius: 8,
                       boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
                     }}
@@ -245,118 +263,72 @@ export default function PortfolioPage() {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-          )}
-        </div>
-
-        <div className={card}>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Cash vs invested
-          </h2>
-          <div className="mt-4 h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: "Cash", value: portfolio.cash },
-                    { name: "Holdings", value: Math.max(0, holdingsValue) },
-                  ]}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={56}
-                  outerRadius={88}
-                >
-                  <Cell fill="#6B6B6B" stroke="#FFFFFF" strokeWidth={1} />
-                  <Cell fill="#C45000" stroke="#FFFFFF" strokeWidth={1} />
-                </Pie>
-                <Tooltip
-                  formatter={(v: number) => formatPKRWithSymbol(v)}
-                  contentStyle={{
-                    background: "#FFFFFF",
-                    border: "1px solid #E8E8E8",
-                    borderRadius: 8,
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                  }}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
           </div>
         </div>
-      </section>
 
-      <section className={card}>
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-          Transaction history
-        </h2>
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-fintech-border">
-                <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Time
-                </th>
-                <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Side
-                </th>
-                <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Ticker
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Shares
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Price
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {txs.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-3 py-8 text-center text-fintech-muted"
-                  >
-                    No transactions yet.
-                  </td>
-                </tr>
-              ) : (
-                txs.map((t) => (
-                  <tr
-                    key={t.id}
-                    className="border-b border-fintech-border last:border-b-0 hover:bg-fintech-card"
-                  >
-                    <td className="px-3 py-3 text-xs text-fintech-muted">
-                      {new Date(t.timestamp).toLocaleString("en-PK")}
-                    </td>
-                    <td
-                      className={`px-3 py-3 text-sm font-semibold ${
-                        t.type === "BUY" ? "text-fintech-gain" : "text-fintech-loss"
-                      }`}
+        <div style={{ marginTop: 16, ...cardStyle(), padding: 0 }}>
+          <div style={{ padding: 24, borderBottom: `1px solid ${COLORS.border}` }}>
+            <div style={labelStyle()}>Transaction history</div>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: COLORS.bgSecondary }}>
+                  {["Time", "Side", "Ticker", "Shares", "Price", "Total"].map((h) => (
+                    <th
+                      key={h}
+                      style={{
+                        textAlign: h === "Time" || h === "Side" || h === "Ticker" ? "left" : "right",
+                        fontSize: 11,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        color: COLORS.muted,
+                        fontWeight: 600,
+                        padding: "12px 16px",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                      }}
                     >
-                      {t.type}
-                    </td>
-                    <td className="px-3 py-3 font-mono font-semibold text-fintech-text">
-                      {t.ticker}
-                    </td>
-                    <td className="px-3 py-3 text-right font-mono tabular-nums text-fintech-text">
-                      {t.shares}
-                    </td>
-                    <td className="px-3 py-3 text-right font-mono font-semibold tabular-nums text-fintech-text">
-                      {formatPKRWithSymbol(t.price)}
-                    </td>
-                    <td className="px-3 py-3 text-right font-mono font-semibold tabular-nums text-fintech-text">
-                      {formatPKRWithSymbol(t.total)}
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {txs.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ padding: 24, color: COLORS.muted }}>
+                      No transactions yet.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  txs.map((t) => (
+                    <tr key={t.id} style={{ height: 48 }}>
+                      <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, color: COLORS.muted, fontSize: 12 }}>
+                        {new Date(t.timestamp).toLocaleString("en-PK")}
+                      </td>
+                      <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, fontWeight: 700, color: t.type === "BUY" ? COLORS.gain : COLORS.loss }}>
+                        {t.type}
+                      </td>
+                      <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontWeight: 700 }}>
+                        {t.ticker}
+                      </td>
+                      <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                        {t.shares}
+                      </td>
+                      <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+                        {formatPKRWithSymbol(t.price)}
+                      </td>
+                      <td style={{ padding: "0 16px", borderBottom: `1px solid ${COLORS.border}`, textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+                        {formatPKRWithSymbol(t.total)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

@@ -8,20 +8,54 @@ import {
 } from "@/lib/portfolioStore";
 import { formatPKRWithSymbol } from "@/lib/format";
 import { usePortfolioState } from "@/hooks/usePortfolioState";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, type CSSProperties } from "react";
+
+const COLORS = {
+  orange: "#C45000",
+  bg: "#FFFFFF",
+  bgSecondary: "#F7F7F7",
+  border: "#E8E8E8",
+  text: "#1A1A1A",
+  muted: "#6B6B6B",
+  gain: "#007A4C",
+  loss: "#C0392B",
+} as const;
 
 function signedPkr(n: number): string {
   const sign = n >= 0 ? "+" : "";
-  return `${sign}${formatPKRWithSymbol(n, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${sign}${formatPKRWithSymbol(n, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
-const card =
-  "rounded-lg border border-fintech-border bg-white p-4 shadow-card";
+function cardStyle(): CSSProperties {
+  return {
+    background: COLORS.bg,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 12,
+    padding: 24,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+  };
+}
+
+function labelStyle(): CSSProperties {
+  return {
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    color: COLORS.muted,
+    fontWeight: 600,
+  };
+}
 
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false);
   const portfolio = usePortfolioState();
   const { getQuote, getStocksWithLive } = useLivePrices();
   const [recent, setRecent] = useState<Transaction[]>([]);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     setRecent(getTransactionHistory().slice(0, 5));
@@ -62,133 +96,250 @@ export default function DashboardPage() {
     .sort((a, b) => a.changePercent - b.changePercent)
     .slice(0, 3);
 
+  if (!mounted) return null;
+
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-fintech-muted">
-        Prices refresh every few seconds (simulated).
-      </p>
-
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Portfolio Value"
-          value={formatPKRWithSymbol(portfolioValue)}
-        />
-        <StatCard
-          label="Cash Available"
-          value={formatPKRWithSymbol(portfolio.cash)}
-        />
-        <StatCard
-          label="Today's P&L"
-          value={signedPkr(todayPnL)}
-          valueClass={todayPnL >= 0 ? "text-fintech-gain" : "text-fintech-loss"}
-        />
-        <StatCard
-          label="Total Return"
-          value={`${totalReturnPct >= 0 ? "+" : ""}${totalReturnPct.toFixed(2)}%`}
-          valueClass={
-            totalReturnPct >= 0 ? "text-fintech-gain" : "text-fintech-loss"
-          }
-        />
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className={card}>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Top Gainers
-          </h2>
-          <ul className="mt-4 divide-y divide-fintech-border">
-            {gainers.map((s) => (
-              <li
-                key={s.ticker}
-                className="flex items-center justify-between py-3 first:pt-0"
-              >
-                <Link
-                  href={`/stock/${s.ticker}`}
-                  className="font-bold text-fintech-brand hover:underline"
-                >
-                  {s.ticker}
-                </Link>
-                <span className="text-sm font-semibold tabular-nums text-fintech-gain">
-                  +{s.changePercent.toFixed(2)}%
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className={card}>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Top Losers
-          </h2>
-          <ul className="mt-4 divide-y divide-fintech-border">
-            {losers.map((s) => (
-              <li
-                key={s.ticker}
-                className="flex items-center justify-between py-3 first:pt-0"
-              >
-                <Link
-                  href={`/stock/${s.ticker}`}
-                  className="font-bold text-fintech-brand hover:underline"
-                >
-                  {s.ticker}
-                </Link>
-                <span className="text-sm font-semibold tabular-nums text-fintech-loss">
-                  {s.changePercent.toFixed(2)}%
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
-      <section className={card}>
-        <div className="flex items-center justify-between gap-2 border-b border-fintech-border pb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Recent Transactions
-          </h2>
-          <Link
-            href="/portfolio"
-            className="text-xs font-semibold text-fintech-brand hover:underline"
-          >
-            View all
-          </Link>
+    <div style={{ background: COLORS.bg }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 32 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            gap: 16,
+          }}
+        >
+          <StatCard
+            label="Portfolio Value"
+            value={formatPKRWithSymbol(portfolioValue)}
+          />
+          <StatCard
+            label="Cash Available"
+            value={formatPKRWithSymbol(portfolio.cash)}
+          />
+          <StatCard
+            label="Today's P&L"
+            value={signedPkr(todayPnL)}
+            valueColor={todayPnL >= 0 ? COLORS.gain : COLORS.loss}
+          />
+          <StatCard
+            label="Total Return"
+            value={`${totalReturnPct >= 0 ? "+" : ""}${totalReturnPct.toFixed(
+              2
+            )}%`}
+            valueColor={totalReturnPct >= 0 ? COLORS.gain : COLORS.loss}
+          />
         </div>
-        {recent.length === 0 ? (
-          <p className="mt-4 text-sm text-fintech-muted">
-            No trades yet. Browse{" "}
-            <Link href="/stocks" className="font-semibold text-fintech-brand hover:underline">
-              stocks
-            </Link>{" "}
-            to place your first order.
-          </p>
-        ) : (
-          <div className="mt-0 divide-y divide-fintech-border">
-            {recent.map((tx) => (
-              <div
-                key={tx.id}
-                className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
-              >
-                <span
-                  className={`font-semibold ${
-                    tx.type === "BUY" ? "text-fintech-gain" : "text-fintech-loss"
-                  }`}
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 16,
+            marginTop: 16,
+          }}
+        >
+          <div style={cardStyle()}>
+            <div style={labelStyle()}>Top Gainers</div>
+            <div style={{ marginTop: 12 }}>
+              {gainers.map((s, idx) => (
+                <div
+                  key={s.ticker}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    padding: "12px 0",
+                    borderTop: idx === 0 ? "none" : `1px solid ${COLORS.border}`,
+                  }}
                 >
-                  {tx.type}
-                </span>
-                <span className="font-mono font-semibold tabular-nums text-fintech-text">
-                  {tx.ticker}
-                </span>
-                <span className="text-fintech-muted">
-                  {tx.shares} sh @ {formatPKRWithSymbol(tx.price)}
-                </span>
-                <span className="font-semibold tabular-nums text-fintech-text">
-                  {formatPKRWithSymbol(tx.total)}
-                </span>
-              </div>
-            ))}
+                  <div style={{ minWidth: 0 }}>
+                    <Link
+                      href={`/stock/${s.ticker}`}
+                      style={{
+                        color: COLORS.orange,
+                        fontWeight: 700,
+                        textDecoration: "none",
+                      }}
+                    >
+                      {s.ticker}
+                    </Link>
+                    <div
+                      style={{
+                        color: COLORS.muted,
+                        fontSize: 13,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 360,
+                      }}
+                    >
+                      {s.name}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      color: COLORS.gain,
+                      fontVariantNumeric: "tabular-nums",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    +{s.changePercent.toFixed(2)}%
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
-      </section>
+
+          <div style={cardStyle()}>
+            <div style={labelStyle()}>Top Losers</div>
+            <div style={{ marginTop: 12 }}>
+              {losers.map((s, idx) => (
+                <div
+                  key={s.ticker}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    padding: "12px 0",
+                    borderTop: idx === 0 ? "none" : `1px solid ${COLORS.border}`,
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <Link
+                      href={`/stock/${s.ticker}`}
+                      style={{
+                        color: COLORS.orange,
+                        fontWeight: 700,
+                        textDecoration: "none",
+                      }}
+                    >
+                      {s.ticker}
+                    </Link>
+                    <div
+                      style={{
+                        color: COLORS.muted,
+                        fontSize: 13,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 360,
+                      }}
+                    >
+                      {s.name}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      color: COLORS.loss,
+                      fontVariantNumeric: "tabular-nums",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {s.changePercent.toFixed(2)}%
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 16, ...cardStyle() }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingBottom: 12,
+              borderBottom: `1px solid ${COLORS.border}`,
+            }}
+          >
+            <div style={labelStyle()}>Recent Transactions</div>
+            <Link
+              href="/portfolio"
+              style={{
+                color: COLORS.orange,
+                fontSize: 12,
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
+            >
+              View all
+            </Link>
+          </div>
+
+          {recent.length === 0 ? (
+            <div style={{ marginTop: 12, color: COLORS.muted, fontSize: 14 }}>
+              No trades yet. Browse{" "}
+              <Link
+                href="/stocks"
+                style={{
+                  color: COLORS.orange,
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                stocks
+              </Link>{" "}
+              to place your first order.
+            </div>
+          ) : (
+            <div style={{ marginTop: 8 }}>
+              {recent.map((tx, idx) => (
+                <div
+                  key={tx.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    padding: "12px 0",
+                    borderTop: idx === 0 ? "none" : `1px solid ${COLORS.border}`,
+                    fontSize: 14,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      color: tx.type === "BUY" ? COLORS.gain : COLORS.loss,
+                      minWidth: 56,
+                    }}
+                  >
+                    {tx.type}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily:
+                        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      fontWeight: 700,
+                      color: COLORS.text,
+                      minWidth: 64,
+                    }}
+                  >
+                    {tx.ticker}
+                  </div>
+                  <div style={{ color: COLORS.muted, flex: 1 }}>
+                    {tx.shares} sh @ {formatPKRWithSymbol(tx.price)}
+                  </div>
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      color: COLORS.text,
+                      fontVariantNumeric: "tabular-nums",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {formatPKRWithSymbol(tx.total)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -196,22 +347,26 @@ export default function DashboardPage() {
 function StatCard({
   label,
   value,
-  valueClass = "text-fintech-text",
+  valueColor,
 }: {
   label: string;
   value: string;
-  valueClass?: string;
+  valueColor?: string;
 }) {
   return (
-    <div className={card}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-        {label}
-      </p>
-      <p
-        className={`mt-2 text-xl font-bold tabular-nums tracking-tight ${valueClass}`}
+    <div style={cardStyle()}>
+      <div style={labelStyle()}>{label}</div>
+      <div
+        style={{
+          marginTop: 10,
+          fontSize: 28,
+          fontWeight: 700,
+          color: valueColor ?? COLORS.text,
+          fontVariantNumeric: "tabular-nums",
+        }}
       >
         {value}
-      </p>
+      </div>
     </div>
   );
 }

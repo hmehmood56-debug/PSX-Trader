@@ -13,30 +13,62 @@ export function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="w-full bg-fintech-brand">
-      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 px-4 py-3 md:grid-cols-3">
-        <Link href="/" className="flex items-baseline gap-1.5 justify-self-start">
-          <span className="text-lg font-bold tracking-tight text-white">PSX</span>
-          <span className="text-lg font-light tracking-tight text-white">
+    <header
+      style={{
+        width: "100%",
+        height: 56,
+        background: "#C45000",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 1200,
+          padding: "0 32px",
+          margin: "0 auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+        }}
+      >
+        <Link
+          href="/"
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 6,
+            textDecoration: "none",
+          }}
+        >
+          <span style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 20 }}>
+            PSX
+          </span>
+          <span style={{ color: "#FFFFFF", fontWeight: 300, fontSize: 20 }}>
             Trader
           </span>
         </Link>
 
-        <nav className="flex flex-wrap items-center justify-center gap-1 md:gap-2">
+        <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {links.map((l) => {
             const active =
-              l.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(l.href);
+              l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`rounded-btn px-3 py-2 text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-white font-semibold text-fintech-brand"
-                    : "text-white hover:bg-white/10"
-                }`}
+                style={{
+                  color: active ? "#C45000" : "#FFFFFF",
+                  background: active ? "#FFFFFF" : "transparent",
+                  borderRadius: 999,
+                  padding: "8px 12px",
+                  fontSize: 14,
+                  fontWeight: 500,
+                  textDecoration: "none",
+                  lineHeight: "20px",
+                }}
               >
                 {l.label}
               </Link>
@@ -44,16 +76,34 @@ export function Navbar() {
           })}
         </nav>
 
-        <div className="flex flex-wrap items-center justify-end gap-2 justify-self-end">
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button
             type="button"
-            className="rounded-btn border border-white bg-transparent px-4 py-2 text-sm font-medium text-white"
+            style={{
+              height: 34,
+              padding: "0 14px",
+              borderRadius: 6,
+              border: "1px solid #FFFFFF",
+              background: "transparent",
+              color: "#FFFFFF",
+              fontSize: 14,
+              fontWeight: 500,
+            }}
           >
             Log In
           </button>
           <button
             type="button"
-            className="rounded-btn bg-white px-4 py-2 text-sm font-semibold text-fintech-brand"
+            style={{
+              height: 34,
+              padding: "0 14px",
+              borderRadius: 6,
+              border: "1px solid #FFFFFF",
+              background: "#FFFFFF",
+              color: "#C45000",
+              fontSize: 14,
+              fontWeight: 600,
+            }}
           >
             Sign Up
           </button>

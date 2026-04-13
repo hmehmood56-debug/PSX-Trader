@@ -6,6 +6,17 @@ import { getAllSectors } from "@/lib/mockData";
 import { useLivePrices } from "@/lib/priceSimulator";
 import { formatCompactPKR, formatPKRWithSymbol } from "@/lib/format";
 
+const COLORS = {
+  orange: "#C45000",
+  bg: "#FFFFFF",
+  bgSecondary: "#F7F7F7",
+  border: "#E8E8E8",
+  text: "#1A1A1A",
+  muted: "#6B6B6B",
+  gain: "#007A4C",
+  loss: "#C0392B",
+} as const;
+
 export default function StocksPage() {
   const router = useRouter();
   const { getStocksWithLive } = useLivePrices();
@@ -28,128 +39,244 @@ export default function StocksPage() {
   }, [stocks, q, sector]);
 
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-fintech-muted">
-        Live quotes (simulated). Select a row for details.
-      </p>
+    <div style={{ background: COLORS.bg }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 32 }}>
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-end" }}>
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                fontSize: 11,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: COLORS.muted,
+                fontWeight: 600,
+              }}
+            >
+              Search
+            </div>
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Ticker or company name"
+              style={{
+                marginTop: 8,
+                width: "100%",
+                height: 40,
+                borderRadius: 8,
+                border: `1px solid ${COLORS.border}`,
+                padding: "0 12px",
+                fontSize: 14,
+                outline: "none",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = COLORS.orange;
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(196,80,0,0.18)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = COLORS.border;
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            />
+          </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-        <div className="flex-1">
-          <label className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Search
-          </label>
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Ticker or company name"
-            className="mt-2 w-full rounded-lg border border-fintech-border bg-white px-3 py-2 text-sm text-fintech-text outline-none ring-0 focus:border-fintech-brand focus:ring-2 focus:ring-fintech-brand/25"
-          />
+          <div style={{ width: 240 }}>
+            <div
+              style={{
+                fontSize: 11,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: COLORS.muted,
+                fontWeight: 600,
+              }}
+            >
+              Sector
+            </div>
+            <select
+              value={sector}
+              onChange={(e) => setSector(e.target.value)}
+              style={{
+                marginTop: 8,
+                width: "100%",
+                height: 40,
+                borderRadius: 8,
+                border: `1px solid ${COLORS.border}`,
+                padding: "0 12px",
+                fontSize: 14,
+                outline: "none",
+                background: "#FFFFFF",
+              }}
+            >
+              {sectors.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div className="sm:w-56">
-          <label className="text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-            Sector
-          </label>
-          <select
-            value={sector}
-            onChange={(e) => setSector(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-fintech-border bg-white px-3 py-2 text-sm text-fintech-text outline-none focus:border-fintech-brand focus:ring-2 focus:ring-fintech-brand/25"
-          >
-            {sectors.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
 
-      <div className="overflow-x-auto rounded-lg border border-fintech-border bg-white shadow-card">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-fintech-border bg-fintech-card">
-            <tr>
-              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                Ticker
-              </th>
-              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                Company
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                Price
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                Change
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                Change %
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                Volume
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-fintech-muted">
-                Mkt Cap
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((s) => {
-              const up = s.change >= 0;
-              return (
-                <tr
-                  key={s.ticker}
-                  role="link"
-                  tabIndex={0}
-                  onClick={() => router.push(`/stock/${s.ticker}`)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      router.push(`/stock/${s.ticker}`);
-                    }
-                  }}
-                  className="cursor-pointer border-b border-fintech-border last:border-b-0 hover:bg-fintech-card"
-                >
-                  <td className="px-4 py-3">
-                    <span className="font-mono font-bold text-fintech-brand">
+        <div
+          style={{
+            marginTop: 16,
+            background: "#FFFFFF",
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 12,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          }}
+        >
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: COLORS.bgSecondary }}>
+                {[
+                  "Ticker",
+                  "Company",
+                  "Price",
+                  "Change",
+                  "Change %",
+                  "Volume",
+                  "Mkt Cap",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      textAlign: h === "Company" || h === "Ticker" ? "left" : "right",
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: COLORS.muted,
+                      fontWeight: 600,
+                      padding: "12px 16px",
+                      borderBottom: `1px solid ${COLORS.border}`,
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((s) => {
+                const up = s.change >= 0;
+                return (
+                  <tr
+                    key={s.ticker}
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => router.push(`/stock/${s.ticker}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        router.push(`/stock/${s.ticker}`);
+                      }
+                    }}
+                    style={{ height: 48, cursor: "pointer" }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLTableRowElement).style.background =
+                        COLORS.bgSecondary;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLTableRowElement).style.background =
+                        "#FFFFFF";
+                    }}
+                  >
+                    <td
+                      style={{
+                        padding: "0 16px",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                        color: COLORS.orange,
+                        fontWeight: 700,
+                        fontFamily:
+                          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      }}
+                    >
                       {s.ticker}
-                    </span>
-                  </td>
-                  <td className="max-w-[220px] truncate px-4 py-3 text-fintech-muted">
-                    {s.name}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-sm font-bold tabular-nums text-fintech-text">
-                    {formatPKRWithSymbol(s.price)}
-                  </td>
-                  <td
-                    className={`px-4 py-3 text-right font-mono text-sm font-semibold tabular-nums ${
-                      up ? "text-fintech-gain" : "text-fintech-loss"
-                    }`}
-                  >
-                    {up ? "+" : ""}
-                    {s.change.toFixed(2)}
-                  </td>
-                  <td
-                    className={`px-4 py-3 text-right font-mono text-sm font-semibold tabular-nums ${
-                      up ? "text-fintech-gain" : "text-fintech-loss"
-                    }`}
-                  >
-                    {up ? "+" : ""}
-                    {s.changePercent.toFixed(2)}%
-                  </td>
-                  <td className="px-4 py-3 text-right text-fintech-muted tabular-nums">
-                    {formatCompactPKR(s.volume)}
-                  </td>
-                  <td className="px-4 py-3 text-right text-fintech-muted tabular-nums">
-                    {formatCompactPKR(s.marketCap)}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {filtered.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fintech-muted">
-            No matches.
-          </p>
-        )}
+                    </td>
+                    <td
+                      style={{
+                        padding: "0 16px",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                        color: COLORS.muted,
+                        maxWidth: 420,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {s.name}
+                    </td>
+                    <td
+                      style={{
+                        padding: "0 16px",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                        textAlign: "right",
+                        color: COLORS.text,
+                        fontWeight: 700,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {formatPKRWithSymbol(s.price)}
+                    </td>
+                    <td
+                      style={{
+                        padding: "0 16px",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                        textAlign: "right",
+                        color: up ? COLORS.gain : COLORS.loss,
+                        fontWeight: 600,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {up ? "+" : ""}
+                      {s.change.toFixed(2)}
+                    </td>
+                    <td
+                      style={{
+                        padding: "0 16px",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                        textAlign: "right",
+                        color: up ? COLORS.gain : COLORS.loss,
+                        fontWeight: 600,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {up ? "+" : ""}
+                      {s.changePercent.toFixed(2)}%
+                    </td>
+                    <td
+                      style={{
+                        padding: "0 16px",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                        textAlign: "right",
+                        color: COLORS.muted,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {formatCompactPKR(s.volume)}
+                    </td>
+                    <td
+                      style={{
+                        padding: "0 16px",
+                        borderBottom: `1px solid ${COLORS.border}`,
+                        textAlign: "right",
+                        color: COLORS.muted,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {formatCompactPKR(s.marketCap)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {filtered.length === 0 && (
+            <div style={{ padding: 24, textAlign: "center", color: COLORS.muted }}>
+              No matches.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
