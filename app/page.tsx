@@ -99,7 +99,7 @@ export default function LandingPage() {
                 Start Investing
               </Link>
               <Link
-                href="/stocks"
+                href="/markets"
                 style={{
                   textDecoration: "none",
                   border: `1px solid ${palette.border}`,

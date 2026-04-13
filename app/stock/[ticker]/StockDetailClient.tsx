@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   Line,
   LineChart,
@@ -16,7 +16,7 @@ import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { buyStock, sellStock } from "@/lib/portfolioStore";
 import { usePortfolioState } from "@/hooks/usePortfolioState";
 
-type Point = { idx: number; price: number };
+type Point = { date: string; price: number; volume: number };
 
 const COLORS = {
   orange: "#C45000",
@@ -51,52 +51,20 @@ function statLabelStyle(): CSSProperties {
   };
 }
 
-function buildSimulatedHistory(endPrice: number): Point[] {
-  const n = 30;
-  const out: Point[] = [];
-  let p = endPrice;
-  for (let k = n - 1; k >= 0; k--) {
-    out.unshift({ idx: n - 1 - k, price: Number(p.toFixed(2)) });
-    const delta = (Math.random() * 2 - 1) * 0.005;
-    p = Math.max(0.01, p / (1 + delta));
-  }
-  out[out.length - 1] = {
-    ...out[out.length - 1],
-    price: Number(endPrice.toFixed(2)),
-  };
-  return out;
-}
-
 export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const ticker = base.ticker;
-  const { getQuote } = useLivePrices();
+  const { getQuote, getHistory, currentDate, isPlaceholderData } = useLivePrices();
   const quote = getQuote(ticker);
   const price = quote?.price ?? base.price;
   const change = quote?.change ?? base.change;
   const changePct = quote?.changePercent ?? base.changePercent;
+  const volume = quote?.volume ?? base.volume;
+  const history = getHistory(ticker) as Point[];
 
   const portfolio = usePortfolioState();
-  const [history, setHistory] = useState<Point[]>([]);
   const [mode, setMode] = useState<"BUY" | "SELL">("BUY");
   const [sharesInput, setSharesInput] = useState("10");
   const [message, setMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    setHistory(buildSimulatedHistory(price));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ticker]);
-
-  useEffect(() => {
-    setHistory((h) => {
-      if (h.length === 0) return h;
-      const next = [...h];
-      next[next.length - 1] = {
-        ...next[next.length - 1],
-        price: Number(price.toFixed(2)),
-      };
-      return next;
-    });
-  }, [price]);
 
   const shares = Math.max(0, Math.floor(Number(sharesInput) || 0));
   const est = shares * price;
@@ -130,7 +98,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "28px 32px 36px" }}>
         <div style={{ marginBottom: 24 }}>
           <Link
-            href="/stocks"
+            href="/markets/psx"
             style={{
               color: COLORS.muted,
               textDecoration: "none",
@@ -139,7 +107,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               letterSpacing: "0.02em",
             }}
           >
-            {"<- Back to stocks"}
+            {"<- Back to simulated PSX"}
           </Link>
         </div>
 
@@ -213,7 +181,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   {changePct.toFixed(2)}%)
                 </div>
                 <div style={{ fontSize: 12, color: COLORS.mutedSoft, marginTop: 4, textAlign: "right" }}>
-                  vs. simulated open
+                  vs. previous replay day
                 </div>
               </div>
             </section>
@@ -227,13 +195,24 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               }}
             >
               <div style={statLabelStyle()}>
-                Price (simulated intraday)
+                Price replay
               </div>
               <div style={{ width: "100%", height: 360, marginTop: 12 }}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={history}>
-                    <XAxis dataKey="idx" hide />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: COLORS.mutedSoft, fontSize: 11 }}
+                      tickFormatter={(value: string) =>
+                        new Date(value).toLocaleDateString("en-PK", {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      }
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <YAxis
                       domain={["auto", "auto"]}
                       width={56}
@@ -250,7 +229,14 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                         boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
                       }}
                       labelStyle={{ color: COLORS.muted }}
-                      formatter={(v: number) => [formatPKRWithSymbol(v), "Price"]}
+                      labelFormatter={(value: string) =>
+                        new Date(value).toLocaleDateString("en-PK", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                        })
+                      }
+                      formatter={(value: number) => [formatPKRWithSymbol(value), "Price"]}
                     />
                     <Line
                       type="monotone"
@@ -261,6 +247,11 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                     />
                   </LineChart>
                 </ResponsiveContainer>
+              </div>
+              <div style={{ marginTop: 12, color: COLORS.mutedSoft, fontSize: 12 }}>
+                {isPlaceholderData
+                  ? `Shared replay clock running on sample daily bars. Current replay date: ${currentDate}.`
+                  : `Current replay date: ${currentDate}.`}
               </div>
             </section>
 
@@ -309,7 +300,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 <div>
                   <div style={statLabelStyle()}>Volume</div>
                   <div style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
-                    {formatCompactPKR(base.volume)}
+                    {formatCompactPKR(volume)}
                   </div>
                 </div>
                 <div>

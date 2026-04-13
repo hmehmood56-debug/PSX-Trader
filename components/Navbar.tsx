@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 const links = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/stocks", label: "Stocks" },
+  { href: "/markets", label: "Markets" },
   { href: "/account", label: "Account" },
   { href: "/learn", label: "Learn" },
 ];
@@ -98,7 +98,7 @@ export function Navbar() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Link
-            href="/stocks"
+            href="/markets"
             style={{
               height: 34,
               padding: "0 14px",

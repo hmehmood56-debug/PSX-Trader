@@ -230,7 +230,7 @@ export default function LearnPage() {
             placing your next simulated trade.
           </p>
           <Link
-            href="/stocks"
+            href="/markets"
             style={{
               display: "inline-block",
               marginTop: 12,
@@ -243,7 +243,7 @@ export default function LearnPage() {
               textDecoration: "none",
             }}
           >
-            Browse Stocks
+            Open Markets
           </Link>
         </section>
       </div>
