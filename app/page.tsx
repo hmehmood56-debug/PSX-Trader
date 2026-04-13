@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLivePrices } from "@/lib/priceSimulator";
+import { getStockByTicker } from "@/lib/mockData";
 import {
   getTransactionHistory,
   type Transaction,
@@ -9,6 +10,7 @@ import {
 import { formatPKRWithSymbol } from "@/lib/format";
 import { usePortfolioState } from "@/hooks/usePortfolioState";
 import { useMemo, useState, useEffect, type CSSProperties } from "react";
+import { PortfolioSections } from "@/components/dashboard/PortfolioSections";
 
 const COLORS = {
   orange: "#C45000",
@@ -53,13 +55,13 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const portfolio = usePortfolioState();
   const { getQuote, getStocksWithLive } = useLivePrices();
-  const [recent, setRecent] = useState<Transaction[]>([]);
+  const [txs, setTxs] = useState<Transaction[]>([]);
 
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    setRecent(getTransactionHistory().slice(0, 5));
-    const onUp = () => setRecent(getTransactionHistory().slice(0, 5));
+    setTxs(getTransactionHistory());
+    const onUp = () => setTxs(getTransactionHistory());
     window.addEventListener("psx-portfolio-updated", onUp);
     return () => window.removeEventListener("psx-portfolio-updated", onUp);
   }, []);
@@ -95,6 +97,76 @@ export default function DashboardPage() {
   const losers = [...stocks]
     .sort((a, b) => a.changePercent - b.changePercent)
     .slice(0, 3);
+
+  const rows = useMemo(() => {
+    return portfolio.holdings.map((h) => {
+      const q = getQuote(h.ticker);
+      const px = q?.price ?? getStockByTicker(h.ticker)?.price ?? 0;
+      const value = h.shares * px;
+      const cost = h.shares * h.avgBuyPrice;
+      const pnl = value - cost;
+      const pnlPct = cost !== 0 ? (pnl / cost) * 100 : 0;
+      const name = getStockByTicker(h.ticker)?.name ?? h.ticker;
+      return { ...h, name, px, value, pnl, pnlPct };
+    });
+  }, [portfolio.holdings, getQuote]);
+
+  const unrealizedPnl = rows.reduce((sum, r) => sum + r.pnl, 0);
+
+  const performancePoints = useMemo(() => {
+    if (txs.length === 0) {
+      return [
+        { label: "Start", pnl: 0 },
+        { label: "Now", pnl: unrealizedPnl },
+      ];
+    }
+
+    const ascending = [...txs].sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+    const book: Record<string, { shares: number; avg: number }> = {};
+    let realized = 0;
+    const points: { label: string; pnl: number }[] = [{ label: "Start", pnl: 0 }];
+
+    for (const tx of ascending) {
+      const key = tx.ticker;
+      const pos = book[key] ?? { shares: 0, avg: 0 };
+      if (tx.type === "BUY") {
+        const totalShares = pos.shares + tx.shares;
+        const nextAvg =
+          totalShares === 0
+            ? 0
+            : (pos.avg * pos.shares + tx.price * tx.shares) / totalShares;
+        book[key] = { shares: totalShares, avg: nextAvg };
+      } else {
+        const sold = Math.min(tx.shares, pos.shares);
+        realized += (tx.price - pos.avg) * sold;
+        const nextShares = Math.max(0, pos.shares - sold);
+        book[key] = { shares: nextShares, avg: nextShares === 0 ? 0 : pos.avg };
+      }
+
+      points.push({
+        label: new Date(tx.timestamp).toLocaleDateString("en-PK", {
+          month: "short",
+          day: "numeric",
+        }),
+        pnl: realized,
+      });
+    }
+
+    const len = points.length;
+    const smoothed = points.map((p, idx) => ({
+      label: p.label,
+      pnl: p.pnl + unrealizedPnl * (idx / Math.max(1, len - 1)),
+    }));
+    smoothed[smoothed.length - 1] = {
+      label: "Now",
+      pnl: realized + unrealizedPnl,
+    };
+    return smoothed;
+  }, [txs, unrealizedPnl]);
 
   if (!mounted) return null;
 
@@ -247,98 +319,13 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div style={{ marginTop: 16, ...cardStyle() }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingBottom: 12,
-              borderBottom: `1px solid ${COLORS.border}`,
-            }}
-          >
-            <div style={labelStyle()}>Recent Transactions</div>
-            <Link
-              href="/portfolio"
-              style={{
-                color: COLORS.orange,
-                fontSize: 12,
-                fontWeight: 600,
-                textDecoration: "none",
-              }}
-            >
-              View all
-            </Link>
-          </div>
-
-          {recent.length === 0 ? (
-            <div style={{ marginTop: 12, color: COLORS.muted, fontSize: 14 }}>
-              No trades yet. Browse{" "}
-              <Link
-                href="/stocks"
-                style={{
-                  color: COLORS.orange,
-                  fontWeight: 600,
-                  textDecoration: "none",
-                }}
-              >
-                stocks
-              </Link>{" "}
-              to place your first order.
-            </div>
-          ) : (
-            <div style={{ marginTop: 8 }}>
-              {recent.map((tx, idx) => (
-                <div
-                  key={tx.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    padding: "12px 0",
-                    borderTop: idx === 0 ? "none" : `1px solid ${COLORS.border}`,
-                    fontSize: 14,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      color: tx.type === "BUY" ? COLORS.gain : COLORS.loss,
-                      minWidth: 56,
-                    }}
-                  >
-                    {tx.type}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily:
-                        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                      fontWeight: 700,
-                      color: COLORS.text,
-                      minWidth: 64,
-                    }}
-                  >
-                    {tx.ticker}
-                  </div>
-                  <div style={{ color: COLORS.muted, flex: 1 }}>
-                    {tx.shares} sh @ {formatPKRWithSymbol(tx.price)}
-                  </div>
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      color: COLORS.text,
-                      fontVariantNumeric: "tabular-nums",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {formatPKRWithSymbol(tx.total)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <PortfolioSections
+          rows={rows}
+          txs={txs}
+          cash={portfolio.cash}
+          holdingsValue={holdingsValue}
+          performancePoints={performancePoints}
+        />
       </div>
     </div>
   );
