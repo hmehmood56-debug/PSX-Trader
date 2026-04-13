@@ -1,0 +1,14 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #FFFFFF; color: #1A1A1A; }
+
+:root {
+  --orange: #C45000;
+  --orange-light: #F5E6DC;
+  --bg: #FFFFFF;
+  --bg-secondary: #F7F7F7;
+  --border: #E8E8E8;
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B6B6B;
+  --gain: #007A4C;
+  --loss: #C0392B;
+}
