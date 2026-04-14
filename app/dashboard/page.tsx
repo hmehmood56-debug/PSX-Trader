@@ -11,6 +11,7 @@ import { formatPKRWithSymbol } from "@/lib/format";
 import { usePortfolioState } from "@/hooks/usePortfolioState";
 import { useMemo, useState, useEffect, type CSSProperties } from "react";
 import { PortfolioSections } from "@/components/dashboard/PortfolioSections";
+import { PerchWordmark } from "@/components/PerchWordmark";
 
 const COLORS = {
   orange: "#C45000",
@@ -172,6 +173,17 @@ export default function DashboardPage() {
   return (
     <div style={{ background: COLORS.bg }}>
       <div className="perch-shell perch-shell-wide perch-psx-shell">
+        <section className="dashboard-header">
+          <div>
+            <PerchWordmark />
+            <h1>Portfolio Dashboard</h1>
+            <p>Track positions, monitor market movers, and review execution history in one view.</p>
+          </div>
+          <div className="dashboard-header-meta">
+            <span>PSX Simulation</span>
+            <strong>Live Portfolio Monitor</strong>
+          </div>
+        </section>
         <div className="perch-dashboard-stats">
           <StatCard
             label="Portfolio Value"

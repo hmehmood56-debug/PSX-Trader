@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./Navbar.module.css";
+import { PerchWordmark } from "./PerchWordmark";
 
 const links = [
   { href: "/", label: "Home" },
@@ -50,10 +51,7 @@ export function Navbar() {
     <header className={`${styles.header} ${menuOpen ? styles.mobileOpen : ""}`}>
       <div className={styles.inner}>
         <Link href="/" className={styles.brand} onClick={closeMenu}>
-          <div className={styles.brandText}>
-            <span className={styles.perchWordmark}>Perch</span>
-            <span className={styles.brandCapital}>Capital</span>
-          </div>
+          <PerchWordmark />
           <span className={styles.badge}>PSX Market</span>
         </Link>
 

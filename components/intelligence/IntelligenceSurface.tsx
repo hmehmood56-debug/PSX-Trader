@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 
 import { usePortfolioState } from "@/hooks/usePortfolioState";
+import { PerchWordmark } from "@/components/PerchWordmark";
 import type {
   IntelligenceIntent,
   IntelligenceRequest,
@@ -147,16 +148,21 @@ export function IntelligenceSurface() {
       <section className="intelligence-hero">
         <div className="intelligence-hero-grid">
           <div>
+            <div className="intelligence-brand-row">
+              <PerchWordmark compact />
+              <span>Research Desk</span>
+            </div>
             <span className="intelligence-hero-badge">PSX-focused intelligence</span>
             <h1>Perch Intelligence</h1>
             <p>
-              Premium guidance for Pakistan&apos;s markets, designed to help first-time investors
-              make clearer, calmer decisions with confidence.
+              Proprietary guidance for Pakistan&apos;s markets, designed to help first-time investors
+              make clearer and more disciplined decisions with confidence.
             </p>
             <div className="intelligence-hero-tags" aria-label="System capabilities">
               <span>Beginner Friendly</span>
               <span>Portfolio Guidance</span>
               <span>Market Insight</span>
+              <span>Perch Signal Layer</span>
             </div>
           </div>
           <div className="intelligence-hero-graphic" aria-hidden>

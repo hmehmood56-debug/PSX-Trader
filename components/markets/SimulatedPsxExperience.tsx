@@ -52,22 +52,23 @@ function SearchHero({
           flexWrap: "wrap",
         }}
       >
-        <div style={{ fontSize: 13, color: COLORS.muted, fontWeight: 600 }}>
+        <div style={{ fontSize: 12, color: COLORS.muted, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
           Replay date {replayDate || "N/A"}
         </div>
         <span
           style={{
-            fontSize: 11,
-            color: COLORS.orange,
+            fontSize: 10,
+            color: "#355b48",
             fontWeight: 700,
-            border: `1px solid rgba(196,80,0,0.28)`,
-            borderRadius: 999,
-            padding: "4px 8px",
-            background: "rgba(196,80,0,0.06)",
-            letterSpacing: "0.03em",
+            border: `1px solid #d8e3db`,
+            borderRadius: 6,
+            padding: "5px 8px",
+            background: "#f4faf6",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
           }}
         >
-          {isPlaceholderData ? "Sample replay data" : "Simulated PSX"}
+          {isPlaceholderData ? "Sample Market Session" : "Exchange Context: Simulated"}
         </span>
       </div>
       <h1
@@ -79,9 +80,9 @@ function SearchHero({
           lineHeight: 1.15,
         }}
       >
-        Simulated PSX market board
+        Pakistan Stock Exchange (Simulated)
       </h1>
-      <p style={{ marginTop: 10, marginBottom: 0, color: COLORS.muted, fontSize: 14, lineHeight: "22px" }}>
+      <p style={{ marginTop: 10, marginBottom: 0, color: COLORS.muted, fontSize: 14, lineHeight: "22px", maxWidth: 780 }}>
         Practice trading Pakistan equities with virtual funds in a realistic paper-trading environment.
       </p>
       <div className="perch-psx-search-grid" style={{ marginTop: 12 }}>
