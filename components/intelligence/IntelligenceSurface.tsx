@@ -272,7 +272,7 @@ export function IntelligenceSurface() {
                   </button>
                 </div>
               </div>
-            ) : (
+            ) : selectedAction ? (
               <div className="intelligence-selected-state">
                 <span className="intelligence-state-chip">Workflow selected</span>
                 <h2>{selectedAction.title}</h2>
@@ -292,7 +292,7 @@ export function IntelligenceSurface() {
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
 
             <form className="intelligence-composer" onSubmit={onSubmit}>
               <label htmlFor="intelligence-query" className="intelligence-label">
