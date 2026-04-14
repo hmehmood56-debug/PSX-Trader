@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { GuidedOnboarding } from "@/components/onboarding/GuidedOnboarding";
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function StartHerePage() {
-  return <GuidedOnboarding />;
+  return (
+    <Suspense fallback={null}>
+      <GuidedOnboarding />
+    </Suspense>
+  );
 }
