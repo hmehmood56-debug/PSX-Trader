@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   Line,
   LineChart,
@@ -15,76 +16,65 @@ import { useLivePrices } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { buyStock, sellStock } from "@/lib/portfolioStore";
 import { usePortfolioState } from "@/hooks/usePortfolioState";
+import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 
-type Point = { idx: number; price: number };
+type Point = { date: string; price: number; volume: number };
 
 const COLORS = {
   orange: "#C45000",
   bg: "#FFFFFF",
+  bgElevated: "#FCFCFC",
   bgSecondary: "#F7F7F7",
   border: "#E8E8E8",
+  borderStrong: "#D9D9D9",
   text: "#1A1A1A",
   muted: "#6B6B6B",
+  mutedSoft: "#8A8A8A",
   gain: "#007A4C",
   loss: "#C0392B",
 } as const;
 
-function cardStyle(): CSSProperties {
+function panelStyle(): CSSProperties {
   return {
-    background: COLORS.bg,
+    background: COLORS.bgElevated,
     border: `1px solid ${COLORS.border}`,
-    borderRadius: 12,
-    padding: 24,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+    borderRadius: 14,
+    padding: 20,
   };
 }
 
-function buildSimulatedHistory(endPrice: number): Point[] {
-  const n = 30;
-  const out: Point[] = [];
-  let p = endPrice;
-  for (let k = n - 1; k >= 0; k--) {
-    out.unshift({ idx: n - 1 - k, price: Number(p.toFixed(2)) });
-    const delta = (Math.random() * 2 - 1) * 0.005;
-    p = Math.max(0.01, p / (1 + delta));
-  }
-  out[out.length - 1] = {
-    ...out[out.length - 1],
-    price: Number(endPrice.toFixed(2)),
+function statLabelStyle(): CSSProperties {
+  return {
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    color: COLORS.mutedSoft,
+    fontWeight: 600,
   };
-  return out;
 }
 
 export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const ticker = base.ticker;
-  const { getQuote } = useLivePrices();
+  const { getQuote, getHistory, currentDate, isPlaceholderData } = useLivePrices();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const quote = getQuote(ticker);
   const price = quote?.price ?? base.price;
   const change = quote?.change ?? base.change;
   const changePct = quote?.changePercent ?? base.changePercent;
+  const volume = quote?.volume ?? base.volume;
+  const history = getHistory(ticker) as Point[];
 
   const portfolio = usePortfolioState();
-  const [history, setHistory] = useState<Point[]>([]);
   const [mode, setMode] = useState<"BUY" | "SELL">("BUY");
   const [sharesInput, setSharesInput] = useState("10");
   const [message, setMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    setHistory(buildSimulatedHistory(price));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ticker]);
-
-  useEffect(() => {
-    setHistory((h) => {
-      if (h.length === 0) return h;
-      const next = [...h];
-      next[next.length - 1] = {
-        ...next[next.length - 1],
-        price: Number(price.toFixed(2)),
-      };
-      return next;
-    });
-  }, [price]);
+  const [standardSuccess, setStandardSuccess] = useState<{
+    shares: number;
+    total: number;
+    side: "BUY" | "SELL";
+    timestampLabel: string;
+  } | null>(null);
 
   const shares = Math.max(0, Math.floor(Number(sharesInput) || 0));
   const est = shares * price;
@@ -100,6 +90,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
       setMessage("Enter a valid number of shares.");
       return;
     }
+    const onboarding = searchParams.get("onboarding") === "1";
     const res =
       mode === "BUY"
         ? buyStock(ticker, shares, price)
@@ -108,79 +99,137 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
       setMessage(res.error);
       return;
     }
-    setMessage(`${mode === "BUY" ? "Bought" : "Sold"} ${shares} shares.`);
+    if (onboarding && mode === "BUY") {
+      const params = new URLSearchParams({
+        tradeComplete: "1",
+        ticker,
+        invested: `${Math.round(est)}`,
+        shares: `${shares}`,
+      });
+      router.push(`/start?${params.toString()}`);
+      return;
+    }
+    setStandardSuccess({
+      shares,
+      total: est,
+      side: mode,
+      timestampLabel: new Date().toLocaleString("en-PK", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+    });
   }
 
   const up = change >= 0;
+  if (standardSuccess) {
+    return (
+      <div style={{ background: COLORS.bg }}>
+        <div
+          className="perch-shell perch-shell-stock"
+          style={{ paddingTop: "clamp(20px, 4vw, 28px)", paddingBottom: "clamp(28px, 6vw, 36px)" }}
+        >
+          <TradeSuccessScreen
+            variant="standard"
+            ticker={ticker}
+            companyName={base.name}
+            investedAmount={standardSuccess.total}
+            shares={standardSuccess.shares}
+            side={standardSuccess.side}
+            timestampLabel={standardSuccess.timestampLabel}
+            onPrimary={() => router.push("/dashboard")}
+            onSecondary={() => router.push("/markets/psx")}
+            onAutoRedirect={() => router.push("/dashboard")}
+            autoRedirectMs={2500}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: COLORS.bg }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 32 }}>
-        <div style={{ marginBottom: 16 }}>
+      <div
+        className="perch-shell perch-shell-stock"
+        style={{ paddingTop: "clamp(20px, 4vw, 28px)", paddingBottom: "clamp(28px, 6vw, 36px)" }}
+      >
+        <div style={{ marginBottom: 20 }}>
           <Link
-            href="/stocks"
-            style={{ color: COLORS.muted, textDecoration: "none", fontSize: 14 }}
+            href="/markets/psx"
+            style={{
+              color: COLORS.muted,
+              textDecoration: "none",
+              fontSize: 14,
+              fontWeight: 600,
+              letterSpacing: "0.02em",
+              display: "inline-flex",
+              minHeight: 44,
+              alignItems: "center",
+              WebkitTapHighlightColor: "transparent",
+            }}
           >
-            {"<- Back to stocks"}
+            {"← Back to simulated PSX"}
           </Link>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "65% 35%",
-            gap: 16,
-            alignItems: "start",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div>
-              <div
+        <div className="perch-stock-detail-grid">
+          <div className="perch-stock-detail-main" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <section>
+              <div style={statLabelStyle()}>{base.sector}</div>
+              <h1
                 style={{
-                  fontSize: 11,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: COLORS.muted,
-                  fontWeight: 600,
+                  margin: "8px 0 0",
+                  fontSize: "clamp(22px, 5vw, 32px)",
+                  fontWeight: 750,
+                  lineHeight: 1.12,
                 }}
               >
-                {base.sector}
-              </div>
-              <div style={{ marginTop: 6, fontSize: 20, fontWeight: 700 }}>
                 {base.name}
-              </div>
+              </h1>
               <div
                 style={{
-                  marginTop: 4,
+                  marginTop: 8,
                   color: COLORS.muted,
                   fontFamily:
                     "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  letterSpacing: "0.02em",
+                  fontSize: 13,
+                  fontWeight: 700,
                 }}
               >
                 {base.ticker}
               </div>
-            </div>
+            </section>
 
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 16 }}>
+            <section
+              className="perch-stock-price-row"
+              style={{
+                paddingBottom: 8,
+                borderBottom: `1px solid ${COLORS.border}`,
+              }}
+            >
               <div>
-                <div style={{ fontSize: 12, color: COLORS.muted }}>Last price</div>
+                <div style={statLabelStyle()}>Last price</div>
                 <div
+                  className="perch-stock-price-big"
                   style={{
-                    marginTop: 6,
-                    fontSize: 28,
-                    fontWeight: 700,
+                    marginTop: 8,
+                    lineHeight: 1,
+                    fontWeight: 760,
                     color: COLORS.text,
                     fontVariantNumeric: "tabular-nums",
+                    letterSpacing: "-0.02em",
                   }}
                 >
                   {formatPKRWithSymbol(price)}
                 </div>
               </div>
-              <div>
+              <div className="perch-stock-change-block">
                 <div
                   style={{
-                    fontSize: 14,
-                    fontWeight: 700,
+                    fontSize: "clamp(17px, 4vw, 20px)",
+                    fontWeight: 740,
                     color: up ? COLORS.gain : COLORS.loss,
                     fontVariantNumeric: "tabular-nums",
                   }}
@@ -189,33 +238,42 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   {change.toFixed(2)} ({up ? "+" : ""}
                   {changePct.toFixed(2)}%)
                 </div>
-                <div style={{ fontSize: 12, color: COLORS.muted, marginTop: 2 }}>
-                  vs. simulated open
+                <div style={{ fontSize: 12, color: COLORS.mutedSoft, marginTop: 4 }}>
+                  vs. previous replay day
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div style={cardStyle()}>
-              <div
-                style={{
-                  fontSize: 11,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: COLORS.muted,
-                  fontWeight: 600,
-                  marginBottom: 12,
-                }}
-              >
-                Price (simulated intraday)
+            <section
+              style={{
+                border: `1px solid ${COLORS.borderStrong}`,
+                borderRadius: 16,
+                padding: "clamp(14px, 3vw, 18px) clamp(14px, 3vw, 20px) 12px",
+                background: "#FFFFFF",
+              }}
+            >
+              <div style={statLabelStyle()}>
+                Price replay
               </div>
-              <div style={{ width: "100%", height: 320 }}>
+              <div className="perch-stock-chart-box" style={{ width: "100%", marginTop: 12 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={history}>
-                    <XAxis dataKey="idx" hide />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: COLORS.mutedSoft, fontSize: 11 }}
+                      tickFormatter={(value: string) =>
+                        new Date(value).toLocaleDateString("en-PK", {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      }
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <YAxis
                       domain={["auto", "auto"]}
-                      width={52}
-                      tick={{ fill: COLORS.muted, fontSize: 11 }}
+                      width={56}
+                      tick={{ fill: COLORS.mutedSoft, fontSize: 11 }}
                       tickFormatter={(v) => `${Math.round(Number(v))}`}
                       axisLine={false}
                       tickLine={false}
@@ -225,109 +283,139 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                         background: "#FFFFFF",
                         border: `1px solid ${COLORS.border}`,
                         borderRadius: 8,
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                        boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
                       }}
                       labelStyle={{ color: COLORS.muted }}
-                      formatter={(v: number) => [formatPKRWithSymbol(v), "Price"]}
+                      labelFormatter={(value: string) =>
+                        new Date(value).toLocaleDateString("en-PK", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                        })
+                      }
+                      formatter={(value: number) => [formatPKRWithSymbol(value), "Price"]}
                     />
                     <Line
                       type="monotone"
                       dataKey="price"
                       stroke={COLORS.orange}
-                      strokeWidth={2}
+                      strokeWidth={2.4}
                       dot={false}
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+              <div style={{ marginTop: 12, color: COLORS.mutedSoft, fontSize: 12 }}>
+                {isPlaceholderData
+                  ? `Shared replay clock running on sample daily bars. Current replay date: ${currentDate}.`
+                  : `Current replay date: ${currentDate}.`}
+              </div>
+            </section>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <div style={cardStyle()}>
-                <div style={{ fontSize: 12, color: COLORS.muted }}>52-week high</div>
-                <div
-                  style={{
-                    marginTop: 8,
-                    fontFamily:
-                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontWeight: 700,
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {formatPKRWithSymbol(base.high52)}
+            <section>
+              <div className="perch-stock-stats-grid">
+                <div>
+                  <div style={statLabelStyle()}>52-week high</div>
+                  <div
+                    style={{
+                      marginTop: 6,
+                      fontFamily:
+                        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      fontWeight: 720,
+                      fontSize: 18,
+                      color: COLORS.text,
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {formatPKRWithSymbol(base.high52)}
+                  </div>
+                </div>
+                <div>
+                  <div style={statLabelStyle()}>52-week low</div>
+                  <div
+                    style={{
+                      marginTop: 6,
+                      fontFamily:
+                        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      fontWeight: 720,
+                      fontSize: 18,
+                      color: COLORS.text,
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {formatPKRWithSymbol(base.low52)}
+                  </div>
+                </div>
+                <div>
+                  <div style={statLabelStyle()}>Volume</div>
+                  <div style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
+                    {formatCompactPKR(volume)}
+                  </div>
+                </div>
+                <div>
+                  <div style={statLabelStyle()}>Market cap</div>
+                  <div style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
+                    {formatCompactPKR(base.marketCap)}
+                  </div>
                 </div>
               </div>
-              <div style={cardStyle()}>
-                <div style={{ fontSize: 12, color: COLORS.muted }}>52-week low</div>
-                <div
-                  style={{
-                    marginTop: 8,
-                    fontFamily:
-                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                    fontWeight: 700,
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {formatPKRWithSymbol(base.low52)}
-                </div>
-              </div>
-              <div style={cardStyle()}>
-                <div style={{ fontSize: 12, color: COLORS.muted }}>Volume</div>
-                <div style={{ marginTop: 8, fontWeight: 700 }}>
-                  {formatCompactPKR(base.volume)}
-                </div>
-              </div>
-              <div style={cardStyle()}>
-                <div style={{ fontSize: 12, color: COLORS.muted }}>Market cap</div>
-                <div style={{ marginTop: 8, fontWeight: 700 }}>
-                  {formatCompactPKR(base.marketCap)}
-                </div>
-              </div>
-            </div>
+            </section>
 
-            <div style={cardStyle()}>
-              <div
-                style={{
-                  fontSize: 11,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: COLORS.muted,
-                  fontWeight: 600,
-                }}
-              >
+            <section style={{ ...panelStyle(), background: "#FFFFFF" }}>
+              <div style={statLabelStyle()}>
                 About
               </div>
-              <div style={{ marginTop: 12, fontSize: 14, lineHeight: "22px" }}>
+              <div style={{ marginTop: 10, fontSize: 14, lineHeight: "24px", color: COLORS.text }}>
                 {base.description}
               </div>
-            </div>
+            </section>
           </div>
 
-          <div style={cardStyle()}>
-            <div
-              style={{
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                color: COLORS.muted,
-                fontWeight: 600,
-              }}
-            >
-              Trade
+          <aside
+            className="perch-stock-order-aside"
+            style={{
+              border: `1px solid ${COLORS.borderStrong}`,
+              borderRadius: 16,
+              background: "#FFFFFF",
+              padding: "clamp(16px, 4vw, 18px)",
+            }}
+          >
+            <div style={{ ...statLabelStyle(), color: COLORS.muted }}>
+              Order ticket
+            </div>
+            <div style={{ marginTop: 6, fontSize: 18, fontWeight: 730, color: COLORS.text }}>
+              {base.ticker}
+            </div>
+            <div style={{ marginTop: 2, fontSize: 13, color: COLORS.muted }}>
+              {base.name}
             </div>
 
-            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <div
+              style={{
+                marginTop: 16,
+                display: "flex",
+                gap: 8,
+                padding: 4,
+                background: COLORS.bgSecondary,
+                borderRadius: 10,
+                border: `1px solid ${COLORS.border}`,
+              }}
+            >
               <button
                 type="button"
                 onClick={() => setMode("BUY")}
                 style={{
                   flex: 1,
-                  height: 36,
+                  minHeight: 44,
                   borderRadius: 8,
-                  border: `1px solid ${mode === "BUY" ? COLORS.orange : COLORS.border}`,
-                  background: mode === "BUY" ? "#F5E6DC" : "#FFFFFF",
-                  color: mode === "BUY" ? COLORS.orange : COLORS.muted,
-                  fontWeight: 700,
+                  border: "none",
+                  background: mode === "BUY" ? COLORS.orange : "transparent",
+                  color: mode === "BUY" ? "#FFFFFF" : COLORS.muted,
+                  fontWeight: 720,
+                  letterSpacing: "0.01em",
+                  fontSize: 15,
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 Buy
@@ -337,20 +425,24 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 onClick={() => setMode("SELL")}
                 style={{
                   flex: 1,
-                  height: 36,
+                  minHeight: 44,
                   borderRadius: 8,
-                  border: `1px solid ${mode === "SELL" ? COLORS.loss : COLORS.border}`,
-                  background: "#FFFFFF",
-                  color: mode === "SELL" ? COLORS.loss : COLORS.muted,
-                  fontWeight: 700,
+                  border: "none",
+                  background: mode === "SELL" ? COLORS.loss : "transparent",
+                  color: mode === "SELL" ? "#FFFFFF" : COLORS.muted,
+                  fontWeight: 720,
+                  letterSpacing: "0.01em",
+                  fontSize: 15,
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 Sell
               </button>
             </div>
 
-            <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: 12, color: COLORS.muted, fontWeight: 600 }}>
+            <div style={{ marginTop: 18 }}>
+              <div style={{ ...statLabelStyle(), color: COLORS.muted }}>
                 Shares
               </div>
               <input
@@ -360,12 +452,13 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 style={{
                   marginTop: 8,
                   width: "100%",
-                  height: 40,
-                  borderRadius: 8,
+                  minHeight: 48,
+                  borderRadius: 10,
                   border: `1px solid ${COLORS.border}`,
-                  padding: "0 12px",
-                  fontSize: 14,
+                  padding: "0 16px",
+                  fontSize: 16,
                   outline: "none",
+                  color: COLORS.text,
                   fontFamily:
                     "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                 }}
@@ -383,22 +476,23 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
             <div
               style={{
                 marginTop: 16,
-                background: COLORS.bgSecondary,
+                background: COLORS.bgElevated,
                 border: `1px solid ${COLORS.border}`,
                 borderRadius: 12,
-                padding: 12,
-                fontSize: 14,
+                padding: 14,
+                fontSize: 13,
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                <div style={{ color: COLORS.muted }}>
+                <div style={{ color: COLORS.mutedSoft, fontWeight: 600 }}>
                   {mode === "BUY" ? "Estimated cost" : "Estimated proceeds"}
                 </div>
                 <div
                   style={{
-                    fontWeight: 700,
+                    fontWeight: 740,
                     color: COLORS.text,
                     fontVariantNumeric: "tabular-nums",
+                    fontSize: 15,
                     fontFamily:
                       "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                   }}
@@ -414,14 +508,15 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   marginTop: 8,
                 }}
               >
-                <div style={{ color: COLORS.muted }}>
+                <div style={{ color: COLORS.mutedSoft, fontWeight: 600 }}>
                   {mode === "BUY" ? "Available cash" : "Shares owned"}
                 </div>
                 <div
                   style={{
-                    fontWeight: 700,
+                    fontWeight: 730,
                     color: COLORS.text,
                     fontVariantNumeric: "tabular-nums",
+                    fontSize: 15,
                     fontFamily:
                       "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                   }}
@@ -434,49 +529,76 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
             </div>
 
             {message && (
-              <div style={{ marginTop: 12, color: COLORS.muted, fontSize: 14 }} role="status">
+              <div
+                style={{
+                  marginTop: 14,
+                  border: `1px solid ${message.includes("Bought") || message.includes("Sold") ? "#CFE6DB" : "#F0D1CC"}`,
+                  background:
+                    message.includes("Bought") || message.includes("Sold")
+                      ? "#F4FBF7"
+                      : "#FFF6F4",
+                  color:
+                    message.includes("Bought") || message.includes("Sold")
+                      ? COLORS.gain
+                      : COLORS.loss,
+                  borderRadius: 10,
+                  padding: "10px 12px",
+                  fontSize: 13,
+                  fontWeight: 650,
+                }}
+                role="status"
+              >
                 {message}
               </div>
             )}
 
-            {mode === "BUY" ? (
-              <button
-                type="button"
-                onClick={onConfirm}
-                style={{
-                  marginTop: 16,
-                  width: "100%",
-                  height: 44,
-                  borderRadius: 10,
-                  border: `1px solid ${COLORS.orange}`,
-                  background: COLORS.orange,
-                  color: "#FFFFFF",
-                  fontWeight: 700,
-                  fontSize: 14,
-                }}
-              >
-                Buy {ticker}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={onConfirm}
-                style={{
-                  marginTop: 16,
-                  width: "100%",
-                  height: 44,
-                  borderRadius: 10,
-                  border: `2px solid ${COLORS.loss}`,
-                  background: "#FFFFFF",
-                  color: COLORS.loss,
-                  fontWeight: 700,
-                  fontSize: 14,
-                }}
-              >
-                Sell {ticker}
-              </button>
-            )}
-          </div>
+            {mode === "BUY"
+              ? (
+                  <button
+                    type="button"
+                    onClick={onConfirm}
+                    style={{
+                      marginTop: 16,
+                      width: "100%",
+                      minHeight: 50,
+                      borderRadius: 12,
+                      border: `1px solid ${COLORS.orange}`,
+                      background: COLORS.orange,
+                      color: "#FFFFFF",
+                      fontWeight: 740,
+                      fontSize: 16,
+                      letterSpacing: "0.02em",
+                      boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
+                      cursor: "pointer",
+                      WebkitTapHighlightColor: "transparent",
+                    }}
+                  >
+                    Buy {ticker}
+                  </button>
+                )
+              : (
+                  <button
+                    type="button"
+                    onClick={onConfirm}
+                    style={{
+                      marginTop: 16,
+                      width: "100%",
+                      minHeight: 50,
+                      borderRadius: 12,
+                      border: `1px solid ${COLORS.loss}`,
+                      background: "#FFFFFF",
+                      color: COLORS.loss,
+                      fontWeight: 740,
+                      fontSize: 16,
+                      letterSpacing: "0.02em",
+                      cursor: "pointer",
+                      WebkitTapHighlightColor: "transparent",
+                    }}
+                  >
+                    Sell {ticker}
+                  </button>
+                )}
+          </aside>
         </div>
       </div>
     </div>

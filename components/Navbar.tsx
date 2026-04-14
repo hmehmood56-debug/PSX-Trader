@@ -2,73 +2,69 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import styles from "./Navbar.module.css";
 
 const links = [
-  { href: "/", label: "Dashboard" },
-  { href: "/stocks", label: "Stocks" },
-  { href: "/learn", label: "Learn" },
+  { href: "/", label: "Home" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/markets", label: "Markets" },
+  { href: "/intelligence", label: "Intelligence" },
+  { href: "/account", label: "Account" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+
+  useEffect(() => {
+    closeMenu();
+  }, [pathname, closeMenu]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [menuOpen, closeMenu]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 900px)");
+    const onChange = () => {
+      if (mq.matches) setMenuOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   return (
-    <header
-      style={{
-        width: "100%",
-        height: 56,
-        background: "#C45000",
-        display: "flex",
-        alignItems: "center",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 1200,
-          padding: "0 32px",
-          margin: "0 auto",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-        }}
-      >
-        <Link
-          href="/"
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 6,
-            textDecoration: "none",
-          }}
-        >
-          <span style={{ color: "#FFFFFF", fontWeight: 700, fontSize: 20 }}>
-            PSX
-          </span>
-          <span style={{ color: "#FFFFFF", fontWeight: 300, fontSize: 20 }}>
-            Trader
-          </span>
+    <header className={`${styles.header} ${menuOpen ? styles.mobileOpen : ""}`}>
+      <div className={styles.inner}>
+        <Link href="/" className={styles.brand} onClick={closeMenu}>
+          <div className={styles.brandText}>
+            <span className={styles.perchWordmark}>Perch</span>
+            <span className={styles.brandCapital}>Capital</span>
+          </div>
+          <span className={styles.badge}>PSX Market</span>
         </Link>
 
-        <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <nav className={styles.desktopNav} aria-label="Primary">
           {links.map((l) => {
-            const active =
-              l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+            const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                style={{
-                  color: active ? "#C45000" : "#FFFFFF",
-                  background: active ? "#FFFFFF" : "transparent",
-                  borderRadius: 999,
-                  padding: "8px 12px",
-                  fontSize: 14,
-                  fontWeight: 500,
-                  textDecoration: "none",
-                  lineHeight: "20px",
-                }}
+                className={`${styles.navLink} ${active ? styles.navLinkActive : ""}`}
               >
                 {l.label}
               </Link>
@@ -76,37 +72,73 @@ export function Navbar() {
           })}
         </nav>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className={styles.desktopCtas}>
+          <Link href="/markets" className={styles.ctaSecondary}>
+            Explore Markets
+          </Link>
+          <Link href="/start" className={styles.ctaPrimary}>
+            Start Here
+          </Link>
+        </div>
+
+        <button
+          type="button"
+          className={styles.menuButton}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-nav-panel"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <span className={styles.menuIcon} aria-hidden>
+            <span />
+            <span />
+            <span />
+          </span>
+        </button>
+      </div>
+
+      <button
+        type="button"
+        className={styles.backdrop}
+        aria-label="Close menu"
+        tabIndex={menuOpen ? 0 : -1}
+        onClick={closeMenu}
+      />
+
+      <div id="mobile-nav-panel" className={styles.mobilePanel} role="dialog" aria-modal="true">
+        <div className={styles.mobilePanelHeader}>
+          <span>Menu</span>
           <button
             type="button"
-            style={{
-              height: 34,
-              padding: "0 14px",
-              borderRadius: 6,
-              border: "1px solid #FFFFFF",
-              background: "transparent",
-              color: "#FFFFFF",
-              fontSize: 14,
-              fontWeight: 500,
-            }}
+            className={styles.closeButton}
+            aria-label="Close menu"
+            onClick={closeMenu}
           >
-            Log In
+            ×
           </button>
-          <button
-            type="button"
-            style={{
-              height: 34,
-              padding: "0 14px",
-              borderRadius: 6,
-              border: "1px solid #FFFFFF",
-              background: "#FFFFFF",
-              color: "#C45000",
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            Sign Up
-          </button>
+        </div>
+        <nav className={styles.mobileNav} aria-label="Mobile primary">
+          {links.map((l) => {
+            const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={`${styles.mobileNavLink} ${active ? styles.mobileNavLinkActive : ""}`}
+                onClick={closeMenu}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className={styles.mobileCtas}>
+          <Link href="/markets" className={styles.mobileCtaSecondary} onClick={closeMenu}>
+            Explore Markets
+          </Link>
+          <Link href="/start" className={styles.mobileCtaPrimary} onClick={closeMenu}>
+            Start Here
+          </Link>
         </div>
       </div>
     </header>
