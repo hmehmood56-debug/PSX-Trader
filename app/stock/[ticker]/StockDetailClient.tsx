@@ -19,6 +19,7 @@ import { buyStock, sellStock } from "@/lib/portfolioStore";
 import { usePortfolioState } from "@/hooks/usePortfolioState";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 import { getReplayDatasetByTicker } from "@/lib/replayDataset";
+import { startRouteProgress } from "@/lib/routeProgress";
 
 type Point = { date: string; price: number; volume: number };
 type ChartRange = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
@@ -199,6 +200,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
         invested: `${Math.round(est)}`,
         shares: `${shares}`,
       });
+      startRouteProgress();
       router.push(`/start?${params.toString()}`);
       return;
     }
@@ -231,9 +233,18 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
             shares={standardSuccess.shares}
             side={standardSuccess.side}
             timestampLabel={standardSuccess.timestampLabel}
-            onPrimary={() => router.push("/dashboard")}
-            onSecondary={() => router.push("/markets/psx")}
-            onAutoRedirect={() => router.push("/dashboard")}
+            onPrimary={() => {
+              startRouteProgress();
+              router.push("/dashboard");
+            }}
+            onSecondary={() => {
+              startRouteProgress();
+              router.push("/markets/psx");
+            }}
+            onAutoRedirect={() => {
+              startRouteProgress();
+              router.push("/dashboard");
+            }}
             autoRedirectMs={2500}
           />
         </div>

@@ -721,6 +721,30 @@ p {
   --loss: #C0392B;
 }
 
+/* Route transition: subtle fade after navigation (see RouteTransition.tsx) */
+.perch-route-transition-root {
+  min-width: 0;
+}
+
+.perch-route-enter {
+  animation: perchRouteEnter 380ms cubic-bezier(0.22, 0.92, 0.18, 1) both;
+}
+
+@keyframes perchRouteEnter {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .perch-route-enter {
+    animation: none;
+  }
+}
+
 /* Perch Intelligence */
 .intelligence-page-bg {
   background:

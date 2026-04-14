@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { startRouteProgress } from "@/lib/routeProgress";
 import { useMemo, useState } from "react";
 import { useLivePrices, type ReplayStock } from "@/lib/priceSimulator";
 import { formatCompactPKR, formatPKRWithSymbol } from "@/lib/format";
@@ -438,13 +439,19 @@ export function SimulatedPsxExperience() {
               title={hasSearch ? "Search results" : "Trending in simulation"}
               subtitle={hasSearch ? `${filtered.length} listings found` : "Largest movers in this simulated market session"}
               stocks={hasSearch ? filtered.slice(0, 8) : trending}
-              onOpen={(ticker) => router.push(`/stock/${ticker}`)}
+              onOpen={(ticker) => {
+                startRouteProgress();
+                router.push(`/stock/${ticker}`);
+              }}
             />
             <StockSection
               title="Most active"
               subtitle="Highest traded volume in this simulated session"
               stocks={mostActive}
-              onOpen={(ticker) => router.push(`/stock/${ticker}`)}
+              onOpen={(ticker) => {
+                startRouteProgress();
+                router.push(`/stock/${ticker}`);
+              }}
             />
           </>
         )}

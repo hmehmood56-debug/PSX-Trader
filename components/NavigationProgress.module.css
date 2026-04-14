@@ -1,0 +1,75 @@
+.track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 10050;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  will-change: transform, opacity;
+  background: linear-gradient(
+    90deg,
+    rgba(196, 80, 0, 0.88) 0%,
+    rgba(212, 102, 28, 0.95) 42%,
+    rgba(196, 80, 0, 0.92) 100%
+  );
+  box-shadow: 0 0 12px rgba(196, 80, 0, 0.28);
+  opacity: 0;
+  transform: scaleX(0);
+  transition: none;
+}
+
+.fill[data-phase="kick"] {
+  opacity: 1;
+  transform: scaleX(0.07);
+  transition:
+    transform 0.14s cubic-bezier(0.33, 0.9, 0.32, 1),
+    opacity 0.12s ease;
+}
+
+.fill[data-phase="crawl"] {
+  opacity: 1;
+  transform: scaleX(0.9);
+  transition: transform 4.8s cubic-bezier(0.06, 0.72, 0.12, 1);
+}
+
+.fill[data-phase="flush"] {
+  opacity: 1;
+  transform: scaleX(1);
+  transition: transform 0.24s cubic-bezier(0.33, 0.9, 0.32, 1);
+}
+
+.fill[data-phase="fade"] {
+  opacity: 0;
+  transform: scaleX(1);
+  transition:
+    opacity 0.32s ease 0.08s,
+    transform 0.24s cubic-bezier(0.33, 0.9, 0.32, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill[data-phase="kick"] {
+    transition: transform 0.08s ease, opacity 0.08s ease;
+  }
+
+  .fill[data-phase="crawl"] {
+    transform: scaleX(0.82);
+    transition: transform 0.35s ease;
+  }
+
+  .fill[data-phase="flush"] {
+    transition: transform 0.12s ease;
+  }
+
+  .fill[data-phase="fade"] {
+    transition: opacity 0.15s ease, transform 0.12s ease;
+  }
+}

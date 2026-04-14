@@ -14,6 +14,7 @@ import {
   type StarterTicker,
 } from "@/lib/onboardingConstants";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
+import { startRouteProgress } from "@/lib/routeProgress";
 import styles from "./GuidedOnboarding.module.css";
 
 const TOTAL_STEPS = 7;
@@ -51,14 +52,17 @@ export function GuidedOnboarding() {
 
   function goEnterApp() {
     if (!ticker) return;
+    startRouteProgress();
     router.push(`/stock/${ticker}?onboarding=1`);
   }
 
   function goToDashboard() {
+    startRouteProgress();
     router.push("/dashboard");
   }
 
   function goToMarkets() {
+    startRouteProgress();
     router.push("/markets/psx");
   }
 
