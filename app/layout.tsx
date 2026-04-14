@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/Providers";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Perch | Perch Capital",
@@ -40,6 +41,7 @@ export default function RootLayout({
           <Navbar />
           <main className="perch-main">{children}</main>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
