@@ -55,7 +55,7 @@ function labelStyle(): CSSProperties {
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const portfolio = usePortfolioState();
-  const { getQuote, getStocksWithLive } = useLivePrices();
+  const { getQuote, getMarketSnapshot } = useLivePrices();
   const [txs, setTxs] = useState<Transaction[]>([]);
 
   useEffect(() => setMounted(true), []);
@@ -88,15 +88,9 @@ export default function DashboardPage() {
     return pnl;
   }, [portfolio.holdings, getQuote]);
 
-  const totalReturnPct = ((portfolioValue - 1_000_000) / 1_000_000) * 100;
-
-  const stocks = getStocksWithLive();
-  const gainers = [...stocks]
-    .sort((a, b) => b.changePercent - a.changePercent)
-    .slice(0, 3);
-  const losers = [...stocks]
-    .sort((a, b) => a.changePercent - b.changePercent)
-    .slice(0, 3);
+  const market = getMarketSnapshot();
+  const gainers = market.topGainers.slice(0, 3);
+  const losers = market.topLosers.slice(0, 3);
 
   const rows = useMemo(() => {
     return portfolio.holdings.map((h) => {
@@ -177,11 +171,11 @@ export default function DashboardPage() {
           <div>
             <PerchWordmark />
             <h1>Portfolio Dashboard</h1>
-            <p>Track positions, monitor market movers, and review execution history in one view.</p>
+            <p>Track portfolio health, market breadth, and simulated execution in one view.</p>
           </div>
           <div className="dashboard-header-meta">
-            <span>PSX Simulation</span>
-            <strong>Live Portfolio Monitor</strong>
+            <span>Powered by Perch Sim Engine</span>
+            <strong>{market.sessionLabel}</strong>
           </div>
         </section>
         <div className="perch-dashboard-stats">
@@ -194,16 +188,14 @@ export default function DashboardPage() {
             value={formatPKRWithSymbol(portfolio.cash)}
           />
           <StatCard
-            label="Today's P&L"
+            label="Portfolio Health"
             value={signedPkr(todayPnL)}
             valueColor={todayPnL >= 0 ? COLORS.gain : COLORS.loss}
           />
           <StatCard
-            label="Total Return"
-            value={`${totalReturnPct >= 0 ? "+" : ""}${totalReturnPct.toFixed(
-              2
-            )}%`}
-            valueColor={totalReturnPct >= 0 ? COLORS.gain : COLORS.loss}
+            label="Market Breadth"
+            value={`${Math.round(market.marketBreadth * 100)}%`}
+            valueColor={market.marketBreadth >= 0.5 ? COLORS.gain : COLORS.loss}
           />
         </div>
 

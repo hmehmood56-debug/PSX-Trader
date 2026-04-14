@@ -1,7 +1,9 @@
 export {
-  ReplayMarketProvider as PriceSimulatorProvider,
-  useReplayMarket as useLivePrices,
+  PerchSimEngineProvider as PriceSimulatorProvider,
+  usePerchSimEngine as useLivePrices,
   type LiveQuote,
   type ReplayHistoryPoint,
   type ReplayStock,
-} from "./replayEngine";
+  type MarketSnapshot,
+  type ExecutionEstimate,
+} from "./perchSimEngine";

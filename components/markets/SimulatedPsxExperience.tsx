@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { getAllSectors } from "@/lib/mockData";
 import { useLivePrices, type ReplayStock } from "@/lib/priceSimulator";
 import { formatCompactPKR, formatPKRWithSymbol } from "@/lib/format";
 
@@ -22,16 +21,16 @@ function SearchHero({
   sector,
   setSector,
   sectors,
-  replayDate,
   isPlaceholderData,
+  sessionState,
 }: {
   q: string;
   setQ: (value: string) => void;
   sector: string;
   setSector: (value: string) => void;
   sectors: string[];
-  replayDate: string;
   isPlaceholderData: boolean;
+  sessionState: string;
 }) {
   return (
     <section
@@ -53,7 +52,7 @@ function SearchHero({
         }}
       >
         <div style={{ fontSize: 12, color: COLORS.muted, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-          Replay date {replayDate || "N/A"}
+          Simulated market session
         </div>
         <span
           style={{
@@ -68,7 +67,7 @@ function SearchHero({
             textTransform: "uppercase",
           }}
         >
-          {isPlaceholderData ? "Sample Market Session" : "Exchange Context: Simulated"}
+          {isPlaceholderData ? "Sample Market Session" : `Session state: ${sessionState}`}
         </span>
       </div>
       <h1
@@ -83,7 +82,7 @@ function SearchHero({
         Pakistan Stock Exchange (Simulated)
       </h1>
       <p style={{ marginTop: 10, marginBottom: 0, color: COLORS.muted, fontSize: 14, lineHeight: "22px", maxWidth: 780 }}>
-        Practice trading Pakistan equities with virtual funds in a realistic paper-trading environment.
+        Powered by Perch Sim Engine. Practice trading Pakistan equities with market state, sector momentum, and simulated execution realism.
       </p>
       <div className="perch-psx-search-grid" style={{ marginTop: 12 }}>
         <input
@@ -244,6 +243,50 @@ function StockSection({
   );
 }
 
+function MarketDepthStrip({
+  breadth,
+  turnover,
+  sectorLeadership,
+}: {
+  breadth: number;
+  turnover: number;
+  sectorLeadership: string;
+}) {
+  return (
+    <section
+      style={{
+        marginTop: 16,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 14,
+        background: "#fffdfb",
+        padding: "12px 14px",
+        display: "grid",
+        gap: 10,
+        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+      }}
+    >
+      <div>
+        <div style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Market breadth
+        </div>
+        <div style={{ marginTop: 4, fontWeight: 700, color: COLORS.text }}>{Math.round(breadth * 100)}% advancers</div>
+      </div>
+      <div>
+        <div style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Turnover estimate
+        </div>
+        <div style={{ marginTop: 4, fontWeight: 700, color: COLORS.text }}>{formatCompactPKR(turnover)}</div>
+      </div>
+      <div>
+        <div style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Sector leadership
+        </div>
+        <div style={{ marginTop: 4, fontWeight: 700, color: COLORS.text }}>{sectorLeadership}</div>
+      </div>
+    </section>
+  );
+}
+
 function StockCard({
   stock,
   onOpen,
@@ -316,9 +359,13 @@ function StockCard({
 
 export function SimulatedPsxExperience() {
   const router = useRouter();
-  const { getStocksWithLive, currentDate, isPlaceholderData } = useLivePrices();
+  const { getStocksWithLive, isPlaceholderData, getMarketSnapshot } = useLivePrices();
   const stocks = getStocksWithLive();
-  const sectors = useMemo(() => ["All", ...getAllSectors()], []);
+  const market = getMarketSnapshot();
+  const sectors = useMemo(
+    () => ["All", ...Array.from(new Set(stocks.map((s) => s.sector))).sort((a, b) => a.localeCompare(b))],
+    [stocks]
+  );
 
   const [q, setQ] = useState("");
   const [sector, setSector] = useState("All");
@@ -360,8 +407,14 @@ export function SimulatedPsxExperience() {
           sector={sector}
           setSector={setSector}
           sectors={sectors}
-          replayDate={currentDate}
           isPlaceholderData={isPlaceholderData}
+          sessionState={market.sessionState}
+        />
+
+        <MarketDepthStrip
+          breadth={market.marketBreadth}
+          turnover={market.turnoverEstimate}
+          sectorLeadership={market.sectorLeaders.map((s) => s.sector.replace("_", " ")).join(" / ")}
         />
 
         <MarketTickerTape items={marketTape} onOpen={(ticker) => router.push(`/stock/${ticker}`)} />
@@ -383,13 +436,13 @@ export function SimulatedPsxExperience() {
           <>
             <StockSection
               title={hasSearch ? "Search results" : "Trending in simulation"}
-              subtitle={hasSearch ? `${filtered.length} listings found` : "Largest simulated PSX movers"}
+              subtitle={hasSearch ? `${filtered.length} listings found` : "Largest movers in this simulated market session"}
               stocks={hasSearch ? filtered.slice(0, 8) : trending}
               onOpen={(ticker) => router.push(`/stock/${ticker}`)}
             />
             <StockSection
               title="Most active"
-              subtitle="Highest traded volume in the simulated session"
+              subtitle="Highest traded volume in this simulated session"
               stocks={mostActive}
               onOpen={(ticker) => router.push(`/stock/${ticker}`)}
             />

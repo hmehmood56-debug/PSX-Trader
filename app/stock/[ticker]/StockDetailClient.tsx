@@ -55,7 +55,7 @@ function statLabelStyle(): CSSProperties {
 
 export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const ticker = base.ticker;
-  const { getQuote, getHistory, currentDate, isPlaceholderData } = useLivePrices();
+  const { getQuote, getHistory, estimateExecution } = useLivePrices();
   const router = useRouter();
   const searchParams = useSearchParams();
   const quote = getQuote(ticker);
@@ -75,26 +75,38 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     side: "BUY" | "SELL";
     timestampLabel: string;
   } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const shares = Math.max(0, Math.floor(Number(sharesInput) || 0));
-  const est = shares * price;
+  const executionEstimate = estimateExecution(ticker, mode, shares);
+  const estimatedExecutionPrice = executionEstimate?.estimatedPrice ?? price;
+  const est = shares * estimatedExecutionPrice;
+  const recentHistory = history.slice(-18);
+  const localHigh = recentHistory.length > 0 ? Math.max(...recentHistory.map((p) => p.price)) : price;
+  const localLow = recentHistory.length > 0 ? Math.min(...recentHistory.map((p) => p.price)) : price;
+  const averageVolume = history.length > 0 ? history.reduce((sum, p) => sum + p.volume, 0) / history.length : volume;
+  const turnover = volume * price;
 
   const holding = useMemo(
     () => portfolio.holdings.find((h) => h.ticker === ticker),
     [portfolio.holdings, ticker]
   );
 
-  function onConfirm() {
+  async function onConfirm() {
     setMessage(null);
     if (shares <= 0) {
       setMessage("Enter a valid number of shares.");
       return;
     }
     const onboarding = searchParams.get("onboarding") === "1";
+    setIsSubmitting(true);
+    const delayMs = executionEstimate?.delayMs ?? 450;
+    await new Promise((resolve) => window.setTimeout(resolve, delayMs));
     const res =
       mode === "BUY"
-        ? buyStock(ticker, shares, price)
-        : sellStock(ticker, shares, price);
+        ? buyStock(ticker, shares, estimatedExecutionPrice)
+        : sellStock(ticker, shares, estimatedExecutionPrice);
+    setIsSubmitting(false);
     if (!res.ok) {
       setMessage(res.error);
       return;
@@ -239,7 +251,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   {changePct.toFixed(2)}%)
                 </div>
                 <div style={{ fontSize: 12, color: COLORS.mutedSoft, marginTop: 4 }}>
-                  vs. previous replay day
+                  Today&apos;s change
                 </div>
               </div>
             </section>
@@ -306,16 +318,14 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 </ResponsiveContainer>
               </div>
               <div style={{ marginTop: 12, color: COLORS.mutedSoft, fontSize: 12 }}>
-                {isPlaceholderData
-                  ? `Shared replay clock running on sample daily bars. Current replay date: ${currentDate}.`
-                  : `Current replay date: ${currentDate}.`}
+                Powered by Perch Sim Engine. Prices update continuously from current market anchors.
               </div>
             </section>
 
             <section>
               <div className="perch-stock-stats-grid">
                 <div>
-                  <div style={statLabelStyle()}>52-week high</div>
+                  <div style={statLabelStyle()}>Day range</div>
                   <div
                     style={{
                       marginTop: 6,
@@ -327,11 +337,11 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    {formatPKRWithSymbol(base.high52)}
+                    {formatPKRWithSymbol(localLow)} - {formatPKRWithSymbol(localHigh)}
                   </div>
                 </div>
                 <div>
-                  <div style={statLabelStyle()}>52-week low</div>
+                  <div style={statLabelStyle()}>52-week range</div>
                   <div
                     style={{
                       marginTop: 6,
@@ -343,7 +353,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    {formatPKRWithSymbol(base.low52)}
+                    {formatPKRWithSymbol(base.low52)} - {formatPKRWithSymbol(base.high52)}
                   </div>
                 </div>
                 <div>
@@ -358,6 +368,20 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                     {formatCompactPKR(base.marketCap)}
                   </div>
                 </div>
+              </div>
+            </section>
+
+            <section style={{ ...panelStyle(), background: "#FFFFFF" }}>
+              <div style={statLabelStyle()}>Company snapshot</div>
+              <div style={{ marginTop: 10, display: "grid", gap: 8, fontSize: 14, lineHeight: "22px", color: COLORS.text }}>
+                <div>Sector identity: <strong>{base.sector}</strong></div>
+                <div>Average volume: <strong>{formatCompactPKR(averageVolume)}</strong></div>
+                <div>Turnover: <strong>{formatCompactPKR(turnover)}</strong></div>
+                <div>Estimated price: <strong>{formatPKRWithSymbol(estimatedExecutionPrice)}</strong></div>
+                <div>Today&apos;s change: <strong>{up ? "+" : ""}{changePct.toFixed(2)}%</strong></div>
+                {typeof base.dividendYield === "number" ? (
+                  <div>Dividend yield: <strong>{base.dividendYield.toFixed(2)}%</strong></div>
+                ) : null}
               </div>
             </section>
 
@@ -485,7 +509,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
             >
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                 <div style={{ color: COLORS.mutedSoft, fontWeight: 600 }}>
-                  {mode === "BUY" ? "Estimated cost" : "Estimated proceeds"}
+                  Estimated price
                 </div>
                 <div
                   style={{
@@ -499,6 +523,12 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 >
                   {formatPKRWithSymbol(est)}
                 </div>
+              </div>
+              <div style={{ marginTop: 8, color: COLORS.mutedSoft }}>
+                {formatPKRWithSymbol(estimatedExecutionPrice)} per share
+              </div>
+              <div style={{ marginTop: 4, color: COLORS.mutedSoft }}>
+                Price may vary slightly with simulated market conditions.
               </div>
               <div
                 style={{
@@ -557,6 +587,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   <button
                     type="button"
                     onClick={onConfirm}
+                    disabled={isSubmitting}
                     style={{
                       marginTop: 16,
                       width: "100%",
@@ -569,17 +600,19 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                       fontSize: 16,
                       letterSpacing: "0.02em",
                       boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
-                      cursor: "pointer",
+                      cursor: isSubmitting ? "wait" : "pointer",
+                      opacity: isSubmitting ? 0.8 : 1,
                       WebkitTapHighlightColor: "transparent",
                     }}
                   >
-                    Buy {ticker}
+                    {isSubmitting ? "Confirming order..." : `Buy ${ticker}`}
                   </button>
                 )
               : (
                   <button
                     type="button"
                     onClick={onConfirm}
+                    disabled={isSubmitting}
                     style={{
                       marginTop: 16,
                       width: "100%",
@@ -591,11 +624,12 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                       fontWeight: 740,
                       fontSize: 16,
                       letterSpacing: "0.02em",
-                      cursor: "pointer",
+                      cursor: isSubmitting ? "wait" : "pointer",
+                      opacity: isSubmitting ? 0.8 : 1,
                       WebkitTapHighlightColor: "transparent",
                     }}
                   >
-                    Sell {ticker}
+                    {isSubmitting ? "Confirming order..." : `Sell ${ticker}`}
                   </button>
                 )}
           </aside>

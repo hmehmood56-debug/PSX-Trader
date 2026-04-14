@@ -11,6 +11,7 @@ export type ReplayStockProfile = {
   marketCap: number;
   high52: number;
   low52: number;
+  dividendYield?: number;
   description: string;
 };
 
