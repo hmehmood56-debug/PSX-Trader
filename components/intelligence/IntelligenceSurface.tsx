@@ -21,10 +21,10 @@ type IntelligenceAction = {
 const actions: IntelligenceAction[] = [
   {
     id: "build_starter_portfolio",
-    title: "Build Starter Portfolio",
-    description: "Create a balanced first PSX setup with guided allocation logic.",
-    cue: "Allocation",
-    badge: "Guided",
+    title: "Build My First Portfolio",
+    description: "Start with a balanced PSX mix and simple allocation guidance.",
+    cue: "Starter Allocation",
+    badge: "Beginner Pick",
     answers: {
       amount: 250_000,
       risk: "balanced",
@@ -34,32 +34,38 @@ const actions: IntelligenceAction[] = [
   },
   {
     id: "analyze_holdings",
-    title: "Analyze My Holdings",
-    description: "Review concentration, risk posture, and quality of current positions.",
-    cue: "Risk Lens",
+    title: "Analyze Portfolio",
+    description: "Review your holdings for balance, risk, and overall quality.",
+    cue: "Portfolio Guidance",
     badge: "Portfolio",
   },
   {
     id: "explain_stock",
     title: "Explain a Stock",
-    description: "Get a plain-language breakdown of business quality and key watchpoints.",
-    cue: "Research",
-    badge: "Stock Brief",
+    description: "Understand any stock in plain language before you decide.",
+    cue: "Market Insight",
+    badge: "Quick Brief",
   },
   {
     id: "learn_concept",
     title: "Learn a Concept",
-    description: "Understand investing fundamentals in beginner-first Pakistani context.",
+    description: "Learn core investing ideas with simple examples for Pakistan investors.",
     cue: "Education",
-    badge: "Learning",
+    badge: "Beginner Guide",
   },
   {
     id: "find_dividend_stocks",
-    title: "Find Dividend Stocks",
-    description: "Discover income-oriented opportunities with structure and safeguards.",
-    cue: "Income",
-    badge: "Screening",
+    title: "Explore Safe Picks",
+    description: "Find dividend opportunities with practical guardrails and context.",
+    cue: "Income Focus",
+    badge: "Stock Filter",
   },
+];
+
+const primaryActionOrder: IntelligenceIntent[] = [
+  "build_starter_portfolio",
+  "analyze_holdings",
+  "explain_stock",
 ];
 
 export function IntelligenceSurface() {
@@ -73,6 +79,14 @@ export function IntelligenceSurface() {
   const selectedAction = useMemo(
     () => actions.find((item) => item.id === selectedActionId) ?? null,
     [selectedActionId]
+  );
+  const primaryActions = useMemo(
+    () => primaryActionOrder.map((id) => actions.find((item) => item.id === id)).filter(Boolean) as IntelligenceAction[],
+    []
+  );
+  const secondaryActions = useMemo(
+    () => actions.filter((item) => !primaryActionOrder.includes(item.id)),
+    []
   );
 
   const primaryTicker = portfolio.holdings[0]?.ticker;
@@ -131,15 +145,31 @@ export function IntelligenceSurface() {
   return (
     <div className="perch-shell perch-shell-wide intelligence-shell">
       <section className="intelligence-hero">
-        <span className="intelligence-hero-badge">PSX-focused intelligence</span>
-        <h1>Perch Intelligence</h1>
-        <p>
-          AI-powered PSX investment guidance built for first-time Pakistan investors.
-        </p>
-        <div className="intelligence-hero-tags" aria-label="System capabilities">
-          <span>Structured Guidance</span>
-          <span>Risk-Aware Lens</span>
-          <span>Beginner Friendly</span>
+        <div className="intelligence-hero-grid">
+          <div>
+            <span className="intelligence-hero-badge">PSX-focused intelligence</span>
+            <h1>Perch Intelligence</h1>
+            <p>
+              Premium guidance for Pakistan&apos;s markets, designed to help first-time investors
+              make clearer, calmer decisions with confidence.
+            </p>
+            <div className="intelligence-hero-tags" aria-label="System capabilities">
+              <span>Beginner Friendly</span>
+              <span>Portfolio Guidance</span>
+              <span>Market Insight</span>
+            </div>
+          </div>
+          <div className="intelligence-hero-graphic" aria-hidden>
+            <span className="intelligence-hero-graphic-label">Perch Market Signals</span>
+            <div className="intelligence-hero-lines">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="intelligence-hero-graph">
+              <span />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -147,10 +177,35 @@ export function IntelligenceSurface() {
         <section className="intelligence-action-panel">
           <div className="intelligence-section-head">
             <span className="intelligence-label">Guided Workflows</span>
-            <span className="intelligence-count">{actions.length} paths</span>
+            <span className="intelligence-count">{actions.length} guidance paths</span>
           </div>
-          <div className="intelligence-action-grid">
-            {actions.map((action) => {
+          <div className="intelligence-action-tier">
+            <span className="intelligence-tier-label">Primary workflows</span>
+            <div className="intelligence-action-grid intelligence-action-grid-primary">
+              {primaryActions.map((action) => {
+                const active = selectedActionId === action.id;
+                return (
+                  <button
+                    key={action.id}
+                    type="button"
+                    className={`intelligence-action-card intelligence-action-card-primary ${active ? "intelligence-action-card-active" : ""}`}
+                    onClick={() => void onActionClick(action)}
+                  >
+                    <div className="intelligence-action-row">
+                      <span className="intelligence-action-cue">{action.cue}</span>
+                      <span className="intelligence-action-badge">{action.badge}</span>
+                    </div>
+                    <h3>{action.title}</h3>
+                    <p>{action.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="intelligence-action-tier intelligence-action-tier-secondary">
+            <span className="intelligence-tier-label">Secondary tools</span>
+            <div className="intelligence-action-grid intelligence-action-grid-secondary">
+              {secondaryActions.map((action) => {
               const active = selectedActionId === action.id;
               return (
                 <button
@@ -167,16 +222,20 @@ export function IntelligenceSurface() {
                   <p>{action.description}</p>
                 </button>
               );
-            })}
+              })}
+            </div>
           </div>
         </section>
 
         <section className="intelligence-workspace">
           <div className="intelligence-section-head">
-            <span className="intelligence-label">Intelligence Workspace</span>
-            <span className="intelligence-count">
-              {isLoading ? "Running workflow..." : "Layer 2 orchestration"}
-            </span>
+            <span className="intelligence-label">Live Analysis</span>
+            <div className="intelligence-workspace-head">
+              <span className="intelligence-workspace-chip">Perch Guidance</span>
+              <span className="intelligence-count">
+                {isLoading ? "Analyzing your request..." : "Ready for your next question"}
+              </span>
+            </div>
           </div>
 
           <div className={`intelligence-console ${isLoading ? "intelligence-console-loading" : ""}`}>
@@ -187,11 +246,10 @@ export function IntelligenceSurface() {
                   <span />
                   <span />
                 </div>
-                <h2>Ready for structured guidance</h2>
+                <h2>Choose a workflow to get started</h2>
                 <p>
-                  Choose a workflow to start your first intelligence session. Future
-                  responses appear here with PSX-focused analysis and clear next
-                  steps.
+                  We&apos;ll help you build your first PSX portfolio, review your current holdings,
+                  and discover practical next steps.
                 </p>
               </div>
             ) : isLoading ? (
@@ -199,18 +257,18 @@ export function IntelligenceSurface() {
                 <div className="intelligence-loading-bar" />
                 <div className="intelligence-loading-bar intelligence-loading-bar-wide" />
                 <div className="intelligence-loading-bar" />
-                <p>Running structured intelligence checks...</p>
+                <p>Preparing your guidance...</p>
               </div>
             ) : requestError ? (
               <div className="intelligence-selected-state">
-                <span className="intelligence-state-chip">Request failed</span>
-                <h2>Unable to complete this workflow</h2>
+                <span className="intelligence-state-chip">Analysis paused</span>
+                <h2>We couldn&apos;t complete this request</h2>
                 <p>{requestError}</p>
               </div>
             ) : result ? (
               <div className="intelligence-result-state">
                 <div className="intelligence-result-header">
-                  <span className="intelligence-state-chip">Workflow analysis</span>
+                  <span className="intelligence-state-chip">Portfolio Guidance</span>
                   <span className="intelligence-result-pill">{result.confidenceLabel}</span>
                 </div>
                 <h2>{result.title}</h2>
@@ -274,21 +332,21 @@ export function IntelligenceSurface() {
               </div>
             ) : selectedAction ? (
               <div className="intelligence-selected-state">
-                <span className="intelligence-state-chip">Workflow selected</span>
+                <span className="intelligence-state-chip">Guidance selected</span>
                 <h2>{selectedAction.title}</h2>
                 <p>{selectedAction.description}</p>
                 <div className="intelligence-state-steps">
                   <div>
                     <span>01</span>
-                    <p>Collect user intent and profile context.</p>
+                    <p>Understand your goal and current portfolio context.</p>
                   </div>
                   <div>
                     <span>02</span>
-                    <p>Run structured PSX intelligence workflow.</p>
+                    <p>Review PSX data and spot useful signals for your case.</p>
                   </div>
                   <div>
                     <span>03</span>
-                    <p>Generate beginner-friendly action guidance.</p>
+                    <p>Share clear, beginner-friendly next steps.</p>
                   </div>
                 </div>
               </div>
@@ -296,7 +354,7 @@ export function IntelligenceSurface() {
 
             <form className="intelligence-composer" onSubmit={onSubmit}>
               <label htmlFor="intelligence-query" className="intelligence-label">
-                Ask a custom question
+                Ask Perch
               </label>
               <div className="intelligence-composer-row">
                 <input
@@ -307,7 +365,7 @@ export function IntelligenceSurface() {
                   aria-label="Perch Intelligence prompt"
                 />
                 <button type="submit" aria-label="Submit intelligence request" disabled={isLoading}>
-                  {isLoading ? "Running..." : "Launch"}
+                  {isLoading ? "Analyzing..." : "Get Guidance"}
                 </button>
               </div>
             </form>
