@@ -76,8 +76,8 @@ export function Navbar() {
           <Link href="/markets" className={styles.ctaSecondary}>
             Explore Markets
           </Link>
-          <Link href="/dashboard" className={styles.ctaPrimary}>
-            Start Investing
+          <Link href="/start" className={styles.ctaPrimary}>
+            Start Here
           </Link>
         </div>
 
@@ -136,8 +136,8 @@ export function Navbar() {
           <Link href="/markets" className={styles.mobileCtaSecondary} onClick={closeMenu}>
             Explore Markets
           </Link>
-          <Link href="/dashboard" className={styles.mobileCtaPrimary} onClick={closeMenu}>
-            Start Investing
+          <Link href="/start" className={styles.mobileCtaPrimary} onClick={closeMenu}>
+            Start Here
           </Link>
         </div>
       </div>

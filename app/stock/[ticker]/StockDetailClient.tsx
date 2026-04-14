@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState, type CSSProperties } from "react";
 import {
   Line,
@@ -15,6 +16,7 @@ import { useLivePrices } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { buyStock, sellStock } from "@/lib/portfolioStore";
 import { usePortfolioState } from "@/hooks/usePortfolioState";
+import { getTransactionHistory } from "@/lib/portfolioStore";
 
 type Point = { date: string; price: number; volume: number };
 
@@ -54,6 +56,7 @@ function statLabelStyle(): CSSProperties {
 export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const ticker = base.ticker;
   const { getQuote, getHistory, currentDate, isPlaceholderData } = useLivePrices();
+  const searchParams = useSearchParams();
   const quote = getQuote(ticker);
   const price = quote?.price ?? base.price;
   const change = quote?.change ?? base.change;
@@ -65,6 +68,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const [mode, setMode] = useState<"BUY" | "SELL">("BUY");
   const [sharesInput, setSharesInput] = useState("10");
   const [message, setMessage] = useState<string | null>(null);
+  const [onboardingSuccess, setOnboardingSuccess] = useState(false);
 
   const shares = Math.max(0, Math.floor(Number(sharesInput) || 0));
   const est = shares * price;
@@ -80,12 +84,18 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
       setMessage("Enter a valid number of shares.");
       return;
     }
+    const onboarding = searchParams.get("onboarding") === "1";
+    const txCountBefore = onboarding ? getTransactionHistory().length : 0;
     const res =
       mode === "BUY"
         ? buyStock(ticker, shares, price)
         : sellStock(ticker, shares, price);
     if (!res.ok) {
       setMessage(res.error);
+      return;
+    }
+    if (onboarding && mode === "BUY" && txCountBefore === 0) {
+      setOnboardingSuccess(true);
       return;
     }
     setMessage(`${mode === "BUY" ? "Bought" : "Sold"} ${shares} shares.`);
@@ -497,50 +507,119 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               </div>
             )}
 
-            {mode === "BUY" ? (
-              <button
-                type="button"
-                onClick={onConfirm}
+            {onboardingSuccess && (
+              <div
                 style={{
-                  marginTop: 16,
-                  width: "100%",
-                  minHeight: 50,
+                  marginTop: 14,
+                  border: "1px solid #CFE6DB",
+                  background: "#F4FBF7",
                   borderRadius: 12,
-                  border: `1px solid ${COLORS.orange}`,
-                  background: COLORS.orange,
-                  color: "#FFFFFF",
-                  fontWeight: 740,
-                  fontSize: 16,
-                  letterSpacing: "0.02em",
-                  boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
-                  cursor: "pointer",
-                  WebkitTapHighlightColor: "transparent",
+                  padding: 14,
                 }}
+                role="status"
               >
-                Buy {ticker}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={onConfirm}
-                style={{
-                  marginTop: 16,
-                  width: "100%",
-                  minHeight: 50,
-                  borderRadius: 12,
-                  border: `1px solid ${COLORS.loss}`,
-                  background: "#FFFFFF",
-                  color: COLORS.loss,
-                  fontWeight: 740,
-                  fontSize: 16,
-                  letterSpacing: "0.02em",
-                  cursor: "pointer",
-                  WebkitTapHighlightColor: "transparent",
-                }}
-              >
-                Sell {ticker}
-              </button>
+                <div style={{ fontWeight: 760, color: COLORS.gain, fontSize: 15 }}>
+                  Success — your first practice buy is complete
+                </div>
+                <div style={{ marginTop: 8, color: COLORS.muted, fontSize: 14, lineHeight: 1.55 }}>
+                  You now own this position in your virtual portfolio. You can view your holdings and track progress from
+                  the dashboard.
+                </div>
+                <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
+                  <Link
+                    href="/dashboard"
+                    style={{
+                      textDecoration: "none",
+                      width: "100%",
+                      minHeight: 48,
+                      borderRadius: 12,
+                      border: `1px solid ${COLORS.orange}`,
+                      background: COLORS.orange,
+                      color: "#FFFFFF",
+                      fontWeight: 760,
+                      fontSize: 16,
+                      letterSpacing: "0.02em",
+                      boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      WebkitTapHighlightColor: "transparent",
+                    }}
+                  >
+                    Go to Dashboard
+                  </Link>
+                  <Link
+                    href="/markets"
+                    style={{
+                      textDecoration: "none",
+                      width: "100%",
+                      minHeight: 48,
+                      borderRadius: 12,
+                      border: `1px solid ${COLORS.border}`,
+                      background: "#FFFFFF",
+                      color: COLORS.text,
+                      fontWeight: 720,
+                      fontSize: 15,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      WebkitTapHighlightColor: "transparent",
+                    }}
+                  >
+                    Explore more markets
+                  </Link>
+                </div>
+              </div>
             )}
+
+            {onboardingSuccess
+              ? null
+              : mode === "BUY"
+                ? (
+                    <button
+                      type="button"
+                      onClick={onConfirm}
+                      style={{
+                        marginTop: 16,
+                        width: "100%",
+                        minHeight: 50,
+                        borderRadius: 12,
+                        border: `1px solid ${COLORS.orange}`,
+                        background: COLORS.orange,
+                        color: "#FFFFFF",
+                        fontWeight: 740,
+                        fontSize: 16,
+                        letterSpacing: "0.02em",
+                        boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
+                        cursor: "pointer",
+                        WebkitTapHighlightColor: "transparent",
+                      }}
+                    >
+                      Buy {ticker}
+                    </button>
+                  )
+                : (
+                    <button
+                      type="button"
+                      onClick={onConfirm}
+                      style={{
+                        marginTop: 16,
+                        width: "100%",
+                        minHeight: 50,
+                        borderRadius: 12,
+                        border: `1px solid ${COLORS.loss}`,
+                        background: "#FFFFFF",
+                        color: COLORS.loss,
+                        fontWeight: 740,
+                        fontSize: 16,
+                        letterSpacing: "0.02em",
+                        cursor: "pointer",
+                        WebkitTapHighlightColor: "transparent",
+                      }}
+                    >
+                      Sell {ticker}
+                    </button>
+                  )}
           </aside>
         </div>
       </div>
