@@ -9,8 +9,8 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/markets", label: "Markets" },
+  { href: "/intelligence", label: "Intelligence" },
   { href: "/account", label: "Account" },
-  { href: "/learn", label: "Learn" },
 ];
 
 export function Navbar() {

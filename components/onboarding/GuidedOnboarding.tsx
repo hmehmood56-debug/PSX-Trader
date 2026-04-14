@@ -151,7 +151,7 @@ export function GuidedOnboarding() {
             <>
               <h1 className={styles.title}>Pick a starter stock</h1>
               <p className={styles.subtitle}>
-                Choose one name to follow first. These are common PSX names; tap the one you would like to learn with.
+                Choose one name to follow first. These are common PSX names; tap the one you want to start with.
               </p>
               <div className={styles.cardGrid}>
                 {STARTER_TICKERS.map((sym) => {

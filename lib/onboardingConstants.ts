@@ -23,9 +23,9 @@ export const ONBOARDING_GOALS = [
     description: "I am curious about payouts companies sometimes make.",
   },
   {
-    id: "learn",
-    title: "Learn the market",
-    description: "I want to learn how PSX works before anything else.",
+    id: "intelligence",
+    title: "Use Perch Intelligence",
+    description: "I want guided PSX intelligence before placing trades.",
   },
 ] as const;
 
