@@ -844,3 +844,202 @@ body {
 .intelligence-composer button:active {
   transform: translateY(0);
 }
+
+.intelligence-composer button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+  transform: none;
+}
+
+.intelligence-console-loading {
+  border-color: #e2d6cc;
+}
+
+.intelligence-loading-state {
+  border: 1px dashed #e5ddd6;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: clamp(16px, 3.4vw, 22px);
+  animation: intelligenceFadeIn 260ms ease;
+}
+
+.intelligence-loading-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #efe4db 0%, #f8f1ec 45%, #efe4db 100%);
+  background-size: 220% 100%;
+  animation: intelligenceShimmer 1.2s linear infinite;
+  margin-bottom: 8px;
+}
+
+.intelligence-loading-bar-wide {
+  width: 84%;
+}
+
+.intelligence-loading-state p {
+  margin-top: 14px;
+  color: #5f5f5f;
+}
+
+.intelligence-result-state {
+  animation: intelligenceFadeIn 260ms ease;
+}
+
+.intelligence-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.intelligence-result-pill {
+  font-size: 11px;
+  border-radius: 999px;
+  border: 1px solid #e5d9cf;
+  background: #fff;
+  padding: 6px 10px;
+  color: #6b5b4d;
+  font-weight: 600;
+}
+
+.intelligence-meta-row {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.intelligence-meta-row span {
+  font-size: 12px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #ece2d9;
+  color: #6f645a;
+  padding: 5px 10px;
+}
+
+.intelligence-output-grid {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.intelligence-output-card {
+  border: 1px solid #e9e0d8;
+  border-radius: 14px;
+  background: #fff;
+  padding: 12px;
+}
+
+.intelligence-output-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.intelligence-output-head span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7a6e64;
+}
+
+.intelligence-output-card h3 {
+  margin-top: 8px;
+  font-size: 17px;
+  color: #232323;
+}
+
+.intelligence-card-subtitle {
+  margin-top: 4px;
+  color: #666;
+  font-size: 14px;
+}
+
+.intelligence-card-metrics {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.intelligence-card-metrics div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #f0e9e2;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.intelligence-card-metrics span {
+  color: #6b6b6b;
+  font-size: 13px;
+}
+
+.intelligence-card-metrics strong {
+  color: #2a2a2a;
+  font-size: 13px;
+}
+
+.intelligence-output-card ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: #5d5d5d;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.intelligence-suggestions {
+  margin-top: 14px;
+  border-top: 1px solid #ece4dd;
+  padding-top: 12px;
+}
+
+.intelligence-suggestions h3 {
+  font-size: 14px;
+  color: #333;
+}
+
+.intelligence-suggestions ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #5d5d5d;
+  line-height: 1.45;
+}
+
+.intelligence-suggestions button {
+  margin-top: 10px;
+  border: 1px solid #b84700;
+  border-radius: 12px;
+  background: #fff8f2;
+  color: #9b4308;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.intelligence-suggestions button:hover {
+  background: #ffefe2;
+}
+
+@keyframes intelligenceShimmer {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes intelligenceFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
