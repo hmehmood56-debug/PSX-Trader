@@ -175,8 +175,7 @@ export function PortfolioSections({
                           style={{
                             color: COLORS.orange,
                             fontWeight: 700,
-                            fontFamily:
-                              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                            letterSpacing: "0.04em",
                           }}
                         >
                           {r.ticker}
@@ -400,9 +399,8 @@ export function PortfolioSections({
                       style={{
                         padding: "0 16px",
                         borderBottom: `1px solid ${COLORS.border}`,
-                        fontFamily:
-                          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                         fontWeight: 700,
+                        letterSpacing: "0.03em",
                       }}
                     >
                       {t.ticker}

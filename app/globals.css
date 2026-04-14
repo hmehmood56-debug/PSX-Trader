@@ -501,6 +501,19 @@ p {
 
 .perch-stock-price-big {
   font-size: clamp(32px, 9vw, 48px);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  text-rendering: geometricPrecision;
+}
+
+.perch-stock-ticker {
+  margin-top: 8px;
+  color: var(--text-secondary, #6b6b6b);
+  letter-spacing: 0.06em;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .perch-stock-change-block {
@@ -515,8 +528,101 @@ p {
 
 .perch-stock-chart-box {
   width: 100%;
-  height: min(360px, 50vh);
-  min-height: 240px;
+  height: min(380px, 52vh);
+  min-height: 252px;
+}
+
+.perch-stock-range-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.perch-range-btn {
+  box-shadow: none;
+}
+
+.perch-range-btn-active {
+  box-shadow: 0 6px 16px rgba(196, 80, 0, 0.24);
+}
+
+.perch-stock-ohlc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 4px;
+}
+
+@media (min-width: 640px) {
+  .perch-stock-ohlc-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+.perch-stock-ohlc-value {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 680;
+  color: #1a1a1a;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+}
+
+.perch-fin-number {
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+}
+
+.perch-stock-chart-box .recharts-cartesian-axis-tick text,
+.perch-stock-chart-box .recharts-tooltip-label,
+.perch-stock-chart-box .recharts-default-tooltip {
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.perch-ticket-shares-input {
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.perch-stock-stat-number {
+  letter-spacing: -0.014em;
+}
+
+.perch-ticket-summary {
+  background: linear-gradient(180deg, #fbfbfb 0%, #fefefe 100%);
+}
+
+.perch-ticket-row + .perch-ticket-row {
+  padding-top: 10px;
+  margin-top: 8px;
+  border-top: 1px solid #efefef;
+}
+
+.perch-ticket-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  font-weight: 650;
+  color: #878787;
+}
+
+.perch-ticket-primary-value {
+  font-size: 18px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.02em;
+}
+
+.perch-ticket-secondary-value {
+  font-size: 13px;
+}
+
+.perch-ticket-secondary-strong {
+  font-size: 16px !important;
+  font-weight: 740 !important;
 }
 
 .perch-stock-stats-grid {

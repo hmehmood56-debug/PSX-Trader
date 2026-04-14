@@ -6,6 +6,7 @@ import { useMemo, useState, type CSSProperties } from "react";
 import {
   Line,
   LineChart,
+  CartesianGrid,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -17,8 +18,10 @@ import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { buyStock, sellStock } from "@/lib/portfolioStore";
 import { usePortfolioState } from "@/hooks/usePortfolioState";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
+import { getReplayDatasetByTicker } from "@/lib/replayDataset";
 
 type Point = { date: string; price: number; volume: number };
+type ChartRange = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
 
 const COLORS = {
   orange: "#C45000",
@@ -45,12 +48,86 @@ function panelStyle(): CSSProperties {
 
 function statLabelStyle(): CSSProperties {
   return {
-    fontSize: 11,
+    fontSize: 10,
     textTransform: "uppercase",
-    letterSpacing: "0.06em",
+    letterSpacing: "0.08em",
     color: COLORS.mutedSoft,
-    fontWeight: 600,
+    fontWeight: 650,
   };
+}
+
+const CHART_RANGES: readonly ChartRange[] = ["1D", "1W", "1M", "3M", "1Y", "ALL"] as const;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function smoothSeries(points: Point[]): Point[] {
+  if (points.length < 3) return points;
+  return points.map((point, index) => {
+    if (index === 0 || index === points.length - 1) return point;
+    const prev = points[index - 1]?.price ?? point.price;
+    const next = points[index + 1]?.price ?? point.price;
+    const smoothedPrice = prev * 0.22 + point.price * 0.56 + next * 0.22;
+    return { ...point, price: Number(smoothedPrice.toFixed(2)) };
+  });
+}
+
+function buildRangeSeries(
+  range: ChartRange,
+  history: Point[],
+  currentPrice: number,
+  ticker: string
+): Point[] {
+  const now = Date.now();
+  if (range === "1D") return history.length > 0 ? history : [{ date: new Date(now).toISOString(), price: currentPrice, volume: 0 }];
+
+  const replay = getReplayDatasetByTicker(ticker)?.bars ?? [];
+  const recentPrices = history.map((item) => item.price);
+  const recentReturns = recentPrices.slice(1).map((price, idx) => {
+    const prev = recentPrices[idx] ?? price;
+    return prev > 0 ? (price - prev) / prev : 0;
+  });
+  const replayReturns = replay.slice(1).map((bar, idx) => {
+    const prev = replay[idx]?.close ?? bar.close;
+    return prev > 0 ? (bar.close - prev) / prev : 0;
+  });
+  const blendedReturns = [...replayReturns, ...recentReturns];
+  const fallbackReturn = recentReturns[recentReturns.length - 1] ?? replayReturns[replayReturns.length - 1] ?? 0;
+
+  const spec: Record<Exclude<ChartRange, "1D">, { points: number; stepMs: number }> = {
+    "1W": { points: 7, stepMs: 24 * 60 * 60 * 1000 },
+    "1M": { points: 30, stepMs: 24 * 60 * 60 * 1000 },
+    "3M": { points: 66, stepMs: 24 * 60 * 60 * 1000 },
+    "1Y": { points: 52, stepMs: 7 * 24 * 60 * 60 * 1000 },
+    ALL: { points: 120, stepMs: 7 * 24 * 60 * 60 * 1000 },
+  };
+
+  const { points, stepMs } = spec[range];
+  const generated = Array.from({ length: points }, (_, idx) => {
+    const reverseIndex = points - idx - 1;
+    const ret = blendedReturns[blendedReturns.length - 1 - (reverseIndex % Math.max(1, blendedReturns.length))] ?? fallbackReturn;
+    const damp = range === "1W" ? 0.8 : range === "1M" ? 0.62 : 0.48;
+    const move = clamp(ret * damp, -0.06, 0.06);
+    const ts = now - (points - idx - 1) * stepMs;
+    return { ts, move };
+  });
+
+  const series: Point[] = [];
+  let rollingPrice = currentPrice;
+  for (let i = generated.length - 1; i >= 0; i -= 1) {
+    rollingPrice = Math.max(1, rollingPrice / (1 + generated[i].move));
+  }
+  generated.forEach((entry) => {
+    rollingPrice = Math.max(1, rollingPrice * (1 + entry.move));
+    series.push({
+      date: new Date(entry.ts).toISOString(),
+      price: Number(rollingPrice.toFixed(2)),
+      volume: 0,
+    });
+  });
+
+  return smoothSeries(series);
 }
 
 export function StockDetailClient({ stock: base }: { stock: Stock }) {
@@ -76,16 +153,20 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     timestampLabel: string;
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [range, setRange] = useState<ChartRange>("1D");
 
   const shares = Math.max(0, Math.floor(Number(sharesInput) || 0));
   const executionEstimate = estimateExecution(ticker, mode, shares);
   const estimatedExecutionPrice = executionEstimate?.estimatedPrice ?? price;
   const est = shares * estimatedExecutionPrice;
-  const recentHistory = history.slice(-18);
-  const localHigh = recentHistory.length > 0 ? Math.max(...recentHistory.map((p) => p.price)) : price;
-  const localLow = recentHistory.length > 0 ? Math.min(...recentHistory.map((p) => p.price)) : price;
+  const dayHistory = history.length > 0 ? history : [{ date: quote?.date ?? new Date().toISOString(), price, volume }];
+  const dayOpen = dayHistory[0]?.price ?? price;
+  const localHigh = Math.max(price, ...dayHistory.map((p) => p.price));
+  const localLow = Math.min(price, ...dayHistory.map((p) => p.price));
+  const prevClose = quote?.previousClose ?? base.price - base.change;
   const averageVolume = history.length > 0 ? history.reduce((sum, p) => sum + p.volume, 0) / history.length : volume;
   const turnover = volume * price;
+  const chartData = useMemo(() => buildRangeSeries(range, history, price, ticker), [range, history, price, ticker]);
 
   const holding = useMemo(
     () => portfolio.holdings.find((h) => h.ticker === ticker),
@@ -199,17 +280,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               >
                 {base.name}
               </h1>
-              <div
-                style={{
-                  marginTop: 8,
-                  color: COLORS.muted,
-                  fontFamily:
-                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  letterSpacing: "0.02em",
-                  fontSize: 13,
-                  fontWeight: 700,
-                }}
-              >
+              <div className="perch-stock-ticker">
                 {base.ticker}
               </div>
             </section>
@@ -230,8 +301,6 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                     lineHeight: 1,
                     fontWeight: 760,
                     color: COLORS.text,
-                    fontVariantNumeric: "tabular-nums",
-                    letterSpacing: "-0.02em",
                   }}
                 >
                   {formatPKRWithSymbol(price)}
@@ -239,11 +308,11 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               </div>
               <div className="perch-stock-change-block">
                 <div
+                  className="perch-fin-number"
                   style={{
                     fontSize: "clamp(17px, 4vw, 20px)",
                     fontWeight: 740,
                     color: up ? COLORS.gain : COLORS.loss,
-                    fontVariantNumeric: "tabular-nums",
                   }}
                 >
                   {up ? "+" : ""}
@@ -267,17 +336,55 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               <div style={statLabelStyle()}>
                 Price replay
               </div>
+              <div className="perch-stock-range-row" style={{ marginTop: 12 }}>
+                {CHART_RANGES.map((item) => {
+                  const active = item === range;
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setRange(item)}
+                      className={`perch-range-btn${active ? " perch-range-btn-active" : ""}`}
+                      style={{
+                        minHeight: 34,
+                        padding: "0 12px",
+                        borderRadius: 999,
+                        border: active ? `1px solid #AF4300` : `1px solid ${COLORS.border}`,
+                        background: active ? "#C45000" : "#FFFFFF",
+                        color: active ? "#FFFFFF" : COLORS.muted,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: "0.04em",
+                        cursor: "pointer",
+                        WebkitTapHighlightColor: "transparent",
+                        transition: "all 170ms ease",
+                      }}
+                      aria-pressed={active}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
+              </div>
               <div className="perch-stock-chart-box" style={{ width: "100%", marginTop: 12 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={history}>
+                  <LineChart data={chartData} margin={{ top: 10, right: 4, left: -8, bottom: 4 }}>
+                    <CartesianGrid stroke="#F3F3F3" vertical={false} strokeDasharray="0" />
                     <XAxis
                       dataKey="date"
                       tick={{ fill: COLORS.mutedSoft, fontSize: 11 }}
+                      minTickGap={22}
+                      interval="preserveStartEnd"
                       tickFormatter={(value: string) =>
-                        new Date(value).toLocaleDateString("en-PK", {
-                          month: "short",
-                          day: "numeric",
-                        })
+                        range === "1D"
+                          ? new Date(value).toLocaleTimeString("en-PK", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })
+                          : new Date(value).toLocaleDateString("en-PK", {
+                              month: "short",
+                              day: "numeric",
+                            })
                       }
                       axisLine={false}
                       tickLine={false}
@@ -292,105 +399,104 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                     />
                     <Tooltip
                       contentStyle={{
-                        background: "#FFFFFF",
-                        border: `1px solid ${COLORS.border}`,
-                        borderRadius: 8,
-                        boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+                        background: "rgba(255,255,255,0.98)",
+                        border: `1px solid ${COLORS.borderStrong}`,
+                        borderRadius: 10,
+                        boxShadow: "0 14px 28px rgba(14,14,14,0.1)",
+                        padding: "8px 10px",
                       }}
-                      labelStyle={{ color: COLORS.muted }}
+                      labelStyle={{ color: COLORS.muted, fontSize: 12, fontWeight: 600 }}
                       labelFormatter={(value: string) =>
-                        new Date(value).toLocaleDateString("en-PK", {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                        })
+                        range === "1D"
+                          ? new Date(value).toLocaleString("en-PK", {
+                              weekday: "short",
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })
+                          : new Date(value).toLocaleDateString("en-PK", {
+                              weekday: "short",
+                              month: "short",
+                              day: "numeric",
+                            })
                       }
                       formatter={(value: number) => [formatPKRWithSymbol(value), "Price"]}
                     />
                     <Line
-                      type="monotone"
+                      type="monotoneX"
                       dataKey="price"
                       stroke={COLORS.orange}
-                      strokeWidth={2.4}
+                      strokeWidth={3}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       dot={false}
+                      isAnimationActive
+                      animationDuration={280}
+                      animationEasing="ease-in-out"
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
+              <div className="perch-stock-ohlc-grid" style={{ marginTop: 14 }}>
+                <div>
+                  <div style={statLabelStyle()}>Open</div>
+                  <div className="perch-stock-ohlc-value">{formatPKRWithSymbol(dayOpen)}</div>
+                </div>
+                <div>
+                  <div style={statLabelStyle()}>High</div>
+                  <div className="perch-stock-ohlc-value">{formatPKRWithSymbol(localHigh)}</div>
+                </div>
+                <div>
+                  <div style={statLabelStyle()}>Low</div>
+                  <div className="perch-stock-ohlc-value">{formatPKRWithSymbol(localLow)}</div>
+                </div>
+                <div>
+                  <div style={statLabelStyle()}>Prev close</div>
+                  <div className="perch-stock-ohlc-value">{formatPKRWithSymbol(prevClose)}</div>
+                </div>
+                <div>
+                  <div style={statLabelStyle()}>Day volume</div>
+                  <div className="perch-stock-ohlc-value">{formatCompactPKR(volume)}</div>
+                </div>
+              </div>
               <div style={{ marginTop: 12, color: COLORS.mutedSoft, fontSize: 12 }}>
-                Powered by Perch Sim Engine. Prices update continuously from current market anchors.
+                Powered by Perch Sim Engine.
               </div>
             </section>
 
-            <section>
+            <section style={{ ...panelStyle(), background: "#FFFFFF" }}>
               <div className="perch-stock-stats-grid">
                 <div>
-                  <div style={statLabelStyle()}>Day range</div>
-                  <div
-                    style={{
-                      marginTop: 6,
-                      fontFamily:
-                        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                      fontWeight: 720,
-                      fontSize: 18,
-                      color: COLORS.text,
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {formatPKRWithSymbol(localLow)} - {formatPKRWithSymbol(localHigh)}
-                  </div>
-                </div>
-                <div>
                   <div style={statLabelStyle()}>52-week range</div>
-                  <div
-                    style={{
-                      marginTop: 6,
-                      fontFamily:
-                        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                      fontWeight: 720,
-                      fontSize: 18,
-                      color: COLORS.text,
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
+                <div
+                  className="perch-fin-number perch-stock-stat-number"
+                  style={{
+                    marginTop: 6,
+                    fontWeight: 720,
+                    fontSize: 18,
+                    color: COLORS.text,
+                  }}
+                >
                     {formatPKRWithSymbol(base.low52)} - {formatPKRWithSymbol(base.high52)}
                   </div>
                 </div>
                 <div>
-                  <div style={statLabelStyle()}>Volume</div>
-                  <div style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
-                    {formatCompactPKR(volume)}
-                  </div>
-                </div>
-                <div>
                   <div style={statLabelStyle()}>Market cap</div>
-                  <div style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
+                  <div className="perch-fin-number perch-stock-stat-number" style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
                     {formatCompactPKR(base.marketCap)}
                   </div>
                 </div>
-              </div>
-            </section>
-
-            <section style={{ ...panelStyle(), background: "#FFFFFF" }}>
-              <div style={statLabelStyle()}>Company snapshot</div>
-              <div style={{ marginTop: 10, display: "grid", gap: 8, fontSize: 14, lineHeight: "22px", color: COLORS.text }}>
-                <div>Sector identity: <strong>{base.sector}</strong></div>
-                <div>Average volume: <strong>{formatCompactPKR(averageVolume)}</strong></div>
-                <div>Turnover: <strong>{formatCompactPKR(turnover)}</strong></div>
-                <div>Estimated price: <strong>{formatPKRWithSymbol(estimatedExecutionPrice)}</strong></div>
-                <div>Today&apos;s change: <strong>{up ? "+" : ""}{changePct.toFixed(2)}%</strong></div>
-                {typeof base.dividendYield === "number" ? (
-                  <div>Dividend yield: <strong>{base.dividendYield.toFixed(2)}%</strong></div>
-                ) : null}
-              </div>
-            </section>
-
-            <section style={{ ...panelStyle(), background: "#FFFFFF" }}>
-              <div style={statLabelStyle()}>
-                About
-              </div>
-              <div style={{ marginTop: 10, fontSize: 14, lineHeight: "24px", color: COLORS.text }}>
-                {base.description}
+                <div>
+                  <div style={statLabelStyle()}>Average volume</div>
+                  <div className="perch-fin-number perch-stock-stat-number" style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
+                    {formatCompactPKR(averageVolume)}
+                  </div>
+                </div>
+                <div>
+                  <div style={statLabelStyle()}>Turnover</div>
+                  <div className="perch-fin-number perch-stock-stat-number" style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
+                    {formatCompactPKR(turnover)}
+                  </div>
+                </div>
               </div>
             </section>
           </div>
@@ -400,14 +506,15 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
             style={{
               border: `1px solid ${COLORS.borderStrong}`,
               borderRadius: 16,
-              background: "#FFFFFF",
-              padding: "clamp(16px, 4vw, 18px)",
+              background: "linear-gradient(180deg, #FFFFFF 0%, #FCFCFC 100%)",
+              padding: "clamp(16px, 4vw, 20px)",
+              boxShadow: "0 8px 24px rgba(18,18,18,0.04)",
             }}
           >
             <div style={{ ...statLabelStyle(), color: COLORS.muted }}>
               Order ticket
             </div>
-            <div style={{ marginTop: 6, fontSize: 18, fontWeight: 730, color: COLORS.text }}>
+            <div className="perch-fin-number" style={{ marginTop: 6, fontSize: 18, fontWeight: 730, color: COLORS.text }}>
               {base.ticker}
             </div>
             <div style={{ marginTop: 2, fontSize: 13, color: COLORS.muted }}>
@@ -473,6 +580,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 inputMode="numeric"
                 value={sharesInput}
                 onChange={(e) => setSharesInput(e.target.value)}
+                className="perch-ticket-shares-input"
                 style={{
                   marginTop: 8,
                   width: "100%",
@@ -483,8 +591,6 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   fontSize: 16,
                   outline: "none",
                   color: COLORS.text,
-                  fontFamily:
-                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                 }}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = COLORS.orange;
@@ -498,39 +604,39 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
             </div>
 
             <div
+              className="perch-ticket-summary"
               style={{
                 marginTop: 16,
                 background: COLORS.bgElevated,
-                border: `1px solid ${COLORS.border}`,
+                border: `1px solid ${COLORS.borderStrong}`,
                 borderRadius: 12,
-                padding: 14,
+                padding: 16,
                 fontSize: 13,
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                <div style={{ color: COLORS.mutedSoft, fontWeight: 600 }}>
+              <div className="perch-ticket-row" style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                <div className="perch-ticket-label" style={{ color: COLORS.mutedSoft, fontWeight: 600 }}>
                   Estimated price
                 </div>
                 <div
+                  className="perch-fin-number perch-ticket-primary-value"
                   style={{
                     fontWeight: 740,
                     color: COLORS.text,
-                    fontVariantNumeric: "tabular-nums",
                     fontSize: 15,
-                    fontFamily:
-                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                   }}
                 >
                   {formatPKRWithSymbol(est)}
                 </div>
               </div>
-              <div style={{ marginTop: 8, color: COLORS.mutedSoft }}>
+              <div className="perch-fin-number perch-ticket-secondary-value" style={{ marginTop: 8, color: COLORS.mutedSoft }}>
                 {formatPKRWithSymbol(estimatedExecutionPrice)} per share
               </div>
               <div style={{ marginTop: 4, color: COLORS.mutedSoft }}>
                 Price may vary slightly with simulated market conditions.
               </div>
               <div
+                className="perch-ticket-row"
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -538,17 +644,15 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   marginTop: 8,
                 }}
               >
-                <div style={{ color: COLORS.mutedSoft, fontWeight: 600 }}>
+                <div className="perch-ticket-label" style={{ color: COLORS.mutedSoft, fontWeight: 600 }}>
                   {mode === "BUY" ? "Available cash" : "Shares owned"}
                 </div>
                 <div
+                  className="perch-fin-number perch-ticket-secondary-strong"
                   style={{
                     fontWeight: 730,
                     color: COLORS.text,
-                    fontVariantNumeric: "tabular-nums",
                     fontSize: 15,
-                    fontFamily:
-                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                   }}
                 >
                   {mode === "BUY"
