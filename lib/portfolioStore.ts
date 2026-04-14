@@ -146,7 +146,7 @@ export function buyStock(
     return { ok: false, error: "Insufficient cash for this order." };
   }
   const idx = p.holdings.findIndex((h) => h.ticker === t);
-  let holdings = [...p.holdings];
+  const holdings = [...p.holdings];
   if (idx === -1) {
     holdings.push({ ticker: t, shares, avgBuyPrice: price });
   } else {
@@ -200,7 +200,7 @@ export function sellStock(
     return { ok: false, error: "Not enough shares to sell." };
   }
   const proceeds = shares * price;
-  let holdings = [...p.holdings];
+  const holdings = [...p.holdings];
   if (h.shares === shares) {
     holdings.splice(idx, 1);
   } else {
