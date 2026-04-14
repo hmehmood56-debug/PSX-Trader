@@ -67,8 +67,7 @@ function selectStarterAllocations(riskBucket: "conservative" | "balanced" | "gro
 }
 
 function toAllocationCards(allocations: StockAllocation[], amount: number): IntelligenceCard[] {
-  return allocations
-    .map((allocation) => {
+  const mappedCards = allocations.map((allocation): IntelligenceCard | null => {
       const stock = getStockByTicker(allocation.ticker);
       if (!stock) return null;
       const capital = (amount * allocation.percent) / 100;
@@ -89,8 +88,9 @@ function toAllocationCards(allocations: StockAllocation[], amount: number): Inte
           `Recent move: ${stock.changePercent >= 0 ? "+" : ""}${stock.changePercent.toFixed(2)}%`,
         ],
       } satisfies IntelligenceCard;
-    })
-    .filter((card): card is IntelligenceCard => card !== null);
+    });
+
+  return mappedCards.filter((card): card is IntelligenceCard => card !== null);
 }
 
 function analyzeHoldings(holdings: IntelligenceHoldingInput[]): IntelligenceResponse {
