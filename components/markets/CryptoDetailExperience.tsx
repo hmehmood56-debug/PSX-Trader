@@ -85,7 +85,10 @@ export function CryptoDetailExperience({ id }: { id: string }) {
   if (loading) {
     return (
       <div style={{ background: palette.bg }}>
-        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "36px 32px 72px", color: palette.muted }}>
+        <div
+          className="perch-shell"
+          style={{ paddingTop: "clamp(24px, 5vw, 36px)", paddingBottom: "clamp(48px, 10vw, 72px)", color: palette.muted }}
+        >
           Loading crypto detail...
         </div>
       </div>
@@ -95,9 +98,24 @@ export function CryptoDetailExperience({ id }: { id: string }) {
   if (!asset || error) {
     return (
       <div style={{ background: palette.bg }}>
-        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "36px 32px 72px" }}>
-          <Link href="/markets/crypto" style={{ color: palette.muted, textDecoration: "none", fontSize: 13 }}>
-            {"<- Back to Live Crypto"}
+        <div
+          className="perch-shell"
+          style={{ paddingTop: "clamp(24px, 5vw, 36px)", paddingBottom: "clamp(48px, 10vw, 72px)" }}
+        >
+          <Link
+            href="/markets/crypto"
+            style={{
+              color: palette.muted,
+              textDecoration: "none",
+              fontSize: 14,
+              fontWeight: 600,
+              display: "inline-flex",
+              minHeight: 44,
+              alignItems: "center",
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            {"← Back to Live Crypto"}
           </Link>
           <div
             style={{
@@ -121,9 +139,24 @@ export function CryptoDetailExperience({ id }: { id: string }) {
 
   return (
     <div style={{ background: palette.bg }}>
-      <div style={{ maxWidth: 1160, margin: "0 auto", padding: "36px 32px 72px" }}>
-        <Link href="/markets/crypto" style={{ color: palette.muted, textDecoration: "none", fontSize: 13 }}>
-          {"<- Back to Live Crypto"}
+      <div
+        className="perch-shell"
+        style={{ paddingTop: "clamp(24px, 5vw, 36px)", paddingBottom: "clamp(48px, 10vw, 72px)" }}
+      >
+        <Link
+          href="/markets/crypto"
+          style={{
+            color: palette.muted,
+            textDecoration: "none",
+            fontSize: 14,
+            fontWeight: 600,
+            display: "inline-flex",
+            minHeight: 44,
+            alignItems: "center",
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          {"← Back to Live Crypto"}
         </Link>
 
         <section
@@ -132,12 +165,29 @@ export function CryptoDetailExperience({ id }: { id: string }) {
             border: `1px solid ${palette.border}`,
             borderRadius: 18,
             background: "#FFFFFF",
-            padding: "24px 22px",
+            padding: "clamp(18px, 4vw, 24px) clamp(16px, 4vw, 22px)",
           }}
         >
           <p style={{ margin: 0, fontSize: 12, color: palette.orange, fontWeight: 700 }}>{asset.symbol}</p>
-          <h1 style={{ margin: "8px 0 0", color: palette.text, fontSize: 42, lineHeight: 1.1 }}>{asset.name}</h1>
-          <p style={{ margin: "12px 0 0", color: palette.text, fontSize: 44, fontWeight: 740 }}>
+          <h1
+            style={{
+              margin: "8px 0 0",
+              color: palette.text,
+              fontSize: "clamp(24px, 5.5vw, 42px)",
+              lineHeight: 1.12,
+            }}
+          >
+            {asset.name}
+          </h1>
+          <p
+            style={{
+              margin: "12px 0 0",
+              color: palette.text,
+              fontSize: "clamp(28px, 7vw, 44px)",
+              fontWeight: 740,
+              lineHeight: 1.1,
+            }}
+          >
             {formatUsd(asset.price)}
           </p>
           <p style={{ marginTop: 6, color: up ? "#007A4C" : "#C0392B", fontWeight: 650 }}>
@@ -156,12 +206,12 @@ export function CryptoDetailExperience({ id }: { id: string }) {
             border: `1px solid ${palette.border}`,
             borderRadius: 16,
             background: "#FFFFFF",
-            padding: 16,
-            height: 360,
+            padding: "clamp(12px, 3vw, 16px)",
+            minHeight: 280,
           }}
         >
           <div style={{ color: palette.muted, fontSize: 12, fontWeight: 700 }}>7D Price Trend</div>
-          <div style={{ width: "100%", height: 310, marginTop: 8 }}>
+          <div className="perch-crypto-chart-wrap" style={{ width: "100%", marginTop: 8 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={asset.chart}>
                 <XAxis
@@ -201,14 +251,7 @@ export function CryptoDetailExperience({ id }: { id: string }) {
           </div>
         </section>
 
-        <section
-          style={{
-            marginTop: 14,
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: 12,
-          }}
-        >
+        <section className="perch-crypto-detail-stats" style={{ marginTop: 14 }}>
           {[
             { label: "Market Cap", value: formatCompact(asset.marketCap) },
             { label: "Volume (24h)", value: formatCompact(asset.volume24h) },
@@ -226,11 +269,21 @@ export function CryptoDetailExperience({ id }: { id: string }) {
                 border: `1px solid ${palette.border}`,
                 borderRadius: 12,
                 background: "#FFFFFF",
-                padding: "14px 12px",
+                padding: "clamp(12px, 3vw, 14px) clamp(10px, 3vw, 12px)",
               }}
             >
               <p style={{ margin: 0, color: palette.muted, fontSize: 12 }}>{item.label}</p>
-              <p style={{ margin: "8px 0 0", color: palette.text, fontSize: 18, fontWeight: 650 }}>{item.value}</p>
+              <p
+                style={{
+                  margin: "8px 0 0",
+                  color: palette.text,
+                  fontSize: "clamp(15px, 3.5vw, 18px)",
+                  fontWeight: 650,
+                  wordBreak: "break-word",
+                }}
+              >
+                {item.value}
+              </p>
             </article>
           ))}
         </section>

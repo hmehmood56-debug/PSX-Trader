@@ -147,17 +147,27 @@ export default function AccountPage() {
 
   return (
     <div style={{ background: COLORS.bgSecondary, minHeight: "calc(100vh - 56px)" }}>
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "32px 32px 48px" }}>
+      <div
+        className="perch-shell perch-shell-account"
+        style={{ paddingTop: "clamp(20px, 4vw, 32px)", paddingBottom: "clamp(36px, 8vw, 48px)" }}
+      >
         <section
           style={{
             background: COLORS.bg,
             border: `1px solid ${COLORS.border}`,
             borderRadius: 14,
-            padding: 24,
+            padding: "clamp(18px, 4vw, 24px)",
             boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
           }}
         >
-          <h1 style={{ margin: 0, fontSize: 30, fontWeight: 700, color: COLORS.text }}>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "clamp(24px, 5vw, 30px)",
+              fontWeight: 700,
+              color: COLORS.text,
+            }}
+          >
             Account
           </h1>
           <p style={{ margin: "10px 0 0", color: COLORS.muted, fontSize: 15 }}>
@@ -165,29 +175,14 @@ export default function AccountPage() {
             and withdrawal flows tailored for Pakistan investors.
           </p>
 
-          <div
-            style={{
-              marginTop: 20,
-              display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: 12,
-            }}
-          >
+          <div className="perch-account-metrics" style={{ marginTop: 20 }}>
             <MetricCard label="Current Cash Balance" value={formatPKRWithSymbol(portfolio.cash)} />
             <MetricCard label="Buying Power" value={formatPKRWithSymbol(buyingPower)} />
             <MetricCard label="Available Balance" value={formatPKRWithSymbol(availableBalance)} />
           </div>
         </section>
 
-        <div
-          style={{
-            marginTop: 16,
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 16,
-            alignItems: "start",
-          }}
-        >
+        <div className="perch-account-columns" style={{ marginTop: 16 }}>
           <section style={panelStyle()}>
             <SectionHeader
               title="Deposit Funds"
@@ -324,7 +319,7 @@ function panelStyle(): React.CSSProperties {
 function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <>
-      <h2 style={{ margin: 0, fontSize: 22, color: COLORS.text }}>{title}</h2>
+      <h2 style={{ margin: 0, fontSize: "clamp(19px, 4vw, 22px)", color: COLORS.text }}>{title}</h2>
       <p style={{ margin: "8px 0 0", color: COLORS.muted, fontSize: 14 }}>{subtitle}</p>
     </>
   );
@@ -351,7 +346,17 @@ function MetricCard({ label, value }: { label: string; value: string }) {
       >
         {label}
       </div>
-      <div style={{ marginTop: 10, fontSize: 25, fontWeight: 700, color: COLORS.text }}>{value}</div>
+      <div
+        style={{
+          marginTop: 10,
+          fontSize: "clamp(20px, 5vw, 25px)",
+          fontWeight: 700,
+          color: COLORS.text,
+          wordBreak: "break-word",
+        }}
+      >
+        {value}
+      </div>
     </div>
   );
 }
@@ -366,7 +371,7 @@ function MethodGrid({
   onSelect: (methodId: Method["id"]) => void;
 }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+    <div className="perch-account-method-grid">
       {methods.map((method) => {
         const isSelected = method.id === selected;
         return (
@@ -379,8 +384,10 @@ function MethodGrid({
               borderRadius: 12,
               border: `1px solid ${isSelected ? COLORS.orange : COLORS.border}`,
               background: isSelected ? COLORS.orangeLight : COLORS.bg,
-              padding: 12,
+              padding: "14px 12px",
+              minHeight: 48,
               cursor: "pointer",
+              WebkitTapHighlightColor: "transparent",
             }}
           >
             <div style={{ fontWeight: 700, color: isSelected ? COLORS.orange : COLORS.text, fontSize: 14 }}>
@@ -439,10 +446,10 @@ function AmountInput({
           placeholder="Enter amount"
           style={{
             width: "100%",
-            height: 52,
+            minHeight: 52,
             border: "none",
             outline: "none",
-            fontSize: 26,
+            fontSize: "clamp(22px, 5vw, 26px)",
             fontWeight: 700,
             color: COLORS.text,
             fontVariantNumeric: "tabular-nums",
@@ -465,10 +472,12 @@ function QuickChips({ onPick }: { onPick: (amount: number) => void }) {
             borderRadius: 999,
             border: `1px solid ${COLORS.border}`,
             background: COLORS.bg,
-            padding: "7px 13px",
-            fontSize: 13,
+            padding: "10px 14px",
+            minHeight: 40,
+            fontSize: 14,
             fontWeight: 600,
             cursor: "pointer",
+            WebkitTapHighlightColor: "transparent",
           }}
         >
           {formatPKRWithSymbol(amount)}
@@ -535,14 +544,15 @@ function SubmitButton({ label, disabled }: { label: string; disabled: boolean })
       style={{
         marginTop: 14,
         width: "100%",
-        height: 46,
+        minHeight: 50,
         border: "none",
         borderRadius: 10,
         background: disabled ? "#E8E8E8" : COLORS.orange,
         color: disabled ? "#9A9A9A" : "#FFFFFF",
         fontWeight: 700,
-        fontSize: 14,
+        fontSize: 16,
         cursor: disabled ? "not-allowed" : "pointer",
+        WebkitTapHighlightColor: "transparent",
       }}
     >
       {label}

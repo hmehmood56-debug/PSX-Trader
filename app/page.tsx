@@ -35,21 +35,16 @@ const howItWorks = [
 export default function LandingPage() {
   return (
     <div style={{ background: palette.bg }}>
-      <div style={{ maxWidth: 1160, margin: "0 auto", padding: "32px 32px 88px" }}>
-        <section
-          style={{
-            padding: "72px 0 64px",
-            display: "grid",
-            gridTemplateColumns: "1.1fr 0.9fr",
-            gap: 40,
-            alignItems: "center",
-          }}
-        >
-          <div>
+      <div
+        className="perch-shell"
+        style={{ paddingTop: "clamp(20px, 4vw, 32px)", paddingBottom: "clamp(56px, 12vw, 88px)" }}
+      >
+        <section className="landing-hero">
+          <div style={{ minWidth: 0 }}>
             <p
+              className="landing-hero-eyebrow"
               style={{
                 color: palette.orange,
-                fontSize: 13,
                 fontWeight: 600,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
@@ -59,30 +54,27 @@ export default function LandingPage() {
             </p>
             <h1
               style={{
-                marginTop: 18,
+                marginTop: 14,
                 color: palette.text,
-                fontSize: 56,
-                lineHeight: 1.1,
+                lineHeight: 1.12,
                 fontWeight: 700,
-                maxWidth: 660,
               }}
             >
               Practice investing on PSX, commission-free
             </h1>
             <p
+              className="landing-hero-lead"
               style={{
-                marginTop: 24,
+                marginTop: 20,
                 maxWidth: 620,
                 color: palette.muted,
-                fontSize: 18,
-                lineHeight: 1.7,
+                lineHeight: 1.65,
               }}
             >
-              Perch gives you virtual funds inside a real brokerage-style interface with
-              live market movement, so you can build investing confidence before you go
-              live.
+              Perch gives you virtual funds inside a real brokerage-style interface with live market
+              movement, so you can build investing confidence before you go live.
             </p>
-            <div style={{ marginTop: 34, display: "flex", alignItems: "center", gap: 14 }}>
+            <div className="landing-cta-row" style={{ marginTop: 28 }}>
               <Link
                 href="/dashboard"
                 style={{
@@ -90,9 +82,7 @@ export default function LandingPage() {
                   background: palette.orange,
                   color: "#FFFFFF",
                   fontWeight: 600,
-                  fontSize: 15,
                   borderRadius: 10,
-                  padding: "13px 22px",
                   boxShadow: "0 12px 28px rgba(196, 80, 0, 0.22)",
                 }}
               >
@@ -105,9 +95,7 @@ export default function LandingPage() {
                   border: `1px solid ${palette.border}`,
                   color: palette.text,
                   fontWeight: 600,
-                  fontSize: 15,
                   borderRadius: 10,
-                  padding: "13px 22px",
                   background: "#FFFFFF",
                 }}
               >
@@ -120,9 +108,10 @@ export default function LandingPage() {
             style={{
               border: `1px solid ${palette.border}`,
               borderRadius: 20,
-              padding: 24,
+              padding: "clamp(18px, 4vw, 24px)",
               background: "#FFFFFF",
               boxShadow: palette.shadow,
+              minWidth: 0,
             }}
           >
             <PreviewTile
@@ -139,7 +128,7 @@ export default function LandingPage() {
               subtitle="Virtual Balance"
               items={[
                 { label: "Funding Source", value: "Sim Wallet" },
-                { label: "Available Cash", value: "₨ 1,000,000" },
+                { label: "Available Cash", value: "\u20A8 1,000,000" },
                 { label: "Settlement", value: "Instant" },
               ]}
             />
@@ -147,7 +136,7 @@ export default function LandingPage() {
               title="Portfolio Tracking"
               subtitle="Daily Performance"
               items={[
-                { label: "Today", value: "+₨ 12,750" },
+                { label: "Today", value: "+\u20A8 12,750" },
                 { label: "Total Return", value: "+4.92%" },
                 { label: "Risk View", value: "Balanced" },
               ]}
@@ -160,30 +149,30 @@ export default function LandingPage() {
           style={{
             border: `1px solid ${palette.border}`,
             borderRadius: 18,
-            padding: "24px 26px",
+            padding: "clamp(18px, 4vw, 26px)",
             background: palette.bgSection,
           }}
         >
           <p style={{ color: palette.orange, fontWeight: 600, fontSize: 13 }}>Perch Capital</p>
-          <p style={{ marginTop: 8, color: palette.text, fontSize: 24, fontWeight: 600 }}>
+          <p
+            style={{
+              marginTop: 8,
+              color: palette.text,
+              fontSize: "clamp(18px, 4.5vw, 24px)",
+              fontWeight: 600,
+              lineHeight: 1.25,
+            }}
+          >
             Pakistan-first simulator for disciplined PSX investing
           </p>
-          <p style={{ marginTop: 10, color: palette.muted, fontSize: 16, lineHeight: 1.7 }}>
-            Purpose-built for investors who want serious practice before they enter the live
-            market.
+          <p style={{ marginTop: 10, color: palette.muted, fontSize: 15, lineHeight: 1.65 }}>
+            Purpose-built for investors who want serious practice before they enter the live market.
           </p>
         </section>
 
-        <section style={{ marginTop: 86 }}>
+        <section style={{ marginTop: "clamp(48px, 10vw, 86px)" }}>
           <SectionTitle title="Why Perch" />
-          <div
-            style={{
-              marginTop: 26,
-              display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: 18,
-            }}
-          >
+          <div className="landing-grid-3" style={{ marginTop: 26 }}>
             {whyPerch.map((item) => (
               <div
                 key={item.title}
@@ -191,11 +180,11 @@ export default function LandingPage() {
                   border: `1px solid ${palette.border}`,
                   borderRadius: 16,
                   background: "#FFFFFF",
-                  padding: 24,
+                  padding: "clamp(18px, 4vw, 24px)",
                   boxShadow: "0 10px 30px rgba(23, 23, 23, 0.05)",
                 }}
               >
-                <h3 style={{ color: palette.text, fontSize: 20, fontWeight: 600 }}>
+                <h3 style={{ color: palette.text, fontSize: "clamp(17px, 3.8vw, 20px)", fontWeight: 600 }}>
                   {item.title}
                 </h3>
                 <p
@@ -203,7 +192,7 @@ export default function LandingPage() {
                     marginTop: 10,
                     color: palette.muted,
                     fontSize: 15,
-                    lineHeight: 1.7,
+                    lineHeight: 1.65,
                   }}
                 >
                   {item.description}
@@ -213,7 +202,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section style={{ marginTop: 86 }}>
+        <section style={{ marginTop: "clamp(48px, 10vw, 86px)" }}>
           <SectionTitle title="Product Preview" />
           <div
             style={{
@@ -225,12 +214,7 @@ export default function LandingPage() {
               boxShadow: palette.shadow,
             }}
           >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              }}
-            >
+            <div className="landing-preview-grid">
               <PreviewPanel
                 title="Market Movers"
                 description="Watch gainers and decliners update in a clean PSX watchlist view."
@@ -248,23 +232,16 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section style={{ marginTop: 86 }}>
+        <section style={{ marginTop: "clamp(48px, 10vw, 86px)" }}>
           <SectionTitle title="How It Works" />
-          <div
-            style={{
-              marginTop: 26,
-              display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: 18,
-            }}
-          >
+          <div className="landing-grid-3" style={{ marginTop: 26 }}>
             {howItWorks.map((step, idx) => (
               <div
                 key={step}
                 style={{
                   border: `1px solid ${palette.border}`,
                   borderRadius: 14,
-                  padding: 22,
+                  padding: "clamp(18px, 4vw, 22px)",
                   background: "#FFFFFF",
                 }}
               >
@@ -279,7 +256,14 @@ export default function LandingPage() {
                 >
                   Step {idx + 1}
                 </p>
-                <p style={{ marginTop: 10, fontSize: 20, fontWeight: 600, color: palette.text }}>
+                <p
+                  style={{
+                    marginTop: 10,
+                    fontSize: "clamp(17px, 3.8vw, 20px)",
+                    fontWeight: 600,
+                    color: palette.text,
+                  }}
+                >
                   {step}
                 </p>
               </div>
@@ -288,34 +272,38 @@ export default function LandingPage() {
         </section>
 
         <section
+          className="landing-bottom-cta"
           style={{
-            marginTop: 94,
+            marginTop: "clamp(56px, 11vw, 94px)",
             background: palette.orangeSoft,
             border: `1px solid #E7D5C8`,
             borderRadius: 18,
-            padding: "42px 34px",
+            padding: "clamp(28px, 6vw, 42px) clamp(20px, 4vw, 34px)",
             textAlign: "center",
           }}
         >
-          <h2 style={{ color: palette.text, fontSize: 36, lineHeight: 1.2, fontWeight: 700 }}>
+          <h2 style={{ color: palette.text, lineHeight: 1.2, fontWeight: 700 }}>
             Build conviction before you trade live.
           </h2>
-          <p style={{ marginTop: 16, color: palette.muted, fontSize: 17, lineHeight: 1.7 }}>
-            Join Perch Capital and sharpen your investing decisions in a realistic PSX
-            simulation environment.
+          <p style={{ marginTop: 16, color: palette.muted, fontSize: 16, lineHeight: 1.65, maxWidth: 560, marginInline: "auto" }}>
+            Join Perch Capital and sharpen your investing decisions in a realistic PSX simulation
+            environment.
           </p>
           <div style={{ marginTop: 26 }}>
             <Link
               href="/dashboard"
               style={{
                 textDecoration: "none",
-                display: "inline-block",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 48,
+                padding: "14px 24px",
                 background: palette.orange,
                 color: "#FFFFFF",
                 fontWeight: 600,
-                fontSize: 15,
+                fontSize: 16,
                 borderRadius: 10,
-                padding: "13px 24px",
                 boxShadow: "0 12px 28px rgba(196, 80, 0, 0.2)",
               }}
             >
@@ -330,7 +318,7 @@ export default function LandingPage() {
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <div>
+    <div className="landing-section-title">
       <p
         style={{
           color: palette.orange,
@@ -342,9 +330,7 @@ function SectionTitle({ title }: { title: string }) {
       >
         Perch Capital
       </p>
-      <h2 style={{ marginTop: 8, color: palette.text, fontSize: 36, fontWeight: 700 }}>
-        {title}
-      </h2>
+      <h2 style={{ marginTop: 8, color: palette.text, fontWeight: 700 }}>{title}</h2>
     </div>
   );
 }
@@ -368,9 +354,9 @@ function PreviewTile({
         borderBottom: isLast ? "none" : `1px solid ${palette.border}`,
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
         <p style={{ color: palette.text, fontSize: 16, fontWeight: 600 }}>{title}</p>
-        <p style={{ color: palette.muted, fontSize: 12 }}>{subtitle}</p>
+        <p style={{ color: palette.muted, fontSize: 12, whiteSpace: "nowrap" }}>{subtitle}</p>
       </div>
       <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
         {items.map((item) => (
@@ -399,16 +385,9 @@ function PreviewPanel({
   isLast?: boolean;
 }) {
   return (
-    <div
-      style={{
-        padding: 24,
-        borderRight: isLast ? "none" : `1px solid ${palette.border}`,
-      }}
-    >
-      <p style={{ color: palette.text, fontSize: 20, fontWeight: 600 }}>{title}</p>
-      <p style={{ marginTop: 10, color: palette.muted, fontSize: 15, lineHeight: 1.7 }}>
-        {description}
-      </p>
+    <div className={`landing-preview-panel ${isLast ? "landing-preview-panel-last" : ""}`}>
+      <p style={{ color: palette.text, fontSize: "clamp(17px, 3.8vw, 20px)", fontWeight: 600 }}>{title}</p>
+      <p style={{ marginTop: 10, color: palette.muted, fontSize: 15, lineHeight: 1.65 }}>{description}</p>
     </div>
   );
 }

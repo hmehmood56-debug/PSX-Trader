@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/Providers";
@@ -7,6 +7,12 @@ export const metadata: Metadata = {
   title: "Perch | Perch Capital",
   description:
     "Perch by Perch Capital helps investors practice with Pakistan Stock Exchange market simulations.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#FFFFFF",
 };
 
 export default function RootLayout({
@@ -32,7 +38,7 @@ export default function RootLayout({
       >
         <Providers>
           <Navbar />
-          <main style={{ width: "100%" }}>{children}</main>
+          <main className="perch-main">{children}</main>
         </Providers>
       </body>
     </html>

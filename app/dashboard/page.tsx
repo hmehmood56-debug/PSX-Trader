@@ -171,14 +171,8 @@ export default function DashboardPage() {
 
   return (
     <div style={{ background: COLORS.bg }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 32 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-            gap: 16,
-          }}
-        >
+      <div className="perch-shell perch-shell-wide perch-psx-shell">
+        <div className="perch-dashboard-stats">
           <StatCard
             label="Portfolio Value"
             value={formatPKRWithSymbol(portfolioValue)}
@@ -201,14 +195,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 16,
-            marginTop: 16,
-          }}
-        >
+        <div className="perch-dashboard-two-col">
           <div style={cardStyle()}>
             <div style={labelStyle()}>Top Gainers</div>
             <div style={{ marginTop: 12 }}>
@@ -242,7 +229,7 @@ export default function DashboardPage() {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        maxWidth: 360,
+                        maxWidth: "min(360px, 100%)",
                       }}
                     >
                       {s.name}
@@ -296,7 +283,7 @@ export default function DashboardPage() {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        maxWidth: 360,
+                        maxWidth: "min(360px, 100%)",
                       }}
                     >
                       {s.name}

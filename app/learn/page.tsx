@@ -85,7 +85,7 @@ export default function LearnPage() {
 
   return (
     <div style={{ background: COLORS.bg }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 32 }}>
+      <div className="perch-shell perch-shell-wide perch-psx-shell">
         <section>
           <span
             style={{
@@ -106,9 +106,10 @@ export default function LearnPage() {
             style={{
               margin: "10px 0 0",
               color: COLORS.text,
-              fontSize: 34,
+              fontSize: "clamp(26px, 6vw, 34px)",
               fontWeight: 700,
               letterSpacing: "-0.02em",
+              lineHeight: 1.15,
             }}
           >
             Investor Education
@@ -127,14 +128,7 @@ export default function LearnPage() {
           </p>
         </section>
 
-        <section
-          style={{
-            marginTop: 20,
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 16,
-          }}
-        >
+        <section className="perch-learn-grid">
           {LESSONS.map((lesson) => {
             const open = openId === lesson.id;
             return (
@@ -169,10 +163,12 @@ export default function LearnPage() {
                     background: open ? COLORS.bgSecondary : COLORS.bg,
                     color: COLORS.orange,
                     borderRadius: 8,
-                    padding: "8px 12px",
-                    fontSize: 13,
+                    padding: "12px 14px",
+                    minHeight: 44,
+                    fontSize: 14,
                     fontWeight: 600,
                     cursor: "pointer",
+                    WebkitTapHighlightColor: "transparent",
                   }}
                 >
                   {open ? "Close Brief" : "Read Brief"}

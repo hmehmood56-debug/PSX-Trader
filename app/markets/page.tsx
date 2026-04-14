@@ -26,12 +26,30 @@ function MarketsCard({
         border: `1px solid ${palette.border}`,
         borderRadius: 18,
         background: "#FFFFFF",
-        padding: 28,
+        padding: "clamp(20px, 4vw, 28px)",
         boxShadow: palette.cardShadow,
       }}
     >
-      <h2 style={{ margin: 0, color: palette.text, fontSize: 28, fontWeight: 700 }}>{title}</h2>
-      <p style={{ marginTop: 12, color: palette.muted, fontSize: 16, lineHeight: "28px", maxWidth: 560 }}>
+      <h2
+        style={{
+          margin: 0,
+          color: palette.text,
+          fontSize: "clamp(20px, 4.5vw, 28px)",
+          fontWeight: 700,
+          lineHeight: 1.2,
+        }}
+      >
+        {title}
+      </h2>
+      <p
+        style={{
+          marginTop: 12,
+          color: palette.muted,
+          fontSize: 15,
+          lineHeight: 1.65,
+          maxWidth: 560,
+        }}
+      >
         {description}
       </p>
       <Link
@@ -40,10 +58,12 @@ function MarketsCard({
           marginTop: 20,
           display: "inline-flex",
           alignItems: "center",
+          justifyContent: "center",
           textDecoration: "none",
           borderRadius: 10,
-          padding: "10px 16px",
-          fontSize: 14,
+          minHeight: 48,
+          padding: "12px 18px",
+          fontSize: 15,
           fontWeight: 650,
           color: "#FFFFFF",
           background: palette.orange,
@@ -89,13 +109,16 @@ export default function MarketsHubPage() {
 
   return (
     <div style={{ background: palette.bg }}>
-      <div style={{ maxWidth: 1160, margin: "0 auto", padding: "36px 32px 72px" }}>
+      <div
+        className="perch-shell markets-hero"
+        style={{ paddingTop: "clamp(24px, 5vw, 36px)", paddingBottom: "clamp(48px, 10vw, 72px)" }}
+      >
         <section
           style={{
             border: `1px solid ${palette.border}`,
             borderRadius: 22,
             background: "linear-gradient(130deg, #FFF8F2 0%, #FFFFFF 100%)",
-            padding: "34px 30px",
+            padding: "clamp(22px, 4vw, 34px) clamp(18px, 4vw, 30px)",
           }}
         >
           <p
@@ -110,16 +133,24 @@ export default function MarketsHubPage() {
           >
             Perch Capital Markets
           </p>
-          <h1 style={{ margin: "10px 0 0", color: palette.text, fontSize: 44, lineHeight: 1.12, maxWidth: 760 }}>
+          <h1 style={{ margin: "10px 0 0", color: palette.text, lineHeight: 1.12, maxWidth: 760 }}>
             Choose your market module
           </h1>
-          <p style={{ marginTop: 14, color: palette.muted, fontSize: 17, lineHeight: "30px", maxWidth: 760 }}>
-            Perch Markets is organized into dedicated sections so each experience is either fully live
-            or intentionally staged for rollout.
+          <p
+            style={{
+              marginTop: 14,
+              color: palette.muted,
+              fontSize: 16,
+              lineHeight: 1.65,
+              maxWidth: 760,
+            }}
+          >
+            Perch Markets is organized into dedicated sections so each experience is either fully live or
+            intentionally staged for rollout.
           </p>
         </section>
 
-        <section style={{ marginTop: 22, display: "grid", gap: 16, gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
+        <section className="markets-hub-grid" style={{ marginTop: 22 }}>
           {sections.map((section) => (
             <MarketsCard
               key={section.title}

@@ -95,34 +95,41 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
 
   return (
     <div style={{ background: COLORS.bg }}>
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "28px 32px 36px" }}>
-        <div style={{ marginBottom: 24 }}>
+      <div
+        className="perch-shell perch-shell-stock"
+        style={{ paddingTop: "clamp(20px, 4vw, 28px)", paddingBottom: "clamp(28px, 6vw, 36px)" }}
+      >
+        <div style={{ marginBottom: 20 }}>
           <Link
             href="/markets/psx"
             style={{
               color: COLORS.muted,
               textDecoration: "none",
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 600,
               letterSpacing: "0.02em",
+              display: "inline-flex",
+              minHeight: 44,
+              alignItems: "center",
+              WebkitTapHighlightColor: "transparent",
             }}
           >
-            {"<- Back to simulated PSX"}
+            {"← Back to simulated PSX"}
           </Link>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) 360px",
-            gap: 28,
-            alignItems: "start",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div className="perch-stock-detail-grid">
+          <div className="perch-stock-detail-main" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <section>
               <div style={statLabelStyle()}>{base.sector}</div>
-              <h1 style={{ margin: "8px 0 0", fontSize: 32, fontWeight: 750, lineHeight: 1.12 }}>
+              <h1
+                style={{
+                  margin: "8px 0 0",
+                  fontSize: "clamp(22px, 5vw, 32px)",
+                  fontWeight: 750,
+                  lineHeight: 1.12,
+                }}
+              >
                 {base.name}
               </h1>
               <div
@@ -141,11 +148,8 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
             </section>
 
             <section
+              className="perch-stock-price-row"
               style={{
-                display: "grid",
-                gridTemplateColumns: "minmax(0, 1fr) auto",
-                gap: 24,
-                alignItems: "end",
                 paddingBottom: 8,
                 borderBottom: `1px solid ${COLORS.border}`,
               }}
@@ -153,9 +157,9 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               <div>
                 <div style={statLabelStyle()}>Last price</div>
                 <div
+                  className="perch-stock-price-big"
                   style={{
                     marginTop: 8,
-                    fontSize: 48,
                     lineHeight: 1,
                     fontWeight: 760,
                     color: COLORS.text,
@@ -166,21 +170,20 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   {formatPKRWithSymbol(price)}
                 </div>
               </div>
-              <div>
+              <div className="perch-stock-change-block">
                 <div
                   style={{
-                    fontSize: 20,
+                    fontSize: "clamp(17px, 4vw, 20px)",
                     fontWeight: 740,
                     color: up ? COLORS.gain : COLORS.loss,
                     fontVariantNumeric: "tabular-nums",
-                    textAlign: "right",
                   }}
                 >
                   {up ? "+" : ""}
                   {change.toFixed(2)} ({up ? "+" : ""}
                   {changePct.toFixed(2)}%)
                 </div>
-                <div style={{ fontSize: 12, color: COLORS.mutedSoft, marginTop: 4, textAlign: "right" }}>
+                <div style={{ fontSize: 12, color: COLORS.mutedSoft, marginTop: 4 }}>
                   vs. previous replay day
                 </div>
               </div>
@@ -190,15 +193,14 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               style={{
                 border: `1px solid ${COLORS.borderStrong}`,
                 borderRadius: 16,
-                padding: "18px 20px 12px",
+                padding: "clamp(14px, 3vw, 18px) clamp(14px, 3vw, 20px) 12px",
                 background: "#FFFFFF",
               }}
             >
               <div style={statLabelStyle()}>
                 Price replay
               </div>
-              <div style={{ width: "100%", height: 360, marginTop: 12 }}
-              >
+              <div className="perch-stock-chart-box" style={{ width: "100%", marginTop: 12 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={history}>
                     <XAxis
@@ -256,15 +258,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
             </section>
 
             <section>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  columnGap: 26,
-                  rowGap: 18,
-                  padding: "8px 2px 0",
-                }}
-              >
+              <div className="perch-stock-stats-grid">
                 <div>
                   <div style={statLabelStyle()}>52-week high</div>
                   <div
@@ -323,13 +317,12 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
           </div>
 
           <aside
+            className="perch-stock-order-aside"
             style={{
               border: `1px solid ${COLORS.borderStrong}`,
               borderRadius: 16,
               background: "#FFFFFF",
-              padding: 18,
-              position: "sticky",
-              top: 18,
+              padding: "clamp(16px, 4vw, 18px)",
             }}
           >
             <div style={{ ...statLabelStyle(), color: COLORS.muted }}>
@@ -358,13 +351,16 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 onClick={() => setMode("BUY")}
                 style={{
                   flex: 1,
-                  height: 36,
+                  minHeight: 44,
                   borderRadius: 8,
                   border: "none",
                   background: mode === "BUY" ? COLORS.orange : "transparent",
                   color: mode === "BUY" ? "#FFFFFF" : COLORS.muted,
                   fontWeight: 720,
                   letterSpacing: "0.01em",
+                  fontSize: 15,
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 Buy
@@ -374,13 +370,16 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 onClick={() => setMode("SELL")}
                 style={{
                   flex: 1,
-                  height: 36,
+                  minHeight: 44,
                   borderRadius: 8,
                   border: "none",
                   background: mode === "SELL" ? COLORS.loss : "transparent",
                   color: mode === "SELL" ? "#FFFFFF" : COLORS.muted,
                   fontWeight: 720,
                   letterSpacing: "0.01em",
+                  fontSize: 15,
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 Sell
@@ -398,11 +397,11 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 style={{
                   marginTop: 8,
                   width: "100%",
-                  height: 44,
+                  minHeight: 48,
                   borderRadius: 10,
                   border: `1px solid ${COLORS.border}`,
-                  padding: "0 14px",
-                  fontSize: 15,
+                  padding: "0 16px",
+                  fontSize: 16,
                   outline: "none",
                   color: COLORS.text,
                   fontFamily:
@@ -505,15 +504,17 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 style={{
                   marginTop: 16,
                   width: "100%",
-                  height: 46,
+                  minHeight: 50,
                   borderRadius: 12,
                   border: `1px solid ${COLORS.orange}`,
                   background: COLORS.orange,
                   color: "#FFFFFF",
                   fontWeight: 740,
-                  fontSize: 14,
+                  fontSize: 16,
                   letterSpacing: "0.02em",
                   boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 Buy {ticker}
@@ -525,14 +526,16 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 style={{
                   marginTop: 16,
                   width: "100%",
-                  height: 46,
+                  minHeight: 50,
                   borderRadius: 12,
                   border: `1px solid ${COLORS.loss}`,
                   background: "#FFFFFF",
                   color: COLORS.loss,
                   fontWeight: 740,
-                  fontSize: 14,
+                  fontSize: 16,
                   letterSpacing: "0.02em",
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 Sell {ticker}

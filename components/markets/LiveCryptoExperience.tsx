@@ -100,13 +100,16 @@ export function LiveCryptoExperience() {
 
   return (
     <div style={{ background: palette.bg }}>
-      <div style={{ maxWidth: 1160, margin: "0 auto", padding: "36px 32px 72px" }}>
+      <div
+        className="perch-shell"
+        style={{ paddingTop: "clamp(24px, 5vw, 36px)", paddingBottom: "clamp(48px, 10vw, 72px)" }}
+      >
         <section
           style={{
             border: `1px solid ${palette.border}`,
             borderRadius: 20,
             background: "#FFFFFF",
-            padding: "28px 26px",
+            padding: "clamp(20px, 4vw, 28px) clamp(18px, 4vw, 26px)",
           }}
         >
           <p
@@ -121,10 +124,17 @@ export function LiveCryptoExperience() {
           >
             Live Crypto
           </p>
-          <h1 style={{ margin: "10px 0 0", color: palette.text, fontSize: 40, lineHeight: 1.12 }}>
+          <h1
+            style={{
+              margin: "10px 0 0",
+              color: palette.text,
+              fontSize: "clamp(26px, 6vw, 40px)",
+              lineHeight: 1.12,
+            }}
+          >
             Live crypto markets
           </h1>
-          <p style={{ marginTop: 12, color: palette.muted, fontSize: 16, lineHeight: "28px", maxWidth: 760 }}>
+          <p style={{ marginTop: 12, color: palette.muted, fontSize: 15, lineHeight: 1.65, maxWidth: 760 }}>
             Browse major digital assets with live pricing, 24h movement, market cap, and volume.
             Data refreshes automatically every 30 seconds through the Perch live feed.
           </p>
@@ -141,12 +151,12 @@ export function LiveCryptoExperience() {
               aria-label="Search crypto by name or symbol"
               style={{
                 width: "100%",
-                maxWidth: 460,
-                height: 48,
+                maxWidth: 520,
+                minHeight: 48,
                 borderRadius: 12,
                 border: `1px solid ${palette.border}`,
-                padding: "0 14px",
-                fontSize: 15,
+                padding: "0 16px",
+                fontSize: 16,
                 outline: "none",
               }}
             />
@@ -155,15 +165,13 @@ export function LiveCryptoExperience() {
 
         {topMovers.length > 0 && (
           <section
+            className="perch-crypto-movers"
             style={{
               marginTop: 14,
               border: `1px solid ${palette.border}`,
               borderRadius: 14,
               padding: "12px 14px",
               background: "#FFFFFF",
-              display: "flex",
-              gap: 12,
-              overflowX: "auto",
             }}
           >
             {topMovers.map((coin) => (
@@ -174,12 +182,13 @@ export function LiveCryptoExperience() {
                   textDecoration: "none",
                   border: `1px solid ${palette.border}`,
                   borderRadius: 999,
-                  padding: "8px 10px",
+                  padding: "10px 14px",
                   display: "inline-flex",
                   gap: 8,
                   color: palette.text,
-                  fontSize: 12,
+                  fontSize: 13,
                   whiteSpace: "nowrap",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 <strong>{coin.symbol}</strong>
@@ -191,14 +200,7 @@ export function LiveCryptoExperience() {
           </section>
         )}
 
-        <section
-          style={{
-            marginTop: 18,
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 14,
-          }}
-        >
+        <section className="perch-crypto-grid" style={{ marginTop: 18 }}>
           {loading
             ? ["BTC", "ETH", "SOL", "BNB", "XRP", "ADA"].map((symbol) => (
                 <article
@@ -225,9 +227,11 @@ export function LiveCryptoExperience() {
                       border: `1px solid ${palette.border}`,
                       borderRadius: 14,
                       background: "#FFFFFF",
-                      padding: 20,
+                      padding: "clamp(16px, 4vw, 20px)",
                       color: palette.text,
                       boxShadow: "0 8px 22px rgba(23,23,23,0.05)",
+                      display: "block",
+                      WebkitTapHighlightColor: "transparent",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -236,8 +240,25 @@ export function LiveCryptoExperience() {
                         {coin.rank ? `#${coin.rank}` : "Rank N/A"}
                       </p>
                     </div>
-                    <h2 style={{ margin: "8px 0 0", color: palette.text, fontSize: 22, fontWeight: 700 }}>{coin.name}</h2>
-                    <p style={{ margin: "12px 0 0", color: palette.text, fontSize: 30, fontWeight: 700 }}>
+                    <h2
+                      style={{
+                        margin: "8px 0 0",
+                        color: palette.text,
+                        fontSize: "clamp(18px, 4vw, 22px)",
+                        fontWeight: 700,
+                        lineHeight: 1.25,
+                      }}
+                    >
+                      {coin.name}
+                    </h2>
+                    <p
+                      style={{
+                        margin: "12px 0 0",
+                        color: palette.text,
+                        fontSize: "clamp(22px, 5vw, 30px)",
+                        fontWeight: 700,
+                      }}
+                    >
                       {formatUsd(coin.price)}
                     </p>
                     <p

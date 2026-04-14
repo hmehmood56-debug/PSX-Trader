@@ -11,13 +11,16 @@ const palette = {
 export default function IndicesPage() {
   return (
     <div style={{ background: palette.bg }}>
-      <div style={{ maxWidth: 1160, margin: "0 auto", padding: "36px 32px 72px" }}>
+      <div
+        className="perch-shell"
+        style={{ paddingTop: "clamp(24px, 5vw, 36px)", paddingBottom: "clamp(48px, 10vw, 72px)" }}
+      >
         <section
           style={{
             border: `1px solid ${palette.border}`,
             borderRadius: 20,
             background: "#FFFFFF",
-            padding: "30px 28px",
+            padding: "clamp(20px, 4vw, 30px) clamp(18px, 4vw, 28px)",
           }}
         >
           <p
@@ -32,7 +35,14 @@ export default function IndicesPage() {
           >
             Global Indices
           </p>
-          <h1 style={{ margin: "10px 0 0", color: palette.text, fontSize: 40, lineHeight: 1.12 }}>
+          <h1
+            style={{
+              margin: "10px 0 0",
+              color: palette.text,
+              fontSize: "clamp(26px, 6vw, 40px)",
+              lineHeight: 1.12,
+            }}
+          >
             Global index tracking is coming soon
           </h1>
           <p style={{ marginTop: 12, color: palette.muted, fontSize: 16, lineHeight: "28px", maxWidth: 760 }}>

@@ -43,7 +43,15 @@ function SearchHero({
         boxShadow: "0 8px 24px rgba(196,80,0,0.08)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+          flexWrap: "wrap",
+        }}
+      >
         <div style={{ fontSize: 13, color: COLORS.muted, fontWeight: 600 }}>
           Replay date {replayDate || "N/A"}
         </div>
@@ -62,13 +70,21 @@ function SearchHero({
           {isPlaceholderData ? "Sample replay data" : "Simulated PSX"}
         </span>
       </div>
-      <h1 style={{ margin: "8px 0 0", fontSize: 30, color: COLORS.text, letterSpacing: "-0.02em" }}>
+      <h1
+        style={{
+          margin: "8px 0 0",
+          fontSize: "clamp(22px, 5vw, 30px)",
+          color: COLORS.text,
+          letterSpacing: "-0.02em",
+          lineHeight: 1.15,
+        }}
+      >
         Simulated PSX market board
       </h1>
       <p style={{ marginTop: 10, marginBottom: 0, color: COLORS.muted, fontSize: 14, lineHeight: "22px" }}>
         Practice trading Pakistan equities with virtual funds in a realistic paper-trading environment.
       </p>
-      <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 220px", gap: 12 }}>
+      <div className="perch-psx-search-grid" style={{ marginTop: 12 }}>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -143,13 +159,13 @@ function MarketTickerTape({
         Simulated PSX pulse
       </div>
       <div
+        className="perch-ticker-row"
         style={{
           borderTop: `1px solid ${COLORS.border}`,
           whiteSpace: "nowrap",
-          overflow: "hidden",
         }}
       >
-        <div className="tickerTrack">
+        <div className="perch-ticker-track">
           {tape.map((s, idx) => {
             const up = s.change >= 0;
             return (
@@ -158,7 +174,7 @@ function MarketTickerTape({
                 type="button"
                 onClick={() => onOpen(s.ticker)}
                 style={{
-                  height: 48,
+                  minHeight: 48,
                   padding: "0 14px",
                   border: "none",
                   background: "transparent",
@@ -167,6 +183,7 @@ function MarketTickerTape({
                   alignItems: "center",
                   gap: 8,
                   borderRight: `1px solid ${COLORS.border}`,
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 <span style={{ color: COLORS.orange, fontWeight: 700 }}>{s.ticker}</span>
@@ -205,18 +222,19 @@ function StockSection({
 }) {
   return (
     <section style={{ marginTop: 22 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <h2 style={{ margin: 0, fontSize: 20, color: COLORS.text }}>{title}</h2>
-        <span style={{ fontSize: 12, color: COLORS.muted }}>{subtitle}</span>
-      </div>
       <div
         style={{
-          marginTop: 12,
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: 12,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          gap: 10,
+          flexWrap: "wrap",
         }}
       >
+        <h2 style={{ margin: 0, fontSize: "clamp(17px, 3.8vw, 20px)", color: COLORS.text }}>{title}</h2>
+        <span style={{ fontSize: 12, color: COLORS.muted }}>{subtitle}</span>
+      </div>
+      <div className="perch-stock-card-grid" style={{ marginTop: 12 }}>
         {stocks.map((stock) => (
           <StockCard key={stock.ticker} stock={stock} onOpen={onOpen} />
         ))}
@@ -243,8 +261,9 @@ function StockCard({
         borderRadius: 14,
         background: "#FFFFFF",
         cursor: "pointer",
-        padding: 14,
+        padding: "clamp(14px, 3vw, 16px)",
         boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+        WebkitTapHighlightColor: "transparent",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -333,7 +352,7 @@ export function SimulatedPsxExperience() {
 
   return (
     <div style={{ background: COLORS.bg }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 32 }}>
+      <div className="perch-shell perch-shell-wide perch-psx-shell">
         <SearchHero
           q={q}
           setQ={setQ}
@@ -376,24 +395,6 @@ export function SimulatedPsxExperience() {
           </>
         )}
       </div>
-      <style jsx>{`
-        .tickerTrack {
-          display: inline-flex;
-          min-width: 100%;
-          animation: tickerScroll 36s linear infinite;
-        }
-        .tickerTrack:hover {
-          animation-play-state: paused;
-        }
-        @keyframes tickerScroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-      `}</style>
     </div>
   );
 }

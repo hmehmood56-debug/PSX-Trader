@@ -1,5 +1,447 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background: #FFFFFF; color: #1A1A1A; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background: #FFFFFF;
+  color: #1A1A1A;
+  overflow-x: clip;
+}
+
+.perch-main {
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+/* Shared page shell: responsive horizontal padding, no horizontal overflow */
+.perch-shell {
+  width: 100%;
+  max-width: 1160px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(16px, 4vw, 32px);
+  padding-right: clamp(16px, 4vw, 32px);
+}
+
+.perch-shell-wide {
+  max-width: 1200px;
+}
+
+.perch-shell-stock {
+  max-width: 1240px;
+}
+
+.perch-shell-account {
+  max-width: 1180px;
+}
+
+/* Landing */
+.landing-hero {
+  padding: clamp(36px, 8vw, 72px) 0 clamp(40px, 6vw, 64px);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(24px, 5vw, 40px);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .landing-hero {
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+}
+
+.landing-hero h1 {
+  font-size: clamp(28px, 7vw, 56px);
+  max-width: 100%;
+  text-wrap: balance;
+}
+
+.landing-hero-eyebrow {
+  font-size: clamp(11px, 2.8vw, 13px);
+}
+
+.landing-hero-lead {
+  font-size: clamp(15px, 3.6vw, 18px);
+}
+
+.landing-cta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+
+@media (min-width: 520px) {
+  .landing-cta-row {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+}
+
+.landing-cta-row a {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 14px 22px;
+  font-size: 16px;
+}
+
+@media (min-width: 520px) {
+  .landing-cta-row a {
+    min-height: unset;
+    padding: 13px 22px;
+    font-size: 15px;
+    width: auto;
+  }
+}
+
+.landing-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 768px) {
+  .landing-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.landing-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .landing-preview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.landing-preview-panel {
+  border-right: none;
+  border-bottom: 1px solid #ece8e4;
+  padding: clamp(18px, 4vw, 24px);
+}
+
+.landing-preview-panel:last-child {
+  border-bottom: none;
+}
+
+@media (min-width: 768px) {
+  .landing-preview-panel {
+    border-bottom: none;
+    border-right: 1px solid #ece8e4;
+    padding: 24px;
+  }
+  .landing-preview-panel-last {
+    border-right: none;
+  }
+}
+
+.landing-section-title h2 {
+  font-size: clamp(26px, 6vw, 36px);
+}
+
+.landing-bottom-cta h2 {
+  font-size: clamp(24px, 6vw, 36px);
+}
+
+/* Markets hub */
+.markets-hub-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .markets-hub-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.markets-hero h1 {
+  font-size: clamp(26px, 6vw, 44px);
+}
+
+/* Simulated PSX */
+.perch-psx-search-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .perch-psx-search-grid {
+    grid-template-columns: 1fr 220px;
+  }
+}
+
+.perch-psx-shell {
+  padding: clamp(16px, 4vw, 32px);
+}
+
+.perch-stock-card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 380px) {
+  .perch-stock-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (min-width: 640px) {
+  .perch-stock-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+.perch-ticker-row {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.perch-ticker-track {
+  display: inline-flex;
+  min-width: 100%;
+  animation: perchTickerScroll 36s linear infinite;
+}
+
+.perch-ticker-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes perchTickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Live crypto */
+.perch-crypto-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .perch-crypto-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.perch-crypto-movers {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+  max-width: 100%;
+}
+
+.perch-crypto-movers a {
+  flex-shrink: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Crypto detail stats */
+.perch-crypto-detail-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 480px) {
+  .perch-crypto-detail-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .perch-crypto-detail-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.perch-crypto-chart-wrap {
+  height: min(360px, 52vh);
+  min-height: 240px;
+}
+
+/* Stock detail */
+.perch-stock-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .perch-stock-detail-grid {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 28px;
+  }
+}
+
+.perch-stock-order-aside {
+  position: static;
+}
+
+@media (min-width: 960px) {
+  .perch-stock-order-aside {
+    position: sticky;
+    top: 18px;
+  }
+}
+
+.perch-stock-detail-main {
+  min-width: 0;
+}
+
+.perch-stock-price-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 520px) {
+  .perch-stock-price-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 24px;
+  }
+}
+
+.perch-stock-price-big {
+  font-size: clamp(32px, 9vw, 48px);
+}
+
+.perch-stock-change-block {
+  text-align: left;
+}
+
+@media (min-width: 520px) {
+  .perch-stock-change-block {
+    text-align: right;
+  }
+}
+
+.perch-stock-chart-box {
+  width: 100%;
+  height: min(360px, 50vh);
+  min-height: 240px;
+}
+
+.perch-stock-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 18px;
+  column-gap: 26px;
+  padding: 8px 2px 0;
+}
+
+@media (min-width: 480px) {
+  .perch-stock-stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Account */
+.perch-account-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .perch-account-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.perch-account-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .perch-account-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.perch-dashboard-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 520px) {
+  .perch-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .perch-dashboard-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+.perch-dashboard-two-col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (min-width: 768px) {
+  .perch-dashboard-two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.perch-learn-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+@media (min-width: 700px) {
+  .perch-learn-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.perch-account-method-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 480px) {
+  .perch-account-method-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 :root {
   --orange: #C45000;
