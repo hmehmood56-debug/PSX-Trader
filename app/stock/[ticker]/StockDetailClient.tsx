@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, type CSSProperties } from "react";
 import {
   Line,
@@ -16,7 +16,7 @@ import { useLivePrices } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { buyStock, sellStock } from "@/lib/portfolioStore";
 import { usePortfolioState } from "@/hooks/usePortfolioState";
-import { getTransactionHistory } from "@/lib/portfolioStore";
+import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 
 type Point = { date: string; price: number; volume: number };
 
@@ -56,6 +56,7 @@ function statLabelStyle(): CSSProperties {
 export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const ticker = base.ticker;
   const { getQuote, getHistory, currentDate, isPlaceholderData } = useLivePrices();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const quote = getQuote(ticker);
   const price = quote?.price ?? base.price;
@@ -68,7 +69,12 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const [mode, setMode] = useState<"BUY" | "SELL">("BUY");
   const [sharesInput, setSharesInput] = useState("10");
   const [message, setMessage] = useState<string | null>(null);
-  const [onboardingSuccess, setOnboardingSuccess] = useState(false);
+  const [standardSuccess, setStandardSuccess] = useState<{
+    shares: number;
+    total: number;
+    side: "BUY" | "SELL";
+    timestampLabel: string;
+  } | null>(null);
 
   const shares = Math.max(0, Math.floor(Number(sharesInput) || 0));
   const est = shares * price;
@@ -85,7 +91,6 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
       return;
     }
     const onboarding = searchParams.get("onboarding") === "1";
-    const txCountBefore = onboarding ? getTransactionHistory().length : 0;
     const res =
       mode === "BUY"
         ? buyStock(ticker, shares, price)
@@ -94,14 +99,54 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
       setMessage(res.error);
       return;
     }
-    if (onboarding && mode === "BUY" && txCountBefore === 0) {
-      setOnboardingSuccess(true);
+    if (onboarding && mode === "BUY") {
+      const params = new URLSearchParams({
+        tradeComplete: "1",
+        ticker,
+        invested: `${Math.round(est)}`,
+        shares: `${shares}`,
+      });
+      router.push(`/start?${params.toString()}`);
       return;
     }
-    setMessage(`${mode === "BUY" ? "Bought" : "Sold"} ${shares} shares.`);
+    setStandardSuccess({
+      shares,
+      total: est,
+      side: mode,
+      timestampLabel: new Date().toLocaleString("en-PK", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+    });
   }
 
   const up = change >= 0;
+  if (standardSuccess) {
+    return (
+      <div style={{ background: COLORS.bg }}>
+        <div
+          className="perch-shell perch-shell-stock"
+          style={{ paddingTop: "clamp(20px, 4vw, 28px)", paddingBottom: "clamp(28px, 6vw, 36px)" }}
+        >
+          <TradeSuccessScreen
+            variant="standard"
+            ticker={ticker}
+            companyName={base.name}
+            investedAmount={standardSuccess.total}
+            shares={standardSuccess.shares}
+            side={standardSuccess.side}
+            timestampLabel={standardSuccess.timestampLabel}
+            onPrimary={() => router.push("/dashboard")}
+            onSecondary={() => router.push("/markets/psx")}
+            onAutoRedirect={() => router.push("/dashboard")}
+            autoRedirectMs={2500}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: COLORS.bg }}>
@@ -507,119 +552,52 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               </div>
             )}
 
-            {onboardingSuccess && (
-              <div
-                style={{
-                  marginTop: 14,
-                  border: "1px solid #CFE6DB",
-                  background: "#F4FBF7",
-                  borderRadius: 12,
-                  padding: 14,
-                }}
-                role="status"
-              >
-                <div style={{ fontWeight: 760, color: COLORS.gain, fontSize: 15 }}>
-                  Success — your first practice buy is complete
-                </div>
-                <div style={{ marginTop: 8, color: COLORS.muted, fontSize: 14, lineHeight: 1.55 }}>
-                  You now own this position in your virtual portfolio. You can view your holdings and track progress from
-                  the dashboard.
-                </div>
-                <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
-                  <Link
-                    href="/dashboard"
+            {mode === "BUY"
+              ? (
+                  <button
+                    type="button"
+                    onClick={onConfirm}
                     style={{
-                      textDecoration: "none",
+                      marginTop: 16,
                       width: "100%",
-                      minHeight: 48,
+                      minHeight: 50,
                       borderRadius: 12,
                       border: `1px solid ${COLORS.orange}`,
                       background: COLORS.orange,
                       color: "#FFFFFF",
-                      fontWeight: 760,
+                      fontWeight: 740,
                       fontSize: 16,
                       letterSpacing: "0.02em",
                       boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      cursor: "pointer",
                       WebkitTapHighlightColor: "transparent",
                     }}
                   >
-                    Go to Dashboard
-                  </Link>
-                  <Link
-                    href="/markets"
+                    Buy {ticker}
+                  </button>
+                )
+              : (
+                  <button
+                    type="button"
+                    onClick={onConfirm}
                     style={{
-                      textDecoration: "none",
+                      marginTop: 16,
                       width: "100%",
-                      minHeight: 48,
+                      minHeight: 50,
                       borderRadius: 12,
-                      border: `1px solid ${COLORS.border}`,
+                      border: `1px solid ${COLORS.loss}`,
                       background: "#FFFFFF",
-                      color: COLORS.text,
-                      fontWeight: 720,
-                      fontSize: 15,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      color: COLORS.loss,
+                      fontWeight: 740,
+                      fontSize: 16,
+                      letterSpacing: "0.02em",
+                      cursor: "pointer",
                       WebkitTapHighlightColor: "transparent",
                     }}
                   >
-                    Explore more markets
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {onboardingSuccess
-              ? null
-              : mode === "BUY"
-                ? (
-                    <button
-                      type="button"
-                      onClick={onConfirm}
-                      style={{
-                        marginTop: 16,
-                        width: "100%",
-                        minHeight: 50,
-                        borderRadius: 12,
-                        border: `1px solid ${COLORS.orange}`,
-                        background: COLORS.orange,
-                        color: "#FFFFFF",
-                        fontWeight: 740,
-                        fontSize: 16,
-                        letterSpacing: "0.02em",
-                        boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
-                        cursor: "pointer",
-                        WebkitTapHighlightColor: "transparent",
-                      }}
-                    >
-                      Buy {ticker}
-                    </button>
-                  )
-                : (
-                    <button
-                      type="button"
-                      onClick={onConfirm}
-                      style={{
-                        marginTop: 16,
-                        width: "100%",
-                        minHeight: 50,
-                        borderRadius: 12,
-                        border: `1px solid ${COLORS.loss}`,
-                        background: "#FFFFFF",
-                        color: COLORS.loss,
-                        fontWeight: 740,
-                        fontSize: 16,
-                        letterSpacing: "0.02em",
-                        cursor: "pointer",
-                        WebkitTapHighlightColor: "transparent",
-                      }}
-                    >
-                      Sell {ticker}
-                    </button>
-                  )}
+                    Sell {ticker}
+                  </button>
+                )}
           </aside>
         </div>
       </div>

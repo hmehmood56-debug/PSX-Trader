@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { getStockByTicker } from "@/lib/mockData";
 import { formatPKRWithSymbol } from "@/lib/format";
@@ -13,13 +13,20 @@ import {
   type GoalId,
   type StarterTicker,
 } from "@/lib/onboardingConstants";
+import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 import styles from "./GuidedOnboarding.module.css";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 export function GuidedOnboarding() {
   const router = useRouter();
-  const [step, setStep] = useState(0);
+  const searchParams = useSearchParams();
+  const tradeComplete = searchParams.get("tradeComplete") === "1";
+  const tradeTickerParam = searchParams.get("ticker");
+  const tradeSharesParam = Number(searchParams.get("shares"));
+  const tradeInvestedParam = Number(searchParams.get("invested"));
+
+  const [step, setStep] = useState(tradeComplete ? TOTAL_STEPS - 1 : 0);
   const [goalId, setGoalId] = useState<GoalId | null>(null);
   const [amount, setAmount] = useState<number | null>(null);
   const [ticker, setTicker] = useState<StarterTicker | null>(null);
@@ -30,6 +37,11 @@ export function GuidedOnboarding() {
   }, [goalId]);
 
   const stock = ticker ? getStockByTicker(ticker) : undefined;
+  const successTicker = tradeTickerParam ?? ticker;
+  const successStock = successTicker ? getStockByTicker(successTicker) : undefined;
+  const successShares = Number.isFinite(tradeSharesParam) && tradeSharesParam > 0 ? Math.floor(tradeSharesParam) : null;
+  const successInvested =
+    Number.isFinite(tradeInvestedParam) && tradeInvestedParam > 0 ? tradeInvestedParam : amount;
 
   const progressPct = ((step + 1) / TOTAL_STEPS) * 100;
 
@@ -40,6 +52,14 @@ export function GuidedOnboarding() {
   function goEnterApp() {
     if (!ticker) return;
     router.push(`/stock/${ticker}?onboarding=1`);
+  }
+
+  function goToDashboard() {
+    router.push("/dashboard");
+  }
+
+  function goToMarkets() {
+    router.push("/markets/psx");
   }
 
   return (
@@ -209,6 +229,18 @@ export function GuidedOnboarding() {
                 </button>
               </div>
             </>
+          )}
+
+          {step === 6 && tradeComplete && (
+            <TradeSuccessScreen
+              variant="firstTrade"
+              ticker={successTicker}
+              companyName={successStock?.name}
+              investedAmount={successInvested}
+              shares={successShares}
+              onPrimary={goToDashboard}
+              onSecondary={goToMarkets}
+            />
           )}
         </div>
       </div>
