@@ -56,9 +56,9 @@ export function GuidedOnboarding() {
     router.push(`/stock/${ticker}?onboarding=1`);
   }
 
-  function goToDashboard() {
+  function goToSignupAfterOnboarding() {
     startRouteProgress();
-    router.push("/dashboard");
+    router.push("/signup?from=onboarding");
   }
 
   function goToMarkets() {
@@ -242,7 +242,8 @@ export function GuidedOnboarding() {
               companyName={successStock?.name}
               investedAmount={successInvested}
               shares={successShares}
-              onPrimary={goToDashboard}
+              primaryCta="Create account to save progress"
+              onPrimary={goToSignupAfterOnboarding}
               onSecondary={goToMarkets}
             />
           )}

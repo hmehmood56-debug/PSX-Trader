@@ -12,10 +12,8 @@ import {
 } from "recharts";
 import { useLivePrices } from "@/lib/priceSimulator";
 import { getStockByTicker } from "@/lib/mockData";
-import { getTransactionHistory, type Transaction } from "@/lib/portfolioStore";
 import { formatPKRWithSymbol } from "@/lib/format";
-import { usePortfolioState } from "@/hooks/usePortfolioState";
-import { useEffect, useState } from "react";
+import { usePortfolio } from "@/hooks/usePortfolioState";
 
 const PIE_COLORS = [
   "#C45000",
@@ -32,16 +30,8 @@ const card =
   "rounded-lg border border-fintech-border bg-white p-4 shadow-card";
 
 export default function PortfolioPage() {
-  const portfolio = usePortfolioState();
+  const { portfolio, transactions: txs } = usePortfolio();
   const { getQuote } = useLivePrices();
-  const [txs, setTxs] = useState<Transaction[]>([]);
-
-  useEffect(() => {
-    setTxs(getTransactionHistory());
-    const onUp = () => setTxs(getTransactionHistory());
-    window.addEventListener("psx-portfolio-updated", onUp);
-    return () => window.removeEventListener("psx-portfolio-updated", onUp);
-  }, []);
 
   const rows = useMemo(() => {
     return portfolio.holdings.map((h) => {

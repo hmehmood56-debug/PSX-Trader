@@ -13,7 +13,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { Transaction } from "@/lib/portfolioStore";
+import type { Transaction } from "@/lib/portfolioTypes";
 import { formatPKRWithSymbol } from "@/lib/format";
 
 type HoldingRow = {

@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useMemo, useState } from "react";
 import { formatPKRWithSymbol } from "@/lib/format";
-import {
-  depositVirtualFunds,
-  getAccountActivity,
-  type AccountActivity,
-  withdrawVirtualFunds,
-} from "@/lib/portfolioStore";
-import { usePortfolioState } from "@/hooks/usePortfolioState";
+import { usePortfolio } from "@/hooks/usePortfolioState";
+import { useRouter } from "next/navigation";
 
 type Method = {
   id: "jazzcash" | "easypaisa" | "bank-transfer" | "card";
@@ -52,8 +48,14 @@ function relativeTimeLabel(timestamp: string): string {
 }
 
 export default function AccountPage() {
-  const portfolio = usePortfolioState();
-  const [activity, setActivity] = useState<AccountActivity[]>([]);
+  const router = useRouter();
+  const { user, signOut } = useAuth();
+  const {
+    portfolio,
+    accountActivity: activity,
+    depositVirtualFunds,
+    withdrawVirtualFunds,
+  } = usePortfolio();
   const [depositMethod, setDepositMethod] = useState<Method["id"]>(METHODS[0].id);
   const [withdrawMethod, setWithdrawMethod] = useState<Method["id"]>("bank-transfer");
   const [depositAmountInput, setDepositAmountInput] = useState("");
@@ -62,13 +64,6 @@ export default function AccountPage() {
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
   const [depositSuccess, setDepositSuccess] = useState<string | null>(null);
   const [withdrawSuccess, setWithdrawSuccess] = useState<string | null>(null);
-
-  useEffect(() => {
-    const refresh = () => setActivity(getAccountActivity());
-    refresh();
-    window.addEventListener("psx-portfolio-updated", refresh);
-    return () => window.removeEventListener("psx-portfolio-updated", refresh);
-  }, []);
 
   const depositAmount = parseAmount(depositAmountInput);
   const withdrawAmount = parseAmount(withdrawAmountInput);
@@ -89,7 +84,7 @@ export default function AccountPage() {
     [withdrawMethodMeta, withdrawAmount]
   );
 
-  function handleDeposit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleDeposit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setDepositError(null);
     setDepositSuccess(null);
@@ -103,7 +98,7 @@ export default function AccountPage() {
       return;
     }
 
-    const result = depositVirtualFunds(depositAmount, depositMethodMeta.label);
+    const result = await depositVirtualFunds(depositAmount, depositMethodMeta.label);
     if (!result.ok) {
       setDepositError(result.error);
       return;
@@ -117,7 +112,7 @@ export default function AccountPage() {
     setDepositAmountInput("");
   }
 
-  function handleWithdraw(e: React.FormEvent<HTMLFormElement>) {
+  async function handleWithdraw(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setWithdrawError(null);
     setWithdrawSuccess(null);
@@ -131,7 +126,7 @@ export default function AccountPage() {
       return;
     }
 
-    const result = withdrawVirtualFunds(withdrawAmount, withdrawMethodMeta.label);
+    const result = await withdrawVirtualFunds(withdrawAmount, withdrawMethodMeta.label);
     if (!result.ok) {
       setWithdrawError(result.error);
       return;
@@ -174,6 +169,44 @@ export default function AccountPage() {
             Manage your virtual brokerage wallet with local, simulation-only funding
             and withdrawal flows tailored for Pakistan investors.
           </p>
+
+          {user && (
+            <div
+              style={{
+                marginTop: 16,
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 12,
+                alignItems: "center",
+              }}
+            >
+              <span style={{ fontSize: 14, color: COLORS.muted }}>
+                Signed in as{" "}
+                <strong style={{ color: COLORS.text }}>
+                  {(user.user_metadata?.username as string | undefined) ?? user.email ?? "Perch user"}
+                </strong>
+              </span>
+              <button
+                type="button"
+                onClick={async () => {
+                  await signOut();
+                  router.refresh();
+                }}
+                style={{
+                  borderRadius: 8,
+                  border: `1px solid ${COLORS.border}`,
+                  background: COLORS.bg,
+                  padding: "8px 14px",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  color: COLORS.text,
+                }}
+              >
+                Sign out
+              </button>
+            </div>
+          )}
 
           <div className="perch-account-metrics" style={{ marginTop: 20 }}>
             <MetricCard label="Current Cash Balance" value={formatPKRWithSymbol(portfolio.cash)} />

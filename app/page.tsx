@@ -55,6 +55,12 @@ export default function LandingPage() {
                 Explore Markets
               </Link>
             </div>
+            <p className="home-start-lead" style={{ marginTop: 16, maxWidth: 420, fontSize: 15 }}>
+              Returning user?{" "}
+              <Link href="/signin" style={{ color: palette.orange, fontWeight: 600 }}>
+                Sign in
+              </Link>
+            </p>
           </div>
           <div className="home-market-panel" aria-label="Market snapshot panel">
             <div className="home-market-head">

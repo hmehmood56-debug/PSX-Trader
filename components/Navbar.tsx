@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
 import styles from "./Navbar.module.css";
 import { PerchWordmark } from "./PerchWordmark";
 
@@ -16,6 +17,7 @@ const links = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const { user, loading: authLoading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -71,6 +73,11 @@ export function Navbar() {
         </nav>
 
         <div className={styles.desktopCtas}>
+          {!authLoading && !user && (
+            <Link href="/signin" className={styles.ctaSecondary}>
+              Sign in
+            </Link>
+          )}
           <Link href="/markets" className={styles.ctaSecondary}>
             Explore Markets
           </Link>
@@ -131,6 +138,11 @@ export function Navbar() {
           })}
         </nav>
         <div className={styles.mobileCtas}>
+          {!authLoading && !user && (
+            <Link href="/signin" className={styles.mobileCtaSecondary} onClick={closeMenu}>
+              Sign in
+            </Link>
+          )}
           <Link href="/markets" className={styles.mobileCtaSecondary} onClick={closeMenu}>
             Explore Markets
           </Link>

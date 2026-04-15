@@ -3,12 +3,8 @@
 import Link from "next/link";
 import { useLivePrices } from "@/lib/priceSimulator";
 import { getStockByTicker } from "@/lib/mockData";
-import {
-  getTransactionHistory,
-  type Transaction,
-} from "@/lib/portfolioStore";
 import { formatPKRWithSymbol } from "@/lib/format";
-import { usePortfolioState } from "@/hooks/usePortfolioState";
+import { usePortfolio } from "@/hooks/usePortfolioState";
 import { useMemo, useState, useEffect, type CSSProperties } from "react";
 import { PortfolioSections } from "@/components/dashboard/PortfolioSections";
 import { PerchWordmark } from "@/components/PerchWordmark";
@@ -54,18 +50,10 @@ function labelStyle(): CSSProperties {
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
-  const portfolio = usePortfolioState();
+  const { portfolio, transactions: txs, portfolioReady } = usePortfolio();
   const { getQuote, getMarketSnapshot } = useLivePrices();
-  const [txs, setTxs] = useState<Transaction[]>([]);
 
   useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    setTxs(getTransactionHistory());
-    const onUp = () => setTxs(getTransactionHistory());
-    window.addEventListener("psx-portfolio-updated", onUp);
-    return () => window.removeEventListener("psx-portfolio-updated", onUp);
-  }, []);
 
   const holdingsValue = useMemo(() => {
     let v = 0;
@@ -162,7 +150,7 @@ export default function DashboardPage() {
     return smoothed;
   }, [txs, unrealizedPnl]);
 
-  if (!mounted) return null;
+  if (!mounted || !portfolioReady) return null;
 
   return (
     <div style={{ background: COLORS.bg }}>

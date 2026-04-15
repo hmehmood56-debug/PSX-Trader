@@ -19,6 +19,8 @@ type TradeSuccessScreenProps = {
   onSecondary: () => void;
   onAutoRedirect?: () => void;
   autoRedirectMs?: number;
+  /** When set, replaces the default primary button label for this variant. */
+  primaryCta?: string;
 };
 
 type SummaryRow = { label: string; value: string };
@@ -73,6 +75,7 @@ export function TradeSuccessScreen({
   onSecondary,
   onAutoRedirect,
   autoRedirectMs = 2500,
+  primaryCta: primaryCtaOverride,
 }: TradeSuccessScreenProps) {
   useEffect(() => {
     if (variant !== "standard" || !onAutoRedirect) return;
@@ -123,7 +126,9 @@ export function TradeSuccessScreen({
       ? "Great job. You just made your first practice investment using virtual money, so you can learn how investing works without risking real cash."
       : "Your order was successfully completed.";
   const subtext = variant === "firstTrade" ? "You are officially building your portfolio." : null;
-  const primaryCta = variant === "firstTrade" ? "Go to Dashboard" : "View Portfolio";
+  const primaryCta =
+    primaryCtaOverride ??
+    (variant === "firstTrade" ? "Go to Dashboard" : "View Portfolio");
   const secondaryCta = variant === "firstTrade" ? "Explore More Stocks" : "Continue Browsing";
 
   return (

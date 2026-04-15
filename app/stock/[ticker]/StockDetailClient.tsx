@@ -15,8 +15,7 @@ import {
 import type { Stock } from "@/lib/mockData";
 import { useLivePrices } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
-import { buyStock, sellStock } from "@/lib/portfolioStore";
-import { usePortfolioState } from "@/hooks/usePortfolioState";
+import { usePortfolio } from "@/hooks/usePortfolioState";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 import { getReplayDatasetByTicker } from "@/lib/replayDataset";
 import { startRouteProgress } from "@/lib/routeProgress";
@@ -143,7 +142,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const volume = quote?.volume ?? base.volume;
   const history = getHistory(ticker) as Point[];
 
-  const portfolio = usePortfolioState();
+  const { portfolio, buyStock, sellStock } = usePortfolio();
   const [mode, setMode] = useState<"BUY" | "SELL">("BUY");
   const [sharesInput, setSharesInput] = useState("10");
   const [message, setMessage] = useState<string | null>(null);
@@ -186,8 +185,8 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     await new Promise((resolve) => window.setTimeout(resolve, delayMs));
     const res =
       mode === "BUY"
-        ? buyStock(ticker, shares, estimatedExecutionPrice)
-        : sellStock(ticker, shares, estimatedExecutionPrice);
+        ? await buyStock(ticker, shares, estimatedExecutionPrice)
+        : await sellStock(ticker, shares, estimatedExecutionPrice);
     setIsSubmitting(false);
     if (!res.ok) {
       setMessage(res.error);
