@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { revalidatePath } from "next/cache";
 import type { CSSProperties, ReactNode } from "react";
+import { toggleFeatureFlagAction } from "@/app/admin/actions";
 
 type SignupRow = {
   id: string;
@@ -114,24 +114,6 @@ function getFlagLabel(flag: FeatureFlagRow): string {
   return "Feature Flag";
 }
 
-export async function toggleFeatureFlagAction(formData: FormData) {
-  "use server";
-  const field = String(formData.get("field") ?? "");
-  const value = String(formData.get("value") ?? "");
-  const enabledField = String(formData.get("enabled_field") ?? "");
-  const currentEnabled = String(formData.get("current_enabled") ?? "") === "true";
-
-  if (!field || !value || !enabledField) return;
-
-  const supabase = createClient();
-  await supabase
-    .from("feature_flags")
-    .update({ [enabledField]: !currentEnabled })
-    .eq(field, value);
-
-  revalidatePath("/admin");
-}
-
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const supabase = createClient();
   const selectedRange = toTimeRange(searchParams?.range);
@@ -240,7 +222,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const funnelFirstTrade = countEventAliases(groupedEvents, FUNNEL_EVENT_ALIASES.firstTrade);
   const funnelReturnVisits = countEventAliases(groupedEvents, FUNNEL_EVENT_ALIASES.returnVisits);
 
-  const topEvents = [...groupedEvents.entries()]
+  const topEvents = Array.from(groupedEvents.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
 
