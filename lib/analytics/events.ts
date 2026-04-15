@@ -1,0 +1,16 @@
+export type AnalyticsEventName =
+  | "landing_view"
+  | "onboarding_started"
+  | "onboarding_completed"
+  | "signup_completed"
+  | "login_completed"
+  | "session_started"
+  | "return_visit"
+  | "dashboard_viewed"
+  | "stock_viewed"
+  | "trade_ticket_opened"
+  | "trade_executed"
+  | "deposit_virtual_funds"
+  | "withdraw_virtual_funds";
+
+export type AnalyticsMetadata = Record<string, unknown>;

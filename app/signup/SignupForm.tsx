@@ -17,6 +17,7 @@ import {
 } from "@/lib/perchAuthEmail";
 import { getGuestPortfolioBundle } from "@/lib/portfolioStore";
 import { createClient } from "@/utils/supabase/client";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -88,6 +89,11 @@ export function SignupForm() {
       }
 
       await refreshPortfolio();
+      void logAnalyticsEvent("signup_completed", {
+        route: "/signup",
+        username: slug,
+        onboarding_completed: fromOnboarding,
+      });
       router.push("/dashboard");
       router.refresh();
     } finally {

@@ -10,6 +10,7 @@ import {
   validateUsernameFormat,
 } from "@/lib/perchAuthEmail";
 import { createClient } from "@/utils/supabase/client";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -53,6 +54,10 @@ export default function SignInPage() {
       }
 
       await refreshPortfolio();
+      void logAnalyticsEvent("login_completed", {
+        route: "/signin",
+        username,
+      });
       router.push("/dashboard");
       router.refresh();
     } finally {

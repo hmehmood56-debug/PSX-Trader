@@ -23,6 +23,7 @@ import {
   sellStock as guestSellStock,
   withdrawVirtualFunds as guestWithdraw,
 } from "@/lib/portfolioStore";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
 import {
   createContext,
   useCallback,
@@ -53,6 +54,17 @@ const PortfolioContext = createContext<PortfolioContextValue | null>(null);
 
 function defaultPortfolio(): Portfolio {
   return { cash: 1_000_000, holdings: [] };
+}
+
+function estimatePortfolioValue(
+  bundle: PortfolioBundle,
+  tradedTicker: string,
+  tradedPrice: number
+): number {
+  return bundle.portfolio.holdings.reduce((sum, holding) => {
+    const px = holding.ticker === tradedTicker ? tradedPrice : holding.avgBuyPrice;
+    return sum + holding.shares * px;
+  }, bundle.portfolio.cash);
 }
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
@@ -107,13 +119,35 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           applyBundle(res.bundle);
           window.dispatchEvent(new Event(PORTFOLIO_EVENT));
+          void logAnalyticsEvent("trade_executed", {
+            route: `/stock/${ticker}`,
+            ticker,
+            side: "BUY",
+            quantity: shares,
+            price,
+            estimated_price: price,
+            cash_balance_after_trade: res.bundle.portfolio.cash,
+            portfolio_value_after_trade: estimatePortfolioValue(res.bundle, ticker, price),
+            username: user.user_metadata?.username as string | undefined,
+          });
           return { ok: true };
         }
         return { ok: false, error: res.error };
       }
       const out = guestBuyStock(ticker, shares, price);
       if (out.ok) {
-        applyBundle(getGuestPortfolioBundle());
+        const nextBundle = getGuestPortfolioBundle();
+        applyBundle(nextBundle);
+        void logAnalyticsEvent("trade_executed", {
+          route: `/stock/${ticker}`,
+          ticker,
+          side: "BUY",
+          quantity: shares,
+          price,
+          estimated_price: price,
+          cash_balance_after_trade: nextBundle.portfolio.cash,
+          portfolio_value_after_trade: estimatePortfolioValue(nextBundle, ticker, price),
+        });
       }
       return out;
     },
@@ -127,13 +161,35 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           applyBundle(res.bundle);
           window.dispatchEvent(new Event(PORTFOLIO_EVENT));
+          void logAnalyticsEvent("trade_executed", {
+            route: `/stock/${ticker}`,
+            ticker,
+            side: "SELL",
+            quantity: shares,
+            price,
+            estimated_price: price,
+            cash_balance_after_trade: res.bundle.portfolio.cash,
+            portfolio_value_after_trade: estimatePortfolioValue(res.bundle, ticker, price),
+            username: user.user_metadata?.username as string | undefined,
+          });
           return { ok: true };
         }
         return { ok: false, error: res.error };
       }
       const out = guestSellStock(ticker, shares, price);
       if (out.ok) {
-        applyBundle(getGuestPortfolioBundle());
+        const nextBundle = getGuestPortfolioBundle();
+        applyBundle(nextBundle);
+        void logAnalyticsEvent("trade_executed", {
+          route: `/stock/${ticker}`,
+          ticker,
+          side: "SELL",
+          quantity: shares,
+          price,
+          estimated_price: price,
+          cash_balance_after_trade: nextBundle.portfolio.cash,
+          portfolio_value_after_trade: estimatePortfolioValue(nextBundle, ticker, price),
+        });
       }
       return out;
     },
@@ -147,13 +203,27 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           applyBundle(res.bundle);
           window.dispatchEvent(new Event(PORTFOLIO_EVENT));
+          void logAnalyticsEvent("deposit_virtual_funds", {
+            route: "/account",
+            amount,
+            method,
+            cash_balance_after_trade: res.bundle.portfolio.cash,
+            username: user.user_metadata?.username as string | undefined,
+          });
           return { ok: true, newCashBalance: res.bundle.portfolio.cash };
         }
         return { ok: false, error: res.error };
       }
       const out = guestDeposit(amount, method);
       if (out.ok) {
-        applyBundle(getGuestPortfolioBundle());
+        const nextBundle = getGuestPortfolioBundle();
+        applyBundle(nextBundle);
+        void logAnalyticsEvent("deposit_virtual_funds", {
+          route: "/account",
+          amount,
+          method,
+          cash_balance_after_trade: nextBundle.portfolio.cash,
+        });
       }
       return out;
     },
@@ -167,13 +237,27 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           applyBundle(res.bundle);
           window.dispatchEvent(new Event(PORTFOLIO_EVENT));
+          void logAnalyticsEvent("withdraw_virtual_funds", {
+            route: "/account",
+            amount,
+            method,
+            cash_balance_after_trade: res.bundle.portfolio.cash,
+            username: user.user_metadata?.username as string | undefined,
+          });
           return { ok: true, newCashBalance: res.bundle.portfolio.cash };
         }
         return { ok: false, error: res.error };
       }
       const out = guestWithdraw(amount, method);
       if (out.ok) {
-        applyBundle(getGuestPortfolioBundle());
+        const nextBundle = getGuestPortfolioBundle();
+        applyBundle(nextBundle);
+        void logAnalyticsEvent("withdraw_virtual_funds", {
+          route: "/account",
+          amount,
+          method,
+          cash_balance_after_trade: nextBundle.portfolio.cash,
+        });
       }
       return out;
     },

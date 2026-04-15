@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PerchWordmark } from "@/components/PerchWordmark";
+import { PageEventTracker } from "@/components/analytics/PageEventTracker";
 
 const palette = {
   orange: "#C45000",
@@ -15,6 +16,7 @@ export default function LandingPage() {
         background: `linear-gradient(180deg, #FAFAF8 0%, ${palette.bg} 42%, ${palette.bg} 100%)`,
       }}
     >
+      <PageEventTracker eventName="landing_view" metadata={{ route: "/" }} />
       <div className="perch-shell">
         <section className="home-hero">
           <div className="home-hero-copy">

@@ -1,13 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useLivePrices } from "@/lib/priceSimulator";
 import { getStockByTicker } from "@/lib/mockData";
 import { formatPKRWithSymbol } from "@/lib/format";
 import { usePortfolio } from "@/hooks/usePortfolioState";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useMemo, useState, useEffect, type CSSProperties } from "react";
 import { PortfolioSections } from "@/components/dashboard/PortfolioSections";
 import { PerchWordmark } from "@/components/PerchWordmark";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
 
 const COLORS = {
   orange: "#C45000",
@@ -30,11 +31,12 @@ function signedPkr(n: number): string {
 
 function cardStyle(): CSSProperties {
   return {
-    background: COLORS.bg,
+    background: "linear-gradient(180deg, #FFFFFF 0%, #FCFCFC 100%)",
     border: `1px solid ${COLORS.border}`,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 24,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+    boxShadow: "0 10px 26px rgba(26, 26, 26, 0.05)",
+    minHeight: 132,
   };
 }
 
@@ -51,9 +53,13 @@ function labelStyle(): CSSProperties {
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { portfolio, transactions: txs, portfolioReady } = usePortfolio();
+  const { user } = useAuth();
   const { getQuote, getMarketSnapshot } = useLivePrices();
 
   useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    void logAnalyticsEvent("dashboard_viewed", { route: "/dashboard" });
+  }, []);
 
   const holdingsValue = useMemo(() => {
     let v = 0;
@@ -77,8 +83,10 @@ export default function DashboardPage() {
   }, [portfolio.holdings, getQuote]);
 
   const market = getMarketSnapshot();
-  const gainers = market.topGainers.slice(0, 3);
-  const losers = market.topLosers.slice(0, 3);
+  const displayName =
+    (user?.user_metadata?.username as string | undefined) ??
+    user?.email?.split("@")[0] ??
+    "Investor";
 
   const rows = useMemo(() => {
     return portfolio.holdings.map((h) => {
@@ -157,13 +165,11 @@ export default function DashboardPage() {
       <div className="perch-shell perch-shell-wide perch-psx-shell">
         <section className="dashboard-header">
           <div>
-            <PerchWordmark />
-            <h1>Portfolio Dashboard</h1>
-            <p>Track portfolio health, market breadth, and simulated execution in one view.</p>
-          </div>
-          <div className="dashboard-header-meta">
-            <span>Powered by Perch Sim Engine</span>
-            <strong>{market.sessionLabel}</strong>
+            <div style={{ marginBottom: 8 }}>
+              <PerchWordmark compact />
+            </div>
+            <h1>Welcome back, {displayName}</h1>
+            <p>Here&apos;s your portfolio snapshot today</p>
           </div>
         </section>
         <div className="perch-dashboard-stats">
@@ -185,116 +191,6 @@ export default function DashboardPage() {
             value={`${Math.round(market.marketBreadth * 100)}%`}
             valueColor={market.marketBreadth >= 0.5 ? COLORS.gain : COLORS.loss}
           />
-        </div>
-
-        <div className="perch-dashboard-two-col">
-          <div style={cardStyle()}>
-            <div style={labelStyle()}>Top Gainers</div>
-            <div style={{ marginTop: 12 }}>
-              {gainers.map((s, idx) => (
-                <div
-                  key={s.ticker}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    padding: "12px 0",
-                    borderTop: idx === 0 ? "none" : `1px solid ${COLORS.border}`,
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <Link
-                      href={`/stock/${s.ticker}`}
-                      style={{
-                        color: COLORS.orange,
-                        fontWeight: 700,
-                        textDecoration: "none",
-                      }}
-                    >
-                      {s.ticker}
-                    </Link>
-                    <div
-                      style={{
-                        color: COLORS.muted,
-                        fontSize: 13,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        maxWidth: "min(360px, 100%)",
-                      }}
-                    >
-                      {s.name}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      color: COLORS.gain,
-                      fontVariantNumeric: "tabular-nums",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    +{s.changePercent.toFixed(2)}%
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={cardStyle()}>
-            <div style={labelStyle()}>Top Losers</div>
-            <div style={{ marginTop: 12 }}>
-              {losers.map((s, idx) => (
-                <div
-                  key={s.ticker}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    padding: "12px 0",
-                    borderTop: idx === 0 ? "none" : `1px solid ${COLORS.border}`,
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <Link
-                      href={`/stock/${s.ticker}`}
-                      style={{
-                        color: COLORS.orange,
-                        fontWeight: 700,
-                        textDecoration: "none",
-                      }}
-                    >
-                      {s.ticker}
-                    </Link>
-                    <div
-                      style={{
-                        color: COLORS.muted,
-                        fontSize: 13,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        maxWidth: "min(360px, 100%)",
-                      }}
-                    >
-                      {s.name}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      color: COLORS.loss,
-                      fontVariantNumeric: "tabular-nums",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {s.changePercent.toFixed(2)}%
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         <PortfolioSections
@@ -323,11 +219,12 @@ function StatCard({
       <div style={labelStyle()}>{label}</div>
       <div
         style={{
-          marginTop: 10,
-          fontSize: 28,
-          fontWeight: 700,
+          marginTop: 14,
+          fontSize: "clamp(28px, 4vw, 34px)",
+          fontWeight: 760,
           color: valueColor ?? COLORS.text,
           fontVariantNumeric: "tabular-nums",
+          lineHeight: 1.06,
         }}
       >
         {value}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getStockByTicker } from "@/lib/mockData";
 import { formatPKRWithSymbol } from "@/lib/format";
 import {
@@ -15,6 +15,7 @@ import {
 } from "@/lib/onboardingConstants";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 import { startRouteProgress } from "@/lib/routeProgress";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
 import styles from "./GuidedOnboarding.module.css";
 
 const TOTAL_STEPS = 7;
@@ -45,6 +46,22 @@ export function GuidedOnboarding() {
     Number.isFinite(tradeInvestedParam) && tradeInvestedParam > 0 ? tradeInvestedParam : amount;
 
   const progressPct = ((step + 1) / TOTAL_STEPS) * 100;
+  const completionLoggedRef = useRef(false);
+
+  useEffect(() => {
+    void logAnalyticsEvent("onboarding_started", { route: "/start" });
+  }, []);
+
+  useEffect(() => {
+    if (!tradeComplete || completionLoggedRef.current) return;
+    completionLoggedRef.current = true;
+    void logAnalyticsEvent("onboarding_completed", {
+      route: "/start",
+      ticker: successTicker ?? ticker ?? undefined,
+      quantity: successShares ?? undefined,
+      invested_amount: successInvested ?? undefined,
+    });
+  }, [tradeComplete, successTicker, ticker, successShares, successInvested]);
 
   function next() {
     setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   Line,
   LineChart,
@@ -19,6 +19,7 @@ import { usePortfolio } from "@/hooks/usePortfolioState";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 import { getReplayDatasetByTicker } from "@/lib/replayDataset";
 import { startRouteProgress } from "@/lib/routeProgress";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
 
 type Point = { date: string; price: number; volume: number };
 type ChartRange = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
@@ -172,6 +173,12 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     () => portfolio.holdings.find((h) => h.ticker === ticker),
     [portfolio.holdings, ticker]
   );
+
+  useEffect(() => {
+    const route = `/stock/${ticker}`;
+    void logAnalyticsEvent("stock_viewed", { route, ticker });
+    void logAnalyticsEvent("trade_ticket_opened", { route, ticker });
+  }, [ticker]);
 
   async function onConfirm() {
     setMessage(null);
