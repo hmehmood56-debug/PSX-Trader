@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getStockByTicker } from "@/lib/mockData";
 import { formatPKRWithSymbol } from "@/lib/format";
 import {
-  ONBOARDING_GOALS,
   PRACTICE_AMOUNTS,
   STARTER_BLURBS,
   STARTER_TICKERS,
-  type GoalId,
   type StarterTicker,
 } from "@/lib/onboardingConstants";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
@@ -18,7 +16,7 @@ import { startRouteProgress } from "@/lib/routeProgress";
 import { logAnalyticsEvent } from "@/lib/analytics/client";
 import styles from "./GuidedOnboarding.module.css";
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 5;
 
 export function GuidedOnboarding() {
   const router = useRouter();
@@ -29,14 +27,8 @@ export function GuidedOnboarding() {
   const tradeInvestedParam = Number(searchParams.get("invested"));
 
   const [step, setStep] = useState(tradeComplete ? TOTAL_STEPS - 1 : 0);
-  const [goalId, setGoalId] = useState<GoalId | null>(null);
   const [amount, setAmount] = useState<number | null>(null);
   const [ticker, setTicker] = useState<StarterTicker | null>(null);
-
-  const goalLabel = useMemo(() => {
-    const g = ONBOARDING_GOALS.find((x) => x.id === goalId);
-    return g?.title ?? "-";
-  }, [goalId]);
 
   const stock = ticker ? getStockByTicker(ticker) : undefined;
   const successTicker = tradeTickerParam ?? ticker;
@@ -104,12 +96,12 @@ export function GuidedOnboarding() {
             <>
               <h1 className={styles.title}>Welcome to Perch</h1>
               <p className={styles.subtitle}>
-                We will walk you through a simple practice setup. There is no quiz and no jargon - just a clear path to
-                your first pretend trade on the Pakistan Stock Exchange (PSX) using virtual money.
+                A quick setup gets you to your first pretend trade on the Pakistan Stock Exchange (PSX) using virtual
+                money.
               </p>
               <div className={styles.actions}>
                 <button type="button" className={styles.primaryBtn} onClick={next}>
-                  Continue
+                  Start setup
                 </button>
               </div>
             </>
@@ -117,36 +109,9 @@ export function GuidedOnboarding() {
 
           {step === 1 && (
             <>
-              <h1 className={styles.title}>What brings you here?</h1>
-              <p className={styles.subtitle}>Pick the option that fits best. You can change your mind anytime.</p>
-              <div className={styles.cardGrid} role="list">
-                {ONBOARDING_GOALS.map((g) => (
-                  <button
-                    key={g.id}
-                    type="button"
-                    role="listitem"
-                    className={`${styles.optionCard} ${goalId === g.id ? styles.optionCardSelected : ""}`}
-                    onClick={() => setGoalId(g.id)}
-                  >
-                    <div className={styles.optionTitle}>{g.title}</div>
-                    <div className={styles.optionDesc}>{g.description}</div>
-                  </button>
-                ))}
-              </div>
-              <div className={styles.actions}>
-                <button type="button" className={styles.primaryBtn} disabled={!goalId} onClick={next}>
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
-
-          {step === 2 && (
-            <>
               <h1 className={styles.title}>How much do you want to practice with?</h1>
               <p className={styles.subtitle}>
-                This is only for planning your practice - it is not a real transfer. Your virtual account already has
-                practice funds; this helps us frame your first trade.
+                This is just a planning amount. No real transfer is needed.
               </p>
               <div className={styles.amountRow}>
                 {PRACTICE_AMOUNTS.map((n) => (
@@ -168,7 +133,7 @@ export function GuidedOnboarding() {
             </>
           )}
 
-          {step === 3 && (
+          {step === 2 && (
             <>
               <h1 className={styles.title}>Pick a starter stock</h1>
               <p className={styles.subtitle}>
@@ -201,39 +166,7 @@ export function GuidedOnboarding() {
             </>
           )}
 
-          {step === 4 && stock && amount != null && goalId && (
-            <>
-              <h1 className={styles.title}>Your practice summary</h1>
-              <p className={styles.subtitle}>
-                Here is what you chose. Everything stays virtual until you place an order on the next screens.
-              </p>
-              <div className={styles.previewBox}>
-                <div className={styles.previewRow}>
-                  <span className={styles.previewLabel}>Your focus</span>
-                  <span className={styles.previewValue}>{goalLabel}</span>
-                </div>
-                <div className={styles.previewRow}>
-                  <span className={styles.previewLabel}>Practice budget you picked</span>
-                  <span className={styles.previewValue}>
-                    {formatPKRWithSymbol(amount, { maximumFractionDigits: 0 })}
-                  </span>
-                </div>
-                <div className={styles.previewRow}>
-                  <span className={styles.previewLabel}>Starter stock</span>
-                  <span className={styles.previewValue}>
-                    {ticker} - {stock.name}
-                  </span>
-                </div>
-              </div>
-              <div className={styles.actions}>
-                <button type="button" className={styles.primaryBtn} onClick={next}>
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
-
-          {step === 5 && ticker && stock && (
+          {step === 3 && ticker && stock && (
             <>
               <h1 className={styles.title}>You are set</h1>
               <p className={styles.subtitle}>
@@ -252,7 +185,7 @@ export function GuidedOnboarding() {
             </>
           )}
 
-          {step === 6 && tradeComplete && (
+          {step === 4 && tradeComplete && (
             <TradeSuccessScreen
               variant="firstTrade"
               ticker={successTicker}

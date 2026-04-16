@@ -67,6 +67,10 @@ function estimatePortfolioValue(
   }, bundle.portfolio.cash);
 }
 
+function isAuthSessionError(error: string): boolean {
+  return error.toLowerCase().includes("not signed in");
+}
+
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const [portfolio, setPortfolio] = useState<Portfolio>(defaultPortfolio);
@@ -132,6 +136,14 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
           });
           return { ok: true };
         }
+        if (isAuthSessionError(res.error)) {
+          const out = guestBuyStock(ticker, shares, price);
+          if (out.ok) {
+            const nextBundle = getGuestPortfolioBundle();
+            applyBundle(nextBundle);
+          }
+          return out;
+        }
         return { ok: false, error: res.error };
       }
       const out = guestBuyStock(ticker, shares, price);
@@ -174,6 +186,14 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
           });
           return { ok: true };
         }
+        if (isAuthSessionError(res.error)) {
+          const out = guestSellStock(ticker, shares, price);
+          if (out.ok) {
+            const nextBundle = getGuestPortfolioBundle();
+            applyBundle(nextBundle);
+          }
+          return out;
+        }
         return { ok: false, error: res.error };
       }
       const out = guestSellStock(ticker, shares, price);
@@ -212,6 +232,14 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
           });
           return { ok: true, newCashBalance: res.bundle.portfolio.cash };
         }
+        if (isAuthSessionError(res.error)) {
+          const out = guestDeposit(amount, method);
+          if (out.ok) {
+            const nextBundle = getGuestPortfolioBundle();
+            applyBundle(nextBundle);
+          }
+          return out;
+        }
         return { ok: false, error: res.error };
       }
       const out = guestDeposit(amount, method);
@@ -245,6 +273,14 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
             username: user.user_metadata?.username as string | undefined,
           });
           return { ok: true, newCashBalance: res.bundle.portfolio.cash };
+        }
+        if (isAuthSessionError(res.error)) {
+          const out = guestWithdraw(amount, method);
+          if (out.ok) {
+            const nextBundle = getGuestPortfolioBundle();
+            applyBundle(nextBundle);
+          }
+          return out;
         }
         return { ok: false, error: res.error };
       }

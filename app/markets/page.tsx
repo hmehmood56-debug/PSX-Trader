@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { canAccessStagedMarketModule } from "@/lib/featureAccess";
 
 const palette = {
   orange: "#C45000",
@@ -75,7 +76,12 @@ function MarketsCard({
   );
 }
 
-export default function MarketsHubPage() {
+export default async function MarketsHubPage() {
+  const [canSeeCurrencies, canSeeIndices] = await Promise.all([
+    canAccessStagedMarketModule("currencies"),
+    canAccessStagedMarketModule("indices"),
+  ]);
+
   const sections = [
     {
       title: "PSX Paper Trading",
@@ -91,21 +97,25 @@ export default function MarketsHubPage() {
       href: "/markets/crypto",
       cta: "Open Live Crypto",
     },
-    {
+  ];
+  if (canSeeCurrencies) {
+    sections.push({
       title: "Currencies",
       description:
         "A focused FX market section for major currency pairs is coming soon, designed as a dedicated module instead of a mixed dashboard.",
       href: "/markets/currencies",
       cta: "View Currencies",
-    },
-    {
+    });
+  }
+  if (canSeeIndices) {
+    sections.push({
       title: "Global Indices",
       description:
         "A premium watchlist for major global indices is planned next, with dedicated coverage for key benchmark markets.",
       href: "/markets/indices",
       cta: "View Indices",
-    },
-  ];
+    });
+  }
 
   return (
     <div style={{ background: palette.bg }}>

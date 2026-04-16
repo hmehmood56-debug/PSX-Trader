@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { canAccessStagedMarketModule } from "@/lib/featureAccess";
 
 const palette = {
   orange: "#C45000",
@@ -8,7 +10,12 @@ const palette = {
   muted: "#646464",
 } as const;
 
-export default function CurrenciesPage() {
+export default async function CurrenciesPage() {
+  const canAccess = await canAccessStagedMarketModule("currencies");
+  if (!canAccess) {
+    redirect("/markets");
+  }
+
   return (
     <div style={{ background: palette.bg }}>
       <div

@@ -27,7 +27,7 @@ export default function LandingPage() {
             <h1 style={{ color: palette.text }}>Build confidence before you invest live</h1>
             <p className="home-start-lead">
               Practice PSX investing in a clean, brokerage-style workspace with realistic market data,
-              disciplined portfolio tools, and guided intelligence.
+              disciplined portfolio tools, and a beginner-friendly first-trade flow.
             </p>
             <div className="landing-cta-row home-start-ctas">
               <Link

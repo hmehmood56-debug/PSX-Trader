@@ -11,24 +11,4 @@ export const STARTER_BLURBS: Record<StarterTicker, string> = {
   PSO: "Pakistan's main fuel supplier - easy to relate to day to day.",
 };
 
-export const ONBOARDING_GOALS = [
-  {
-    id: "grow",
-    title: "Grow savings",
-    description: "I want to practice growing money over time.",
-  },
-  {
-    id: "income",
-    title: "Dividend income",
-    description: "I am curious about payouts companies sometimes make.",
-  },
-  {
-    id: "intelligence",
-    title: "Use Perch Intelligence",
-    description: "I want guided PSX intelligence before placing trades.",
-  },
-] as const;
-
-export type GoalId = (typeof ONBOARDING_GOALS)[number]["id"];
-
 export const PRACTICE_AMOUNTS = [5_000, 10_000, 25_000, 50_000] as const;
