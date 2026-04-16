@@ -1,111 +1,172 @@
 import { NextResponse } from "next/server";
 import {
+  getTrackedCryptoConfigByBinanceSymbol,
+  getTrackedCryptoConfig,
+  isChartRange,
   isTrackedCryptoId,
+  type ChartRange,
   type LiveMarketDetail,
 } from "@/lib/liveMarkets";
 
-type CoinGeckoMarket = {
-  id: string;
+type BinanceTicker24hr = {
   symbol: string;
-  name: string;
-  current_price: number;
-  price_change_percentage_24h: number | null;
-  market_cap?: number;
-  market_cap_rank?: number;
-  total_volume?: number;
-  high_24h?: number;
-  low_24h?: number;
-  circulating_supply?: number;
-  ath?: number;
-  ath_change_percentage?: number;
-  last_updated?: string;
+  lastPrice: string;
+  priceChangePercent: string;
+  highPrice: string;
+  lowPrice: string;
+  volume: string;
+  quoteVolume: string;
+  closeTime: number;
 };
 
-type CoinGeckoChart = {
-  prices?: Array<[number, number]>;
+type BinanceKline = [
+  number,
+  string,
+  string,
+  string,
+  string,
+  string,
+  number,
+  string,
+  number,
+  string,
+  string,
+  string
+];
+
+type BinanceExchangeInfo = {
+  symbols?: Array<{
+    symbol: string;
+    status?: string;
+    baseAsset?: string;
+    quoteAsset?: string;
+  }>;
 };
+
+const RANGE_TO_KLINES: Record<ChartRange, { interval: string; limit: number }> = {
+  "1D": { interval: "15m", limit: 96 },
+  "7D": { interval: "1h", limit: 168 },
+  "1M": { interval: "4h", limit: 180 },
+  "3M": { interval: "12h", limit: 180 },
+  "1Y": { interval: "1d", limit: 365 },
+  ALL: { interval: "1w", limit: 520 },
+};
+
+function resolveBinanceSymbolFromRouteId(id: string): string {
+  if (isTrackedCryptoId(id)) {
+    return getTrackedCryptoConfig(id).binanceSymbol;
+  }
+  const normalized = id.toUpperCase();
+  return normalized.endsWith("USDT") ? normalized : `${normalized}USDT`;
+}
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   const id = params.id;
-
-  if (!isTrackedCryptoId(id)) {
-    return NextResponse.json({ error: "Unsupported crypto asset." }, { status: 404 });
-  }
-
-  const demoApiKey = process.env.COINGECKO_DEMO_API_KEY?.trim();
-  const headers: HeadersInit = {};
-
-  // Public requests are allowed. If a demo key exists, attach it to
-  // improve reliability while keeping this endpoint key-optional.
-  if (demoApiKey) {
-    headers["x-cg-demo-api-key"] = demoApiKey;
-  }
-
-  const marketParams = new URLSearchParams({
-    vs_currency: "usd",
-    ids: id,
-    sparkline: "false",
-    price_change_percentage: "24h",
+  const requestedRange = new URL(request.url).searchParams.get("range");
+  const range: ChartRange =
+    requestedRange && isChartRange(requestedRange) ? requestedRange : "1D";
+  const rangeConfig = RANGE_TO_KLINES[range];
+  const binanceSymbol = resolveBinanceSymbolFromRouteId(id);
+  const exchangeInfoUrl = "https://api.binance.us/api/v3/exchangeInfo";
+  const exchangeInfoResponse = await fetch(exchangeInfoUrl, {
+    next: { revalidate: 300 },
   });
-
-  const summaryUrl = `https://api.coingecko.com/api/v3/coins/markets?${marketParams.toString()}`;
-  const chartUrl = `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=7&interval=daily`;
-
-  try {
-    const [summaryResponse, chartResponse] = await Promise.all([
-      fetch(summaryUrl, { headers, next: { revalidate: 0 } }),
-      fetch(chartUrl, { headers, next: { revalidate: 0 } }),
-    ]);
-
-    if (!summaryResponse.ok || !chartResponse.ok) {
-      return NextResponse.json(
-        { error: "Unable to fetch crypto detail data." },
-        { status: 502 }
-      );
-    }
-
-    const summaryRaw = (await summaryResponse.json()) as CoinGeckoMarket[];
-    const summary = summaryRaw[0];
-    if (!summary) {
-      return NextResponse.json({ error: "Asset data not found." }, { status: 404 });
-    }
-
-    const chartRaw = (await chartResponse.json()) as CoinGeckoChart;
-    const chart =
-      chartRaw.prices?.map(([ts, price]) => ({
-        timestamp: new Date(ts).toISOString(),
-        price,
-      })) ?? [];
-
-    const data: LiveMarketDetail = {
-      id: summary.id,
-      symbol: summary.symbol.toUpperCase(),
-      name: summary.name,
-      price: summary.current_price,
-      change24h: summary.price_change_percentage_24h,
-      marketCap: summary.market_cap ?? null,
-      volume24h: summary.total_volume ?? null,
-      rank: summary.market_cap_rank ?? null,
-      lastUpdated: summary.last_updated ?? null,
-      high24h: summary.high_24h ?? null,
-      low24h: summary.low_24h ?? null,
-      circulatingSupply: summary.circulating_supply ?? null,
-      ath: summary.ath ?? null,
-      athChangePercentage: summary.ath_change_percentage ?? null,
-      chart,
-    };
-
+  if (!exchangeInfoResponse.ok) {
     return NextResponse.json(
-      { data, updatedAt: new Date().toISOString() },
-      { headers: { "Cache-Control": "no-store" } }
-    );
-  } catch {
-    return NextResponse.json(
-      { error: "Crypto detail feed is temporarily unavailable." },
+      { error: "Unable to validate crypto symbol support." },
       { status: 502 }
     );
   }
+
+  const exchangeInfo = (await exchangeInfoResponse.json()) as BinanceExchangeInfo;
+  const supported = (exchangeInfo.symbols ?? []).find(
+    (symbol) =>
+      symbol.symbol === binanceSymbol &&
+      symbol.status === "TRADING" &&
+      symbol.quoteAsset === "USDT"
+  );
+  if (!supported?.baseAsset) {
+    return NextResponse.json({ error: "Unsupported crypto asset." }, { status: 404 });
+  }
+
+  const tracked = getTrackedCryptoConfigByBinanceSymbol(binanceSymbol);
+  const routeId = tracked?.id ?? id;
+  const displaySymbol = tracked?.symbol ?? supported.baseAsset.toUpperCase();
+  const displayName = tracked?.name ?? supported.baseAsset.toUpperCase();
+  const binanceSummaryUrl = `https://api.binance.us/api/v3/ticker/24hr?symbol=${binanceSymbol}`;
+  const binanceChartUrl = `https://api.binance.us/api/v3/klines?symbol=${binanceSymbol}&interval=${rangeConfig.interval}&limit=${rangeConfig.limit}`;
+  const errors: Array<{ endpoint: string; status?: number; body?: string; error?: string }> = [];
+
+  try {
+    const [summaryResponse, chartResponse] = await Promise.all([
+      fetch(binanceSummaryUrl, { next: { revalidate: 0 } }),
+      fetch(binanceChartUrl, { next: { revalidate: 0 } }),
+    ]);
+
+    if (summaryResponse.ok && chartResponse.ok) {
+      const summary = (await summaryResponse.json()) as BinanceTicker24hr;
+
+      const chartRaw = (await chartResponse.json()) as BinanceKline[];
+      const chart = chartRaw.map((kline) => ({
+        timestamp: new Date(kline[0]).toISOString(),
+        price: Number(kline[4]),
+      }));
+
+      const data: LiveMarketDetail = {
+        id: routeId,
+        symbol: displaySymbol,
+        name: displayName,
+        price: Number(summary.lastPrice),
+        change24h: Number(summary.priceChangePercent),
+        high24h: Number(summary.highPrice),
+        low24h: Number(summary.lowPrice),
+        marketCap: null,
+        volume24h: Number(summary.volume),
+        quoteVolume24h: Number(summary.quoteVolume),
+        rank: null,
+        updateTime: new Date(summary.closeTime).toISOString(),
+        circulatingSupply: null,
+        ath: null,
+        athChangePercentage: null,
+        chart,
+      };
+
+      return NextResponse.json(
+        { data, range, updatedAt: new Date().toISOString() },
+        { headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
+    if (!summaryResponse.ok) {
+      errors.push({
+        endpoint: binanceSummaryUrl,
+        status: summaryResponse.status,
+        body: await summaryResponse.text(),
+      });
+    }
+    if (!chartResponse.ok) {
+      errors.push({
+        endpoint: binanceChartUrl,
+        status: chartResponse.status,
+        body: await chartResponse.text(),
+      });
+    }
+  } catch (error) {
+    errors.push({
+      endpoint: `${binanceSummaryUrl} + ${binanceChartUrl}`,
+      error: error instanceof Error ? error.message : "Unknown fetch error",
+    });
+  }
+
+  for (const entry of errors) {
+    console.error("[live-markets/:id] upstream fetch failed", entry);
+  }
+
+  return NextResponse.json(
+    { error: "Crypto detail feed is temporarily unavailable." },
+    { status: 502 }
+  );
 }

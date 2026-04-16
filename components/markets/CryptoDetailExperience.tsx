@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Line,
   LineChart,
@@ -13,15 +13,21 @@ import {
 import type { LiveMarketDetail } from "@/lib/liveMarkets";
 
 const palette = {
-  orange: "#C45000",
-  bg: "#FFFFFF",
-  border: "#E8E8E8",
-  text: "#1A1A1A",
-  muted: "#6B6B6B",
+  orange: "#FF7A1A",
+  bg: "#F5F7FF",
+  border: "#DDE3F2",
+  text: "#0E1425",
+  muted: "#54607A",
+  green: "#00A06E",
+  red: "#D14343",
 } as const;
+
+const RANGE_OPTIONS = ["1D", "7D", "1M", "3M", "1Y", "ALL"] as const;
+type ChartRange = (typeof RANGE_OPTIONS)[number];
 
 type DetailResponse = {
   data?: LiveMarketDetail;
+  range?: ChartRange;
   updatedAt?: string;
   error?: string;
 };
@@ -31,7 +37,7 @@ function formatUsd(value: number | null) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: value >= 1000 ? 0 : 2,
+    maximumFractionDigits: value >= 1000 ? 0 : value >= 1 ? 3 : 6,
   }).format(value);
 }
 
@@ -43,10 +49,15 @@ function formatPercent(value: number | null) {
 function formatCompact(value: number | null) {
   if (value === null) return "N/A";
   return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
     notation: "compact",
     maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatAxisPrice(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: value >= 1000 ? 1 : 3,
   }).format(value);
 }
 
@@ -55,10 +66,13 @@ export function CryptoDetailExperience({ id }: { id: string }) {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRange, setSelectedRange] = useState<ChartRange>("1D");
 
   const loadDetail = useCallback(async () => {
     try {
-      const response = await fetch(`/api/live-markets/${id}`, { cache: "no-store" });
+      const response = await fetch(`/api/live-markets/${id}?range=${selectedRange}`, {
+        cache: "no-store",
+      });
       const payload = (await response.json()) as DetailResponse;
       if (!response.ok || !payload.data) {
         throw new Error(payload.error || "Unable to load asset details.");
@@ -72,15 +86,19 @@ export function CryptoDetailExperience({ id }: { id: string }) {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, selectedRange]);
 
   useEffect(() => {
     void loadDetail();
     const refresh = window.setInterval(() => {
       void loadDetail();
-    }, 45_000);
+    }, 3_000);
     return () => window.clearInterval(refresh);
   }, [loadDetail]);
+
+  const chartPoints = asset?.chart ?? [];
+  const up = (asset?.change24h ?? 0) >= 0;
+  const rangedChart = useMemo(() => chartPoints, [chartPoints]);
 
   if (loading) {
     return (
@@ -135,8 +153,6 @@ export function CryptoDetailExperience({ id }: { id: string }) {
     );
   }
 
-  const up = (asset.change24h ?? 0) >= 0;
-
   return (
     <div style={{ background: palette.bg }}>
       <div
@@ -163,8 +179,10 @@ export function CryptoDetailExperience({ id }: { id: string }) {
           style={{
             marginTop: 14,
             border: `1px solid ${palette.border}`,
-            borderRadius: 18,
-            background: "#FFFFFF",
+            borderRadius: 20,
+            background:
+              "radial-gradient(circle at top right, rgba(255,122,26,0.12), rgba(255,255,255,0.97) 35%), linear-gradient(145deg, #FFFFFF 12%, #F8FAFF 92%)",
+            boxShadow: "0 14px 34px rgba(18, 29, 56, 0.08)",
             padding: "clamp(18px, 4vw, 24px) clamp(16px, 4vw, 22px)",
           }}
         >
@@ -190,7 +208,7 @@ export function CryptoDetailExperience({ id }: { id: string }) {
           >
             {formatUsd(asset.price)}
           </p>
-          <p style={{ marginTop: 6, color: up ? "#007A4C" : "#C0392B", fontWeight: 650 }}>
+          <p style={{ marginTop: 6, color: up ? palette.green : palette.red, fontWeight: 650 }}>
             24h: {formatPercent(asset.change24h)}
           </p>
           <p style={{ marginTop: 8, marginBottom: 0, color: palette.muted, fontSize: 13 }}>
@@ -204,37 +222,74 @@ export function CryptoDetailExperience({ id }: { id: string }) {
           style={{
             marginTop: 14,
             border: `1px solid ${palette.border}`,
-            borderRadius: 16,
-            background: "#FFFFFF",
-            padding: "clamp(12px, 3vw, 16px)",
-            minHeight: 280,
+            borderRadius: 18,
+            background: "linear-gradient(145deg, #FFFFFF 10%, #F5F8FF 90%)",
+            boxShadow: "0 16px 36px rgba(16, 29, 59, 0.09)",
+            padding: "clamp(14px, 3vw, 18px)",
+            minHeight: 340,
           }}
         >
-          <div style={{ color: palette.muted, fontSize: 12, fontWeight: 700 }}>7D Price Trend</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <p style={{ margin: 0, color: palette.muted, fontSize: 12, fontWeight: 700, letterSpacing: "0.08em" }}>
+                PRICE ACTION
+              </p>
+              <p style={{ margin: "4px 0 0", color: palette.text, fontSize: 14, fontWeight: 650 }}>
+                {selectedRange} Trend View
+              </p>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {RANGE_OPTIONS.map((range) => {
+                const active = range === selectedRange;
+                return (
+                  <button
+                    key={range}
+                    type="button"
+                    onClick={() => setSelectedRange(range)}
+                    style={{
+                      borderRadius: 999,
+                      border: active ? "1px solid #1B2A4B" : "1px solid #CFD8EC",
+                      background: active ? "#1B2A4B" : "#FFFFFF",
+                      color: active ? "#F4F7FF" : "#425175",
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: "0.04em",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {range}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <div className="perch-crypto-chart-wrap" style={{ width: "100%", marginTop: 8 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={asset.chart}>
+              <LineChart data={rangedChart} margin={{ top: 10, right: 10, left: 0, bottom: 6 }}>
                 <XAxis
                   dataKey="timestamp"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: palette.muted, fontSize: 11 }}
+                  tick={{ fill: "#5D6A86", fontSize: 11 }}
                   tickFormatter={(value: string) =>
                     new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })
                   }
+                  minTickGap={24}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: palette.muted, fontSize: 11 }}
-                  tickFormatter={(value: number) => `${Math.round(value)}`}
-                  width={56}
+                  tick={{ fill: "#5D6A86", fontSize: 11 }}
+                  tickFormatter={formatAxisPrice}
+                  width={62}
                 />
                 <Tooltip
                   contentStyle={{
                     background: "#FFFFFF",
                     border: `1px solid ${palette.border}`,
-                    borderRadius: 8,
+                    borderRadius: 10,
+                    boxShadow: "0 8px 18px rgba(22,33,61,0.12)",
                   }}
                   formatter={(value: number) => [formatUsd(value), "Price"]}
                   labelFormatter={(value: string) =>
@@ -245,7 +300,14 @@ export function CryptoDetailExperience({ id }: { id: string }) {
                     })
                   }
                 />
-                <Line type="monotone" dataKey="price" stroke={palette.orange} strokeWidth={2.5} dot={false} />
+                <Line
+                  type="monotone"
+                  dataKey="price"
+                  stroke={palette.orange}
+                  strokeWidth={2.8}
+                  dot={false}
+                  activeDot={{ r: 4, fill: palette.orange }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -253,15 +315,13 @@ export function CryptoDetailExperience({ id }: { id: string }) {
 
         <section className="perch-crypto-detail-stats" style={{ marginTop: 14 }}>
           {[
-            { label: "Market Cap", value: formatCompact(asset.marketCap) },
+            { label: "Current Price", value: formatUsd(asset.price) },
+            { label: "24h Change", value: formatPercent(asset.change24h) },
             { label: "Volume (24h)", value: formatCompact(asset.volume24h) },
-            { label: "Rank", value: asset.rank ? `#${asset.rank}` : "N/A" },
+            { label: "Quote Volume (24h)", value: formatCompact(asset.quoteVolume24h) },
             { label: "24h High", value: formatUsd(asset.high24h) },
             { label: "24h Low", value: formatUsd(asset.low24h) },
-            { label: "Circulating Supply", value: asset.circulatingSupply ? asset.circulatingSupply.toLocaleString("en-US") : "N/A" },
-            { label: "All Time High", value: formatUsd(asset.ath) },
-            { label: "ATH Delta", value: formatPercent(asset.athChangePercentage) },
-            { label: "Snapshot Time", value: asset.lastUpdated ? new Date(asset.lastUpdated).toLocaleString("en-US") : "N/A" },
+            { label: "Snapshot Time", value: asset.updateTime ? new Date(asset.updateTime).toLocaleString("en-US") : "N/A" },
           ].map((item) => (
             <article
               key={item.label}
