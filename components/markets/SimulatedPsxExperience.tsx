@@ -68,7 +68,7 @@ function SearchHero({
             textTransform: "uppercase",
           }}
         >
-          {isPlaceholderData ? "Connecting to live feed" : `Feed status: ${sessionState}`}
+          {isPlaceholderData ? "Connecting to live feed" : "LIVE MARKET"}
         </span>
       </div>
       <h1
@@ -83,7 +83,7 @@ function SearchHero({
         Pakistan Stock Exchange (Paper Trading)
       </h1>
       <p style={{ marginTop: 10, marginBottom: 0, color: COLORS.muted, fontSize: 14, lineHeight: "22px", maxWidth: 780 }}>
-        Live PSX market data from PSX Terminal with Perch paper trading execution, virtual cash, and portfolio tracking.
+        Live Pakistan market data with paper trading, virtual cash, and portfolio tracking.
       </p>
       <div className="perch-psx-search-grid" style={{ marginTop: 12 }}>
         <input
