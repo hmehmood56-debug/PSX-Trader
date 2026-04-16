@@ -3,8 +3,10 @@
 import { createClient } from "@/utils/supabase/client";
 import {
   getLastVisitTimestamp,
+  identifyAnalyticsUser,
   logAnalyticsEvent,
   markVisitTimestamp,
+  resetAnalyticsUser,
 } from "@/lib/analytics/client";
 import type { Session, User } from "@supabase/supabase-js";
 import {
@@ -56,6 +58,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       setLoading(false);
+      if (nextSession?.user?.id) {
+        identifyAnalyticsUser(nextSession.user.id, {
+          email: nextSession.user.email ?? null,
+          signup_method: nextSession.user.app_metadata?.provider ?? null,
+        });
+      } else if (event === "SIGNED_OUT") {
+        resetAnalyticsUser();
+      }
       if (event === "SIGNED_IN" && nextSession?.user?.id) {
         emitSessionStarted(nextSession.user.id);
       }
@@ -65,6 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setLoading(false);
       if (data.session?.user?.id) {
+        identifyAnalyticsUser(data.session.user.id, {
+          email: data.session.user.email ?? null,
+          signup_method: data.session.user.app_metadata?.provider ?? null,
+        });
         emitSessionStarted(data.session.user.id);
       }
     });

@@ -170,7 +170,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
 
   useEffect(() => {
     const route = `/stock/${ticker}`;
-    void logAnalyticsEvent("stock_viewed", { route, ticker });
+    void logAnalyticsEvent("stock_detail_viewed", { route, ticker });
     void logAnalyticsEvent("trade_ticket_opened", { route, ticker });
   }, [ticker]);
 
@@ -194,6 +194,13 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
       return;
     }
     if (onboarding && mode === "BUY") {
+      void logAnalyticsEvent("first_trade_completed", {
+        route: `/stock/${ticker}`,
+        ticker,
+        shares,
+        estimated_price_per_share: estimatedExecutionPrice,
+        invested_amount: est,
+      });
       const params = new URLSearchParams({
         tradeComplete: "1",
         ticker,

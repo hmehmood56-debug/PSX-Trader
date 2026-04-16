@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   Cell,
   Pie,
@@ -14,6 +14,7 @@ import { useLivePrices } from "@/lib/priceSimulator";
 import { getStockByTicker } from "@/lib/mockData";
 import { formatPKRWithSymbol } from "@/lib/format";
 import { usePortfolio } from "@/hooks/usePortfolioState";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
 
 const PIE_COLORS = [
   "#C45000",
@@ -32,6 +33,10 @@ const card =
 export default function PortfolioPage() {
   const { portfolio, transactions: txs } = usePortfolio();
   const { getQuote } = useLivePrices();
+
+  useEffect(() => {
+    void logAnalyticsEvent("portfolio_viewed", { route: "/portfolio" });
+  }, []);
 
   const rows = useMemo(() => {
     return portfolio.holdings.map((h) => {

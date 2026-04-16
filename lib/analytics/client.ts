@@ -1,9 +1,10 @@
 "use client";
 
-import { createClient } from "@/utils/supabase/client";
+import posthog from "posthog-js";
 import type { AnalyticsEventName, AnalyticsMetadata } from "@/lib/analytics/events";
 
 const RETURN_VISIT_KEY = "perch_last_visit_at";
+const ATTRIBUTION_REGISTERED_KEY = "perch_attribution_registered";
 
 function normalizeMetadata(metadata?: AnalyticsMetadata): AnalyticsMetadata {
   if (!metadata) return {};
@@ -26,17 +27,44 @@ export async function logAnalyticsEvent(
   metadata?: AnalyticsMetadata
 ) {
   try {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    if (typeof window === "undefined") return;
+    posthog.capture(eventName, normalizeMetadata(metadata));
+  } catch {
+    // Analytics must never interrupt user-facing flows.
+  }
+}
 
-    await supabase.from("analytics_events").insert({
-      user_id: user?.id ?? null,
-      event_name: eventName,
-      metadata: normalizeMetadata(metadata),
-      created_at: new Date().toISOString(),
-    });
+export function registerAttributionProperties() {
+  if (typeof window === "undefined") return;
+  if (window.sessionStorage.getItem(ATTRIBUTION_REGISTERED_KEY)) return;
+
+  const query = new URLSearchParams(window.location.search);
+  const attribution = {
+    initial_referrer: document.referrer || null,
+    landing_path: window.location.pathname,
+    landing_query: window.location.search || null,
+    utm_source: query.get("utm_source"),
+    utm_medium: query.get("utm_medium"),
+    utm_campaign: query.get("utm_campaign"),
+    utm_term: query.get("utm_term"),
+    utm_content: query.get("utm_content"),
+  };
+
+  posthog.register_once(normalizeMetadata(attribution));
+  window.sessionStorage.setItem(ATTRIBUTION_REGISTERED_KEY, "1");
+}
+
+export function identifyAnalyticsUser(userId: string, metadata?: AnalyticsMetadata) {
+  try {
+    posthog.identify(userId, normalizeMetadata(metadata));
+  } catch {
+    // Analytics must never interrupt user-facing flows.
+  }
+}
+
+export function resetAnalyticsUser() {
+  try {
+    posthog.reset();
   } catch {
     // Analytics must never interrupt user-facing flows.
   }

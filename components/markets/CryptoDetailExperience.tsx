@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Line,
   LineChart,
@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import type { LiveMarketDetail } from "@/lib/liveMarkets";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
 
 const palette = {
   orange: "#FF7A1A",
@@ -96,9 +97,15 @@ export function CryptoDetailExperience({ id }: { id: string }) {
     return () => window.clearInterval(refresh);
   }, [loadDetail]);
 
+  useEffect(() => {
+    void logAnalyticsEvent("crypto_detail_viewed", {
+      route: `/markets/crypto/${id}`,
+      asset_id: id,
+    });
+  }, [id]);
+
   const chartPoints = asset?.chart ?? [];
   const up = (asset?.change24h ?? 0) >= 0;
-  const rangedChart = useMemo(() => chartPoints, [chartPoints]);
 
   if (loading) {
     return (
@@ -266,7 +273,7 @@ export function CryptoDetailExperience({ id }: { id: string }) {
           </div>
           <div className="perch-crypto-chart-wrap" style={{ width: "100%", marginTop: 8 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={rangedChart} margin={{ top: 10, right: 10, left: 0, bottom: 6 }}>
+              <LineChart data={chartPoints} margin={{ top: 10, right: 10, left: 0, bottom: 6 }}>
                 <XAxis
                   dataKey="timestamp"
                   axisLine={false}
