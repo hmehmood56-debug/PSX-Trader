@@ -166,7 +166,7 @@ export default function AccountPage() {
             Account
           </h1>
           <p style={{ margin: "10px 0 0", color: COLORS.muted, fontSize: 15 }}>
-            Manage your virtual brokerage wallet with local, simulation-only funding
+            Manage your virtual brokerage wallet with local, paper-trading-only funding
             and withdrawal flows tailored for Pakistan investors.
           </p>
 

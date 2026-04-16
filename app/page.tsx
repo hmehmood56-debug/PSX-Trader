@@ -22,7 +22,7 @@ export default function LandingPage() {
           <div className="home-hero-copy">
             <div className="home-brand-lockup">
               <PerchWordmark />
-              <span>Investor Simulation Platform</span>
+              <span>Live PSX Paper Trading</span>
             </div>
             <h1 style={{ color: palette.text }}>Build confidence before you invest live</h1>
             <p className="home-start-lead">
@@ -66,7 +66,7 @@ export default function LandingPage() {
           </div>
           <div className="home-market-panel" aria-label="Market snapshot panel">
             <div className="home-market-head">
-              <span>Pakistan Stock Exchange (Simulated)</span>
+              <span>Pakistan Stock Exchange (Live Feed)</span>
               <strong>Market Snapshot</strong>
             </div>
             <div className="home-market-strip">
@@ -87,7 +87,7 @@ export default function LandingPage() {
               <span />
             </div>
             <p>
-              Structured simulation environment built for first-time investors and portfolio discipline.
+              Live market snapshot with paper trading tools for disciplined practice.
             </p>
           </div>
         </section>

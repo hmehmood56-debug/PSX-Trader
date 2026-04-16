@@ -1,9 +1,9 @@
 export {
-  PerchSimEngineProvider as PriceSimulatorProvider,
-  usePerchSimEngine as useLivePrices,
+  PsxLiveMarketProvider as PriceSimulatorProvider,
+  usePsxLiveMarket as useLivePrices,
   type LiveQuote,
   type ReplayHistoryPoint,
   type ReplayStock,
   type MarketSnapshot,
   type ExecutionEstimate,
-} from "./perchSimEngine";
+} from "./psxLiveMarket";

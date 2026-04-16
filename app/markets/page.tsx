@@ -78,11 +78,11 @@ function MarketsCard({
 export default function MarketsHubPage() {
   const sections = [
     {
-      title: "Simulated PSX",
+      title: "PSX Paper Trading",
       description:
-        "Practice trading Pakistan equities with virtual funds. Build conviction, test decisions, and refine your process in Perch's paper-trading environment.",
+        "Practice trading Pakistan equities with live PSX market data, virtual funds, and full portfolio tracking in Perch.",
       href: "/markets/psx",
-      cta: "Open Simulated PSX",
+      cta: "Open PSX Paper Trading",
     },
     {
       title: "Live Crypto",

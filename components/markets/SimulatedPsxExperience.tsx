@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { startRouteProgress } from "@/lib/routeProgress";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLivePrices, type ReplayStock } from "@/lib/priceSimulator";
 import { formatCompactPKR, formatPKRWithSymbol } from "@/lib/format";
 
@@ -53,7 +53,7 @@ function SearchHero({
         }}
       >
         <div style={{ fontSize: 12, color: COLORS.muted, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-          Simulated market session
+          Live PSX market feed
         </div>
         <span
           style={{
@@ -68,7 +68,7 @@ function SearchHero({
             textTransform: "uppercase",
           }}
         >
-          {isPlaceholderData ? "Sample Market Session" : `Session state: ${sessionState}`}
+          {isPlaceholderData ? "Connecting to live feed" : `Feed status: ${sessionState}`}
         </span>
       </div>
       <h1
@@ -80,10 +80,10 @@ function SearchHero({
           lineHeight: 1.15,
         }}
       >
-        Pakistan Stock Exchange (Simulated)
+        Pakistan Stock Exchange (Paper Trading)
       </h1>
       <p style={{ marginTop: 10, marginBottom: 0, color: COLORS.muted, fontSize: 14, lineHeight: "22px", maxWidth: 780 }}>
-        Powered by Perch Sim Engine. Practice trading Pakistan equities with market state, sector momentum, and simulated execution realism.
+        Live PSX market data from PSX Terminal with Perch paper trading execution, virtual cash, and portfolio tracking.
       </p>
       <div className="perch-psx-search-grid" style={{ marginTop: 12 }}>
         <input
@@ -157,7 +157,7 @@ function MarketTickerTape({
       }}
     >
       <div style={{ padding: "10px 14px", fontSize: 12, color: COLORS.muted, fontWeight: 600 }}>
-        Simulated PSX pulse
+        Live PSX ticker
       </div>
       <div
         className="perch-ticker-row"
@@ -361,7 +361,11 @@ function StockCard({
 export function SimulatedPsxExperience() {
   const router = useRouter();
   const { getStocksWithLive, isPlaceholderData, getMarketSnapshot } = useLivePrices();
-  const stocks = getStocksWithLive();
+  const allStocks = getStocksWithLive();
+  const stocks = useMemo(
+    () => allStocks.filter((stock) => stock.price > 0 || stock.ticker.length > 0),
+    [allStocks]
+  );
   const market = getMarketSnapshot();
   const sectors = useMemo(
     () => ["All", ...Array.from(new Set(stocks.map((s) => s.sector))).sort((a, b) => a.localeCompare(b))],
@@ -370,6 +374,8 @@ export function SimulatedPsxExperience() {
 
   const [q, setQ] = useState("");
   const [sector, setSector] = useState("All");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 48;
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -396,8 +402,14 @@ export function SimulatedPsxExperience() {
     [filtered]
   );
 
-  const marketTape = useMemo(() => [...stocks].sort((a, b) => b.marketCap - a.marketCap), [stocks]);
+  const marketTape = useMemo(() => [...filtered].sort((a, b) => b.marketCap - a.marketCap).slice(0, 80), [filtered]);
   const hasSearch = q.trim().length > 0 || sector !== "All";
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pagedListings = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [q, sector]);
 
   return (
     <div style={{ background: COLORS.bg }}>
@@ -431,13 +443,13 @@ export function SimulatedPsxExperience() {
               color: COLORS.muted,
             }}
           >
-            No simulated PSX listings match your current filters.
+            No PSX listings match your current filters.
           </div>
         ) : (
           <>
             <StockSection
-              title={hasSearch ? "Search results" : "Trending in simulation"}
-              subtitle={hasSearch ? `${filtered.length} listings found` : "Largest movers in this simulated market session"}
+              title={hasSearch ? "Search results" : "Trending now"}
+              subtitle={hasSearch ? `${filtered.length} listings found` : "Largest movers from the live market feed"}
               stocks={hasSearch ? filtered.slice(0, 8) : trending}
               onOpen={(ticker) => {
                 startRouteProgress();
@@ -446,13 +458,63 @@ export function SimulatedPsxExperience() {
             />
             <StockSection
               title="Most active"
-              subtitle="Highest traded volume in this simulated session"
+              subtitle="Highest traded volume from the live feed"
               stocks={mostActive}
               onOpen={(ticker) => {
                 startRouteProgress();
                 router.push(`/stock/${ticker}`);
               }}
             />
+            <StockSection
+              title="All PSX listings"
+              subtitle={`${filtered.length} total symbols in live universe`}
+              stocks={pagedListings}
+              onOpen={(ticker) => {
+                startRouteProgress();
+                router.push(`/stock/${ticker}`);
+              }}
+            />
+            <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: COLORS.muted, fontSize: 12 }}>
+                Page {page} of {totalPages}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={page === 1}
+                  style={{
+                    minHeight: 36,
+                    borderRadius: 10,
+                    border: `1px solid ${COLORS.border}`,
+                    background: "#fff",
+                    padding: "0 12px",
+                    color: COLORS.text,
+                    cursor: page === 1 ? "not-allowed" : "pointer",
+                    opacity: page === 1 ? 0.5 : 1,
+                  }}
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={page >= totalPages}
+                  style={{
+                    minHeight: 36,
+                    borderRadius: 10,
+                    border: `1px solid ${COLORS.border}`,
+                    background: "#fff",
+                    padding: "0 12px",
+                    color: COLORS.text,
+                    cursor: page >= totalPages ? "not-allowed" : "pointer",
+                    opacity: page >= totalPages ? 0.5 : 1,
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </>
         )}
       </div>

@@ -17,7 +17,6 @@ import { useLivePrices } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { usePortfolio } from "@/hooks/usePortfolioState";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
-import { getReplayDatasetByTicker } from "@/lib/replayDataset";
 import { startRouteProgress } from "@/lib/routeProgress";
 import { logAnalyticsEvent } from "@/lib/analytics/client";
 
@@ -77,24 +76,17 @@ function smoothSeries(points: Point[]): Point[] {
 function buildRangeSeries(
   range: ChartRange,
   history: Point[],
-  currentPrice: number,
-  ticker: string
+  currentPrice: number
 ): Point[] {
   const now = Date.now();
   if (range === "1D") return history.length > 0 ? history : [{ date: new Date(now).toISOString(), price: currentPrice, volume: 0 }];
 
-  const replay = getReplayDatasetByTicker(ticker)?.bars ?? [];
   const recentPrices = history.map((item) => item.price);
   const recentReturns = recentPrices.slice(1).map((price, idx) => {
     const prev = recentPrices[idx] ?? price;
     return prev > 0 ? (price - prev) / prev : 0;
   });
-  const replayReturns = replay.slice(1).map((bar, idx) => {
-    const prev = replay[idx]?.close ?? bar.close;
-    return prev > 0 ? (bar.close - prev) / prev : 0;
-  });
-  const blendedReturns = [...replayReturns, ...recentReturns];
-  const fallbackReturn = recentReturns[recentReturns.length - 1] ?? replayReturns[replayReturns.length - 1] ?? 0;
+  const fallbackReturn = recentReturns[recentReturns.length - 1] ?? 0;
 
   const spec: Record<Exclude<ChartRange, "1D">, { points: number; stepMs: number }> = {
     "1W": { points: 7, stepMs: 24 * 60 * 60 * 1000 },
@@ -107,7 +99,9 @@ function buildRangeSeries(
   const { points, stepMs } = spec[range];
   const generated = Array.from({ length: points }, (_, idx) => {
     const reverseIndex = points - idx - 1;
-    const ret = blendedReturns[blendedReturns.length - 1 - (reverseIndex % Math.max(1, blendedReturns.length))] ?? fallbackReturn;
+    const ret = recentReturns.length
+      ? recentReturns[recentReturns.length - 1 - (reverseIndex % recentReturns.length)] ?? fallbackReturn
+      : fallbackReturn;
     const damp = range === "1W" ? 0.8 : range === "1M" ? 0.62 : 0.48;
     const move = clamp(ret * damp, -0.06, 0.06);
     const ts = now - (points - idx - 1) * stepMs;
@@ -167,7 +161,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const prevClose = quote?.previousClose ?? base.price - base.change;
   const averageVolume = history.length > 0 ? history.reduce((sum, p) => sum + p.volume, 0) / history.length : volume;
   const turnover = volume * price;
-  const chartData = useMemo(() => buildRangeSeries(range, history, price, ticker), [range, history, price, ticker]);
+  const chartData = useMemo(() => buildRangeSeries(range, history, price), [range, history, price]);
 
   const holding = useMemo(
     () => portfolio.holdings.find((h) => h.ticker === ticker),
@@ -279,7 +273,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               WebkitTapHighlightColor: "transparent",
             }}
           >
-            {"← Back to simulated PSX"}
+            {"← Back to PSX market"}
           </Link>
         </div>
 
@@ -351,7 +345,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               }}
             >
               <div style={statLabelStyle()}>
-                Price replay
+                Price chart
               </div>
               <div className="perch-stock-range-row" style={{ marginTop: 12 }}>
                 {CHART_RANGES.map((item) => {
@@ -476,7 +470,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 </div>
               </div>
               <div style={{ marginTop: 12, color: COLORS.mutedSoft, fontSize: 12 }}>
-                Powered by Perch Sim Engine.
+                Live PSX market data via PSX Terminal.
               </div>
             </section>
 
@@ -650,7 +644,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 {formatPKRWithSymbol(estimatedExecutionPrice)} per share
               </div>
               <div style={{ marginTop: 4, color: COLORS.mutedSoft }}>
-                Price may vary slightly with simulated market conditions.
+                Estimated fill may vary slightly from the latest market print.
               </div>
               <div
                 className="perch-ticket-row"

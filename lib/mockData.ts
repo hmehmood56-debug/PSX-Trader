@@ -29,8 +29,8 @@ function toSnapshot(profile: ReplayStockProfile): Stock {
   };
 }
 
-// Compatibility exports for server-rendered pages that still need a static
-// lookup. Runtime quote values come from the replay engine, not this snapshot.
+// Compatibility exports for server-rendered pages that still need static
+// company metadata. Runtime quote values come from the live PSX feed layer.
 export const MOCK_STOCKS: Stock[] = REPLAY_DATASET.map((item) =>
   toSnapshot(item.profile)
 );
