@@ -41,7 +41,7 @@ export default function PortfolioPage() {
   const rows = useMemo(() => {
     return portfolio.holdings.map((h) => {
       const q = getQuote(h.ticker);
-      const px = q?.price ?? getStockByTicker(h.ticker)?.price ?? 0;
+      const px = q?.price ?? h.avgBuyPrice;
       const value = h.shares * px;
       const cost = h.shares * h.avgBuyPrice;
       const pnl = value - cost;

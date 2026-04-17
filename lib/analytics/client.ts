@@ -5,6 +5,8 @@ import type { AnalyticsEventName, AnalyticsMetadata } from "@/lib/analytics/even
 
 const RETURN_VISIT_KEY = "perch_last_visit_at";
 const ATTRIBUTION_REGISTERED_KEY = "perch_attribution_registered";
+/** Session tab scope: cleared on `reset` so the next login can alias again. */
+const LINKED_USER_SESSION_KEY = "perch_ph_linked_user_id";
 
 function normalizeMetadata(metadata?: AnalyticsMetadata): AnalyticsMetadata {
   if (!metadata) return {};
@@ -62,8 +64,34 @@ export function identifyAnalyticsUser(userId: string, metadata?: AnalyticsMetada
   }
 }
 
+/**
+ * Merge anonymous PostHog activity into the authenticated user, then identify.
+ * Call only from the client after `posthog.init` (see provider order in `components/Providers.tsx`).
+ * Deduped per browser tab session + skips redundant alias when distinct id already matches.
+ */
+export function linkAuthenticatedAnalyticsUser(userId: string, metadata?: AnalyticsMetadata) {
+  try {
+    if (typeof window === "undefined") return;
+    if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
+    if (window.sessionStorage.getItem(LINKED_USER_SESSION_KEY) === userId) return;
+
+    const distinctId = posthog.get_distinct_id();
+    if (distinctId !== userId) {
+      posthog.alias(userId);
+    }
+    posthog.identify(userId, normalizeMetadata(metadata ?? {}));
+
+    window.sessionStorage.setItem(LINKED_USER_SESSION_KEY, userId);
+  } catch {
+    // Analytics must never interrupt user-facing flows.
+  }
+}
+
 export function resetAnalyticsUser() {
   try {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(LINKED_USER_SESSION_KEY);
+    }
     posthog.reset();
   } catch {
     // Analytics must never interrupt user-facing flows.

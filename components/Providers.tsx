@@ -9,15 +9,15 @@ import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <PostHogProvider>
+    <AuthProvider>
       <PriceSimulatorProvider>
-        <AuthProvider>
+        <PostHogProvider>
           <PortfolioProvider>
             <NavigationProgress />
             {children}
           </PortfolioProvider>
-        </AuthProvider>
+        </PostHogProvider>
       </PriceSimulatorProvider>
-    </PostHogProvider>
+    </AuthProvider>
   );
 }

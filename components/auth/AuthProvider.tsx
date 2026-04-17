@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/client";
 import {
   getLastVisitTimestamp,
-  identifyAnalyticsUser,
+  linkAuthenticatedAnalyticsUser,
   logAnalyticsEvent,
   markVisitTimestamp,
   resetAnalyticsUser,
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(nextSession);
       setLoading(false);
       if (nextSession?.user?.id) {
-        identifyAnalyticsUser(nextSession.user.id, {
+        linkAuthenticatedAnalyticsUser(nextSession.user.id, {
           email: nextSession.user.email ?? null,
           signup_method: nextSession.user.app_metadata?.provider ?? null,
         });
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setLoading(false);
       if (data.session?.user?.id) {
-        identifyAnalyticsUser(data.session.user.id, {
+        linkAuthenticatedAnalyticsUser(data.session.user.id, {
           email: data.session.user.email ?? null,
           signup_method: data.session.user.app_metadata?.provider ?? null,
         });

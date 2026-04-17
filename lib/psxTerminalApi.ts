@@ -11,6 +11,10 @@ export type PsxTerminalTick = {
   high?: number;
   low?: number;
   timestamp?: number;
+  /** Rupee turnover / traded value for the session when provided. */
+  value?: number;
+  trades?: number;
+  st?: string;
 };
 
 export type PsxTerminalTickResponse = {
@@ -25,6 +29,9 @@ export type PsxTerminalTickResponse = {
     high?: number;
     low?: number;
     timestamp?: number;
+    value?: number;
+    trades?: number;
+    st?: string;
   };
 };
 

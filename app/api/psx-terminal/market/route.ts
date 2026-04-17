@@ -25,6 +25,8 @@ async function fetchTickerSnapshot(ticker: string): Promise<MarketSnapshotItem |
     high: data.high,
     low: data.low,
     timestamp: data.timestamp,
+    value: data.value,
+    trades: data.trades,
   };
 }
 
@@ -61,7 +63,7 @@ export async function GET() {
   }
 
   if (data.length === 0) {
-    return NextResponse.json({ error: "PSX Terminal market snapshot unavailable." }, { status: 502 });
+    return NextResponse.json({ error: "Live market snapshot is temporarily unavailable." }, { status: 502 });
   }
 
   return NextResponse.json(

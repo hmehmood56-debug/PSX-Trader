@@ -17,7 +17,7 @@ import {
 } from "@/lib/perchAuthEmail";
 import { getGuestPortfolioBundle } from "@/lib/portfolioStore";
 import { createClient } from "@/utils/supabase/client";
-import { logAnalyticsEvent } from "@/lib/analytics/client";
+import { linkAuthenticatedAnalyticsUser, logAnalyticsEvent } from "@/lib/analytics/client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -89,6 +89,20 @@ export function SignupForm() {
       }
 
       await refreshPortfolio();
+
+      // Onboarding signup awaits profile + seed + portfolio refresh before navigation.
+      // Ensure PostHog alias+identify runs for this session even if auth callbacks raced that work.
+      if (fromOnboarding) {
+        const { data: latest } = await supabase.auth.getSession();
+        const u = latest.session?.user;
+        if (u) {
+          linkAuthenticatedAnalyticsUser(u.id, {
+            email: u.email ?? null,
+            signup_method: u.app_metadata?.provider ?? null,
+          });
+        }
+      }
+
       void logAnalyticsEvent("signup_completed", {
         route: "/signup",
         username: slug,

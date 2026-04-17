@@ -168,7 +168,7 @@ function MarketTickerTape({
       >
         <div className="perch-ticker-track">
           {tape.map((s, idx) => {
-            const up = s.change >= 0;
+            const up = s.hasLiveQuote && s.change >= 0;
             return (
               <button
                 key={`${s.ticker}-${idx}`}
@@ -189,17 +189,23 @@ function MarketTickerTape({
               >
                 <span style={{ color: COLORS.orange, fontWeight: 700 }}>{s.ticker}</span>
                 <span style={{ color: COLORS.text, fontVariantNumeric: "tabular-nums" }}>
-                  {formatPKRWithSymbol(s.price)}
+                  {s.hasLiveQuote ? formatPKRWithSymbol(s.price) : "—"}
                 </span>
                 <span
                   style={{
-                    color: up ? COLORS.gain : COLORS.loss,
+                    color: s.hasLiveQuote ? (up ? COLORS.gain : COLORS.loss) : COLORS.muted,
                     fontWeight: 700,
                     fontVariantNumeric: "tabular-nums",
                   }}
                 >
-                  {up ? "+" : ""}
-                  {s.changePercent.toFixed(2)}%
+                  {s.hasLiveQuote ? (
+                    <>
+                      {up ? "+" : ""}
+                      {s.changePercent.toFixed(2)}%
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </span>
               </button>
             );
@@ -295,7 +301,7 @@ function StockCard({
   stock: ReplayStock;
   onOpen: (ticker: string) => void;
 }) {
-  const up = stock.change >= 0;
+  const up = stock.hasLiveQuote && stock.change >= 0;
   return (
     <button
       type="button"
@@ -328,7 +334,7 @@ function StockCard({
         {stock.name}
       </div>
       <div style={{ marginTop: 10, color: COLORS.text, fontWeight: 700, fontSize: 18 }}>
-        {formatPKRWithSymbol(stock.price)}
+        {stock.hasLiveQuote ? formatPKRWithSymbol(stock.price) : "—"}
       </div>
       <div
         style={{
@@ -341,17 +347,23 @@ function StockCard({
       >
         <span
           style={{
-            color: up ? COLORS.gain : COLORS.loss,
+            color: stock.hasLiveQuote ? (up ? COLORS.gain : COLORS.loss) : COLORS.muted,
             fontWeight: 700,
             fontVariantNumeric: "tabular-nums",
           }}
         >
-          {up ? "+" : ""}
-          {stock.change.toFixed(2)} ({up ? "+" : ""}
-          {stock.changePercent.toFixed(2)}%)
+          {stock.hasLiveQuote ? (
+            <>
+              {up ? "+" : ""}
+              {stock.change.toFixed(2)} ({up ? "+" : ""}
+              {stock.changePercent.toFixed(2)}%)
+            </>
+          ) : (
+            "Awaiting live quote"
+          )}
         </span>
         <span style={{ color: COLORS.muted, fontVariantNumeric: "tabular-nums" }}>
-          Vol {formatCompactPKR(stock.volume)}
+          {stock.hasLiveQuote ? `Vol ${formatCompactPKR(stock.volume)}` : "—"}
         </span>
       </div>
     </button>
@@ -362,10 +374,7 @@ export function SimulatedPsxExperience() {
   const router = useRouter();
   const { getStocksWithLive, isPlaceholderData, getMarketSnapshot } = useLivePrices();
   const allStocks = getStocksWithLive();
-  const stocks = useMemo(
-    () => allStocks.filter((stock) => stock.price > 0 || stock.ticker.length > 0),
-    [allStocks]
-  );
+  const stocks = useMemo(() => allStocks.filter((stock) => stock.ticker.length > 0), [allStocks]);
   const market = getMarketSnapshot();
   const sectors = useMemo(
     () => ["All", ...Array.from(new Set(stocks.map((s) => s.sector))).sort((a, b) => a.localeCompare(b))],
@@ -392,17 +401,29 @@ export function SimulatedPsxExperience() {
   const trending = useMemo(
     () =>
       [...filtered]
+        .filter((s) => s.hasLiveQuote)
         .sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
         .slice(0, 6),
     [filtered]
   );
 
   const mostActive = useMemo(
-    () => [...filtered].sort((a, b) => b.volume - a.volume).slice(0, 6),
+    () =>
+      [...filtered]
+        .filter((s) => s.hasLiveQuote)
+        .sort((a, b) => b.volume - a.volume)
+        .slice(0, 6),
     [filtered]
   );
 
-  const marketTape = useMemo(() => [...filtered].sort((a, b) => b.marketCap - a.marketCap).slice(0, 80), [filtered]);
+  const marketTape = useMemo(
+    () =>
+      [...filtered]
+        .filter((s) => s.hasLiveQuote)
+        .sort((a, b) => b.volume - a.volume)
+        .slice(0, 80),
+    [filtered]
+  );
   const hasSearch = q.trim().length > 0 || sector !== "All";
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pagedListings = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

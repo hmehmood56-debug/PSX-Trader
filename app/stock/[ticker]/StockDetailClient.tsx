@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   Line,
   LineChart,
@@ -13,7 +13,7 @@ import {
   YAxis,
 } from "recharts";
 import type { Stock } from "@/lib/mockData";
-import { useLivePrices } from "@/lib/priceSimulator";
+import { useLivePrices, type LiveQuote } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { usePortfolio } from "@/hooks/usePortfolioState";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
@@ -58,71 +58,63 @@ function statLabelStyle(): CSSProperties {
 
 const CHART_RANGES: readonly ChartRange[] = ["1D", "1W", "1M", "3M", "1Y", "ALL"] as const;
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
+const NOT_AVAILABLE = "Not available";
 
-function smoothSeries(points: Point[]): Point[] {
-  if (points.length < 3) return points;
-  return points.map((point, index) => {
-    if (index === 0 || index === points.length - 1) return point;
-    const prev = points[index - 1]?.price ?? point.price;
-    const next = points[index + 1]?.price ?? point.price;
-    const smoothedPrice = prev * 0.22 + point.price * 0.56 + next * 0.22;
-    return { ...point, price: Number(smoothedPrice.toFixed(2)) };
-  });
-}
-
-function buildRangeSeries(
-  range: ChartRange,
-  history: Point[],
-  currentPrice: number
-): Point[] {
-  const now = Date.now();
-  if (range === "1D") return history.length > 0 ? history : [{ date: new Date(now).toISOString(), price: currentPrice, volume: 0 }];
-
-  const recentPrices = history.map((item) => item.price);
-  const recentReturns = recentPrices.slice(1).map((price, idx) => {
-    const prev = recentPrices[idx] ?? price;
-    return prev > 0 ? (price - prev) / prev : 0;
-  });
-  const fallbackReturn = recentReturns[recentReturns.length - 1] ?? 0;
-
-  const spec: Record<Exclude<ChartRange, "1D">, { points: number; stepMs: number }> = {
-    "1W": { points: 7, stepMs: 24 * 60 * 60 * 1000 },
-    "1M": { points: 30, stepMs: 24 * 60 * 60 * 1000 },
-    "3M": { points: 66, stepMs: 24 * 60 * 60 * 1000 },
-    "1Y": { points: 52, stepMs: 7 * 24 * 60 * 60 * 1000 },
-    ALL: { points: 120, stepMs: 7 * 24 * 60 * 60 * 1000 },
+type DetailStatsPayload = {
+  ticker: string;
+  tick: {
+    price?: number;
+    change?: number;
+    changePercent?: number;
+    value?: number;
+    volume?: number;
+    high?: number;
+    low?: number;
+    trades?: number;
+    timestamp?: number;
+  } | null;
+  derived: {
+    rangeHigh: number | null;
+    rangeLow: number | null;
+    avgDailyVolume: number | null;
+    latestDailyOpen: number | null;
+    dailySessions: number;
   };
+};
 
-  const { points, stepMs } = spec[range];
-  const generated = Array.from({ length: points }, (_, idx) => {
-    const reverseIndex = points - idx - 1;
-    const ret = recentReturns.length
-      ? recentReturns[recentReturns.length - 1 - (reverseIndex % recentReturns.length)] ?? fallbackReturn
-      : fallbackReturn;
-    const damp = range === "1W" ? 0.8 : range === "1M" ? 0.62 : 0.48;
-    const move = clamp(ret * damp, -0.06, 0.06);
-    const ts = now - (points - idx - 1) * stepMs;
-    return { ts, move };
-  });
+function formatMoneyOrNA(
+  value: number | null | undefined,
+  fmt: (n: number) => string,
+  options?: { allowZero?: boolean }
+): string {
+  if (value == null || !Number.isFinite(value)) return NOT_AVAILABLE;
+  if (!options?.allowZero && value === 0) return NOT_AVAILABLE;
+  return fmt(value);
+}
 
-  const series: Point[] = [];
-  let rollingPrice = currentPrice;
-  for (let i = generated.length - 1; i >= 0; i -= 1) {
-    rollingPrice = Math.max(1, rollingPrice / (1 + generated[i].move));
-  }
-  generated.forEach((entry) => {
-    rollingPrice = Math.max(1, rollingPrice * (1 + entry.move));
-    series.push({
-      date: new Date(entry.ts).toISOString(),
-      price: Number(rollingPrice.toFixed(2)),
-      volume: 0,
-    });
-  });
+function sortChartPointsAsc(points: Point[]): Point[] {
+  return [...points].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+}
 
-  return smoothSeries(series);
+function liveQuoteFromDetailTick(t: NonNullable<DetailStatsPayload["tick"]>): LiveQuote | null {
+  if (typeof t.price !== "number" || !Number.isFinite(t.price)) return null;
+  const change = typeof t.change === "number" && Number.isFinite(t.change) ? t.change : 0;
+  const previousClose = Number((t.price - change).toFixed(2));
+  const changePercent =
+    previousClose !== 0 ? Number((((t.price - previousClose) / previousClose) * 100).toFixed(2)) : 0;
+  const tsRaw = typeof t.timestamp === "number" && Number.isFinite(t.timestamp) ? t.timestamp : Date.now() / 1000;
+  const ms = tsRaw > 10_000_000_000 ? tsRaw : tsRaw * 1000;
+  return {
+    price: Number(t.price.toFixed(2)),
+    change: Number(change.toFixed(2)),
+    changePercent,
+    volume: Math.max(0, Math.round(typeof t.volume === "number" && Number.isFinite(t.volume) ? t.volume : 0)),
+    previousClose,
+    date: new Date(ms).toISOString(),
+    dayHigh: typeof t.high === "number" && Number.isFinite(t.high) ? t.high : undefined,
+    dayLow: typeof t.low === "number" && Number.isFinite(t.low) ? t.low : undefined,
+    sessionTurnover: typeof t.value === "number" && t.value > 0 ? t.value : undefined,
+  };
 }
 
 export function StockDetailClient({ stock: base }: { stock: Stock }) {
@@ -130,13 +122,16 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const { getQuote, getHistory, estimateExecution } = useLivePrices();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const quote = getQuote(ticker);
-  const price = quote?.price ?? base.price;
-  const change = quote?.change ?? base.change;
-  const changePct = quote?.changePercent ?? base.changePercent;
-  const volume = quote?.volume ?? base.volume;
+  const lastStreamQuoteRef = useRef<LiveQuote | null>(null);
+  const prevTickerSyncRef = useRef<string | null>(null);
+  if (prevTickerSyncRef.current !== ticker) {
+    lastStreamQuoteRef.current = null;
+    prevTickerSyncRef.current = ticker;
+  }
   const history = getHistory(ticker) as Point[];
-
+  const [detailStats, setDetailStats] = useState<DetailStatsPayload | null>(null);
+  const [chartSeries, setChartSeries] = useState<Point[]>([]);
+  const [chartLoadState, setChartLoadState] = useState<"idle" | "loading" | "ready" | "empty">("idle");
   const { portfolio, buyStock, sellStock } = usePortfolio();
   const [mode, setMode] = useState<"BUY" | "SELL">("BUY");
   const [sharesInput, setSharesInput] = useState("10");
@@ -150,18 +145,148 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [range, setRange] = useState<ChartRange>("1D");
 
+  const quoteFromDetail = useMemo(
+    () => (detailStats?.tick ? liveQuoteFromDetailTick(detailStats.tick) : null),
+    [detailStats]
+  );
+
+  const liveQuote = getQuote(ticker);
+  if (liveQuote) lastStreamQuoteRef.current = liveQuote;
+  const quote = liveQuote ?? lastStreamQuoteRef.current ?? quoteFromDetail;
+  const hasQuote = quote != null;
+  const price = hasQuote ? quote.price : null;
+  const change = hasQuote ? quote.change : 0;
+  const changePct = hasQuote ? quote.changePercent : 0;
+  const volume = hasQuote ? quote.volume : 0;
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch(`/api/psx-terminal/detail-stats/${encodeURIComponent(ticker)}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const json = (await res.json()) as DetailStatsPayload;
+        if (!cancelled) setDetailStats(json);
+      } catch {
+        // Detail stats are best-effort; live quote remains authoritative for price.
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [ticker]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setChartLoadState("loading");
+    const loadChart = async () => {
+      try {
+        const res = await fetch(
+          `/api/psx-terminal/chart/${encodeURIComponent(ticker)}?range=${encodeURIComponent(range)}`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) {
+          if (!cancelled) {
+            setChartSeries([]);
+            setChartLoadState("empty");
+          }
+          return;
+        }
+        const json = (await res.json()) as { data?: Point[] };
+        const rows = Array.isArray(json.data) ? sortChartPointsAsc(json.data as Point[]) : [];
+        if (cancelled) return;
+        setChartSeries(rows);
+        setChartLoadState(rows.length > 0 ? "ready" : "empty");
+      } catch {
+        if (!cancelled) {
+          setChartSeries([]);
+          setChartLoadState("empty");
+        }
+      }
+    };
+    void loadChart();
+    return () => {
+      cancelled = true;
+    };
+  }, [ticker, range]);
+
   const shares = Math.max(0, Math.floor(Number(sharesInput) || 0));
   const executionEstimate = estimateExecution(ticker, mode, shares);
-  const estimatedExecutionPrice = executionEstimate?.estimatedPrice ?? price;
+  const estimatedExecutionPrice = executionEstimate?.estimatedPrice ?? price ?? 0;
   const est = shares * estimatedExecutionPrice;
-  const dayHistory = history.length > 0 ? history : [{ date: quote?.date ?? new Date().toISOString(), price, volume }];
-  const dayOpen = dayHistory[0]?.price ?? price;
-  const localHigh = Math.max(price, ...dayHistory.map((p) => p.price));
-  const localLow = Math.min(price, ...dayHistory.map((p) => p.price));
-  const prevClose = quote?.previousClose ?? base.price - base.change;
-  const averageVolume = history.length > 0 ? history.reduce((sum, p) => sum + p.volume, 0) / history.length : volume;
-  const turnover = volume * price;
-  const chartData = useMemo(() => buildRangeSeries(range, history, price), [range, history, price]);
+  const dayHistory =
+    history.length > 0
+      ? sortChartPointsAsc(history)
+      : hasQuote && quote
+        ? [{ date: quote.date, price: quote.price, volume: quote.volume }]
+        : [];
+  const dayOpenFromBars = dayHistory[0]?.price;
+  const dayOpenFromDaily = detailStats?.derived.latestDailyOpen;
+  const dayOpen =
+    typeof dayOpenFromDaily === "number" && Number.isFinite(dayOpenFromDaily) && dayOpenFromDaily > 0
+      ? dayOpenFromDaily
+      : typeof dayOpenFromBars === "number" && Number.isFinite(dayOpenFromBars)
+        ? dayOpenFromBars
+        : price;
+  const localHigh = (() => {
+    const vals = [
+      ...(dayHistory.length ? dayHistory.map((p) => p.price) : []),
+      ...(hasQuote && quote ? [quote.price, quote.dayHigh ?? quote.price] : price != null ? [price] : []),
+    ];
+    if (!vals.length) return 0;
+    return Math.max(...vals);
+  })();
+  const localLow = (() => {
+    const vals = [
+      ...(dayHistory.length ? dayHistory.map((p) => p.price) : []),
+      ...(hasQuote && quote ? [quote.price, quote.dayLow ?? quote.price] : price != null ? [price] : []),
+    ];
+    if (!vals.length) return 0;
+    return Math.min(...vals);
+  })();
+  const prevClose = hasQuote && quote ? quote.previousClose : null;
+  const averageVolumeFromDetail = detailStats?.derived.avgDailyVolume;
+  const averageVolume =
+    typeof averageVolumeFromDetail === "number" &&
+    Number.isFinite(averageVolumeFromDetail) &&
+    averageVolumeFromDetail > 0
+      ? averageVolumeFromDetail
+      : history.length > 0
+        ? history.reduce((sum, p) => sum + p.volume, 0) / history.length
+        : volume;
+  const turnoverFromSession = hasQuote && quote?.sessionTurnover;
+  const turnover =
+    typeof turnoverFromSession === "number" && turnoverFromSession > 0
+      ? turnoverFromSession
+      : hasQuote && price != null && volume > 0
+        ? volume * price
+        : null;
+
+  const chartData = useMemo(() => {
+    if (chartSeries.length > 0) return chartSeries;
+    if (range === "1D" && history.length > 0) return sortChartPointsAsc(history);
+    if (price != null && Number.isFinite(price)) {
+      return [{ date: new Date().toISOString(), price, volume: volume ?? 0 }];
+    }
+    return [];
+  }, [chartSeries, range, history, price, volume]);
+
+  const rangeLow = detailStats?.derived.rangeLow;
+  const rangeHigh = detailStats?.derived.rangeHigh;
+  const hasDetailRange =
+    typeof rangeLow === "number" &&
+    typeof rangeHigh === "number" &&
+    Number.isFinite(rangeLow) &&
+    Number.isFinite(rangeHigh) &&
+    rangeHigh > 0 &&
+    rangeLow > 0 &&
+    rangeHigh >= rangeLow;
+
+  const marketCapDisplay =
+    base.marketCap > 0 ? formatCompactPKR(base.marketCap) : NOT_AVAILABLE;
 
   const holding = useMemo(
     () => portfolio.holdings.find((h) => h.ticker === ticker),
@@ -176,6 +301,10 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
 
   async function onConfirm() {
     setMessage(null);
+    if (!hasQuote || price == null) {
+      setMessage("Live price is not available yet. Please wait for the market feed.");
+      return;
+    }
     if (shares <= 0) {
       setMessage("Enter a valid number of shares.");
       return;
@@ -224,7 +353,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     });
   }
 
-  const up = change >= 0;
+  const up = hasQuote && change >= 0;
   if (standardSuccess) {
     return (
       <div style={{ background: COLORS.bg }}>
@@ -321,7 +450,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                     color: COLORS.text,
                   }}
                 >
-                  {formatPKRWithSymbol(price)}
+                  {hasQuote && price != null ? formatPKRWithSymbol(price) : "Awaiting live price"}
                 </div>
               </div>
               <div className="perch-stock-change-block">
@@ -330,12 +459,18 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   style={{
                     fontSize: "clamp(17px, 4vw, 20px)",
                     fontWeight: 740,
-                    color: up ? COLORS.gain : COLORS.loss,
+                    color: hasQuote ? (up ? COLORS.gain : COLORS.loss) : COLORS.mutedSoft,
                   }}
                 >
-                  {up ? "+" : ""}
-                  {change.toFixed(2)} ({up ? "+" : ""}
-                  {changePct.toFixed(2)}%)
+                  {hasQuote ? (
+                    <>
+                      {up ? "+" : ""}
+                      {change.toFixed(2)} ({up ? "+" : ""}
+                      {changePct.toFixed(2)}%)
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </div>
                 <div style={{ fontSize: 12, color: COLORS.mutedSoft, marginTop: 4 }}>
                   Today&apos;s change
@@ -384,7 +519,15 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   );
                 })}
               </div>
-              <div className="perch-stock-chart-box" style={{ width: "100%", marginTop: 12 }}>
+              <div
+                className="perch-stock-chart-box"
+                style={{
+                  width: "100%",
+                  marginTop: 12,
+                  opacity: chartLoadState === "loading" ? 0.5 : 1,
+                  transition: "opacity 180ms ease",
+                }}
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 10, right: 4, left: -8, bottom: 4 }}>
                     <CartesianGrid stroke="#F3F3F3" vertical={false} strokeDasharray="0" />
@@ -457,34 +600,48 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               <div className="perch-stock-ohlc-grid" style={{ marginTop: 14 }}>
                 <div>
                   <div style={statLabelStyle()}>Open</div>
-                  <div className="perch-stock-ohlc-value">{formatPKRWithSymbol(dayOpen)}</div>
+                  <div className="perch-stock-ohlc-value">
+                    {formatMoneyOrNA(
+                      typeof dayOpen === "number" && Number.isFinite(dayOpen) ? dayOpen : null,
+                      formatPKRWithSymbol,
+                      { allowZero: true }
+                    )}
+                  </div>
                 </div>
                 <div>
                   <div style={statLabelStyle()}>High</div>
-                  <div className="perch-stock-ohlc-value">{formatPKRWithSymbol(localHigh)}</div>
+                  <div className="perch-stock-ohlc-value">
+                    {localHigh > 0 ? formatPKRWithSymbol(localHigh) : NOT_AVAILABLE}
+                  </div>
                 </div>
                 <div>
                   <div style={statLabelStyle()}>Low</div>
-                  <div className="perch-stock-ohlc-value">{formatPKRWithSymbol(localLow)}</div>
+                  <div className="perch-stock-ohlc-value">
+                    {localLow > 0 ? formatPKRWithSymbol(localLow) : NOT_AVAILABLE}
+                  </div>
                 </div>
                 <div>
                   <div style={statLabelStyle()}>Prev close</div>
-                  <div className="perch-stock-ohlc-value">{formatPKRWithSymbol(prevClose)}</div>
+                  <div className="perch-stock-ohlc-value">
+                    {formatMoneyOrNA(prevClose, formatPKRWithSymbol, { allowZero: true })}
+                  </div>
                 </div>
                 <div>
                   <div style={statLabelStyle()}>Day volume</div>
-                  <div className="perch-stock-ohlc-value">{formatCompactPKR(volume)}</div>
+                  <div className="perch-stock-ohlc-value">
+                    {hasQuote ? formatCompactPKR(volume) : NOT_AVAILABLE}
+                  </div>
                 </div>
               </div>
               <div style={{ marginTop: 12, color: COLORS.mutedSoft, fontSize: 12 }}>
-                Live PSX market data via PSX Terminal.
+                Live market data.
               </div>
             </section>
 
             <section style={{ ...panelStyle(), background: "#FFFFFF" }}>
               <div className="perch-stock-stats-grid">
                 <div>
-                  <div style={statLabelStyle()}>52-week range</div>
+                  <div style={statLabelStyle()}>Price range (recent history)</div>
                 <div
                   className="perch-fin-number perch-stock-stat-number"
                   style={{
@@ -494,25 +651,27 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                     color: COLORS.text,
                   }}
                 >
-                    {formatPKRWithSymbol(base.low52)} - {formatPKRWithSymbol(base.high52)}
+                    {hasDetailRange
+                      ? `${formatPKRWithSymbol(rangeLow!)} – ${formatPKRWithSymbol(rangeHigh!)}`
+                      : NOT_AVAILABLE}
                   </div>
                 </div>
                 <div>
                   <div style={statLabelStyle()}>Market cap</div>
                   <div className="perch-fin-number perch-stock-stat-number" style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
-                    {formatCompactPKR(base.marketCap)}
+                    {marketCapDisplay}
                   </div>
                 </div>
                 <div>
                   <div style={statLabelStyle()}>Average volume</div>
                   <div className="perch-fin-number perch-stock-stat-number" style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
-                    {formatCompactPKR(averageVolume)}
+                    {formatMoneyOrNA(averageVolume, formatCompactPKR)}
                   </div>
                 </div>
                 <div>
                   <div style={statLabelStyle()}>Turnover</div>
                   <div className="perch-fin-number perch-stock-stat-number" style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
-                    {formatCompactPKR(turnover)}
+                    {formatMoneyOrNA(turnover, formatCompactPKR)}
                   </div>
                 </div>
               </div>
@@ -644,11 +803,11 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                     fontSize: 15,
                   }}
                 >
-                  {formatPKRWithSymbol(est)}
+                  {hasQuote ? formatPKRWithSymbol(est) : NOT_AVAILABLE}
                 </div>
               </div>
               <div className="perch-fin-number perch-ticket-secondary-value" style={{ marginTop: 8, color: COLORS.mutedSoft }}>
-                {formatPKRWithSymbol(estimatedExecutionPrice)} per share
+                {hasQuote ? `${formatPKRWithSymbol(estimatedExecutionPrice)} per share` : NOT_AVAILABLE}
               </div>
               <div style={{ marginTop: 4, color: COLORS.mutedSoft }}>
                 Estimated fill may vary slightly from the latest market print.
@@ -709,7 +868,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   <button
                     type="button"
                     onClick={onConfirm}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !hasQuote}
                     style={{
                       marginTop: 16,
                       width: "100%",
@@ -722,8 +881,8 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                       fontSize: 16,
                       letterSpacing: "0.02em",
                       boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
-                      cursor: isSubmitting ? "wait" : "pointer",
-                      opacity: isSubmitting ? 0.8 : 1,
+                      cursor: isSubmitting || !hasQuote ? "not-allowed" : "pointer",
+                      opacity: isSubmitting || !hasQuote ? 0.55 : 1,
                       WebkitTapHighlightColor: "transparent",
                     }}
                   >
@@ -734,7 +893,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   <button
                     type="button"
                     onClick={onConfirm}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !hasQuote}
                     style={{
                       marginTop: 16,
                       width: "100%",
@@ -746,8 +905,8 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                       fontWeight: 740,
                       fontSize: 16,
                       letterSpacing: "0.02em",
-                      cursor: isSubmitting ? "wait" : "pointer",
-                      opacity: isSubmitting ? 0.8 : 1,
+                      cursor: isSubmitting || !hasQuote ? "not-allowed" : "pointer",
+                      opacity: isSubmitting || !hasQuote ? 0.55 : 1,
                       WebkitTapHighlightColor: "transparent",
                     }}
                   >
