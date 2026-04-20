@@ -7,7 +7,6 @@ import {
 import { AuthShell } from "@/components/auth/AuthShell";
 import styles from "@/components/auth/AuthShell.module.css";
 import { usePortfolio } from "@/components/PortfolioProvider";
-import { emptyBundle } from "@/lib/portfolioMutations";
 import {
   friendlyAuthError,
   normalizeUsername,
@@ -15,17 +14,32 @@ import {
   validatePasswordFormat,
   validateUsernameFormat,
 } from "@/lib/perchAuthEmail";
-import { getGuestPortfolioBundle } from "@/lib/portfolioStore";
+import { clearGuestPortfolioStorage, getGuestPortfolioBundle } from "@/lib/portfolioStore";
 import { createClient } from "@/utils/supabase/client";
 import { linkAuthenticatedAnalyticsUser, logAnalyticsEvent } from "@/lib/analytics/client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export function SignupForm() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) router.replace("/dashboard");
+  }, [user, authLoading, router]);
   const fromOnboarding = searchParams.get("from") === "onboarding";
+  const nextRaw = searchParams.get("next");
+  const postSignupPath =
+    !fromOnboarding &&
+    nextRaw &&
+    nextRaw.startsWith("/") &&
+    !nextRaw.startsWith("//")
+      ? nextRaw
+      : "/dashboard";
   const { refreshPortfolio } = usePortfolio();
 
   const [username, setUsername] = useState("");
@@ -81,7 +95,7 @@ export function SignupForm() {
         return;
       }
 
-      const bundle = fromOnboarding ? getGuestPortfolioBundle() : emptyBundle();
+      const bundle = getGuestPortfolioBundle();
       const seedRes = await seedRemotePortfolioFromBundle(bundle);
       if (!seedRes.ok) {
         setError(seedRes.error);
@@ -89,6 +103,7 @@ export function SignupForm() {
       }
 
       await refreshPortfolio();
+      clearGuestPortfolioStorage();
 
       // Onboarding signup awaits profile + seed + portfolio refresh before navigation.
       // Ensure PostHog alias+identify runs for this session even if auth callbacks raced that work.
@@ -108,11 +123,19 @@ export function SignupForm() {
         username: slug,
         onboarding_completed: fromOnboarding,
       });
-      router.push("/dashboard");
+      router.push(postSignupPath);
       router.refresh();
     } finally {
       setBusy(false);
     }
+  }
+
+  if (!authLoading && user) {
+    return (
+      <div className="perch-shell" style={{ paddingTop: 48, color: "#6B6B6B" }}>
+        Redirecting…
+      </div>
+    );
   }
 
   return (
@@ -130,6 +153,12 @@ export function SignupForm() {
           </p>
           <p className={styles.homeLink}>
             <Link href="/">Home</Link>
+          </p>
+          <p className={styles.footer} style={{ marginTop: 12 }}>
+            Want live trading when we launch?{" "}
+            <Link href="/waitlist" className={styles.footerLink}>
+              Join the waitlist
+            </Link>
           </p>
         </>
       }

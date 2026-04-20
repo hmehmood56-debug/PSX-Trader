@@ -14,10 +14,20 @@ const links = [
   { href: "/account", label: "Account" },
 ];
 
+function accountLabel(user: { email?: string | null; user_metadata?: Record<string, unknown> }): string {
+  const u = user.user_metadata?.username;
+  if (typeof u === "string" && u.trim()) return u.trim();
+  const e = user.email?.split("@")[0];
+  return e && e.trim() ? e.trim() : "My Account";
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const signedInLabel = user ? accountLabel(user) : "";
+  /** One of three mutually exclusive UI modes. Never mix guest and signed-in controls in the same render. */
+  const authMode = authLoading ? "loading" : user ? "signedIn" : "guest";
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
@@ -53,7 +63,7 @@ export function Navbar() {
       <div className={styles.inner}>
         <Link href="/" className={styles.brand} onClick={closeMenu}>
           <PerchWordmark />
-          <span className={styles.badge}>PSX Market</span>
+          {authMode === "guest" ? <span className={styles.previewPill}>Preview</span> : null}
         </Link>
 
         <nav className={styles.desktopNav} aria-label="Primary">
@@ -71,19 +81,38 @@ export function Navbar() {
           })}
         </nav>
 
-        <div className={styles.desktopCtas}>
-          {!authLoading && !user && (
+        {authMode === "loading" ? (
+          <div className={styles.desktopCtas}>
+            <Link href="/waitlist" className={styles.ctaWaitlist}>
+              Join Waitlist
+            </Link>
+            <span className={styles.authLoadingSlot} aria-hidden />
+          </div>
+        ) : authMode === "signedIn" ? (
+          <div className={styles.desktopCtas}>
+            <Link href="/waitlist" className={styles.ctaWaitlist}>
+              Join Waitlist
+            </Link>
+            <span className={styles.userLabel} title={user?.email ?? undefined}>
+              {signedInLabel}
+            </span>
+          </div>
+        ) : (
+          <div className={styles.desktopCtas}>
             <Link href="/signin" className={styles.ctaSecondary}>
               Sign in
             </Link>
-          )}
-          <Link href="/markets" className={styles.ctaSecondary}>
-            Explore Markets
-          </Link>
-          <Link href="/start" className={styles.ctaPrimary}>
-            Start Here
-          </Link>
-        </div>
+            <Link href="/signup" className={styles.ctaSecondary}>
+              Create account
+            </Link>
+            <Link href="/waitlist" className={styles.ctaWaitlist}>
+              Join Waitlist
+            </Link>
+            <Link href="/start" className={styles.ctaPrimary}>
+              Start Here
+            </Link>
+          </div>
+        )}
 
         <button
           type="button"
@@ -136,19 +165,42 @@ export function Navbar() {
             );
           })}
         </nav>
-        <div className={styles.mobileCtas}>
-          {!authLoading && !user && (
+        {authMode === "signedIn" ? (
+          <div className={styles.mobileUserRow}>
+            <span className={styles.mobileUserLabel} title={user?.email ?? undefined}>
+              {signedInLabel}
+            </span>
+          </div>
+        ) : null}
+        {authMode === "loading" ? (
+          <div className={styles.mobileCtas}>
+            <Link href="/waitlist" className={styles.mobileCtaWaitlist} onClick={closeMenu}>
+              Join Waitlist
+            </Link>
+            <div className={styles.mobileAuthLoadingSlot} aria-hidden />
+          </div>
+        ) : authMode === "signedIn" ? (
+          <div className={styles.mobileCtas}>
+            <Link href="/waitlist" className={styles.mobileCtaWaitlist} onClick={closeMenu}>
+              Join Waitlist
+            </Link>
+          </div>
+        ) : (
+          <div className={styles.mobileCtas}>
             <Link href="/signin" className={styles.mobileCtaSecondary} onClick={closeMenu}>
               Sign in
             </Link>
-          )}
-          <Link href="/markets" className={styles.mobileCtaSecondary} onClick={closeMenu}>
-            Explore Markets
-          </Link>
-          <Link href="/start" className={styles.mobileCtaPrimary} onClick={closeMenu}>
-            Start Here
-          </Link>
-        </div>
+            <Link href="/signup" className={styles.mobileCtaSecondary} onClick={closeMenu}>
+              Create account
+            </Link>
+            <Link href="/waitlist" className={styles.mobileCtaWaitlist} onClick={closeMenu}>
+              Join Waitlist
+            </Link>
+            <Link href="/start" className={styles.mobileCtaPrimary} onClick={closeMenu}>
+              Start Here
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );

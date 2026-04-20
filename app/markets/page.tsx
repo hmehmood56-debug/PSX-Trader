@@ -164,6 +164,45 @@ export default async function MarketsHubPage() {
             Perch Markets is organized into dedicated sections so each experience is either fully live or
             intentionally staged for rollout.
           </p>
+          <div
+            style={{
+              marginTop: 22,
+              padding: "14px 18px",
+              borderRadius: 14,
+              border: `1px solid ${palette.border}`,
+              background: "#FAFAF8",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 14,
+              maxWidth: 760,
+            }}
+          >
+            <p style={{ margin: 0, color: palette.text, fontSize: 15, lineHeight: 1.55, maxWidth: 480 }}>
+              <strong style={{ fontWeight: 650 }}>Real trading is on the roadmap.</strong> Join the waitlist to be
+              notified when live brokerage access rolls out.
+            </p>
+            <Link
+              href="/waitlist"
+              style={{
+                flexShrink: 0,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textDecoration: "none",
+                borderRadius: 10,
+                minHeight: 44,
+                padding: "10px 18px",
+                fontSize: 15,
+                fontWeight: 650,
+                color: "#FFFFFF",
+                background: palette.orange,
+              }}
+            >
+              Join waitlist
+            </Link>
+          </div>
         </section>
 
         <section className="markets-hub-grid" style={{ marginTop: 22 }}>

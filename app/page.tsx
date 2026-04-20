@@ -57,6 +57,62 @@ export default function LandingPage() {
                 Explore Markets
               </Link>
             </div>
+            <div
+              style={{
+                marginTop: 28,
+                maxWidth: 460,
+                padding: "20px 22px",
+                borderRadius: 14,
+                border: `1px solid #E8D4C7`,
+                background: "linear-gradient(125deg, #FFF8F2 0%, #FFFFFF 100%)",
+                boxShadow: "0 16px 40px rgba(196, 80, 0, 0.1)",
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: palette.orange,
+                }}
+              >
+                Real trading
+              </p>
+              <p
+                style={{
+                  margin: "10px 0 0",
+                  color: palette.text,
+                  fontSize: 17,
+                  fontWeight: 650,
+                  lineHeight: 1.35,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                Live brokerage is on the way. Get priority access when we launch. Join the waitlist in one tap.
+              </p>
+              <Link
+                href="/waitlist"
+                style={{
+                  marginTop: 16,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textDecoration: "none",
+                  minHeight: 46,
+                  padding: "12px 22px",
+                  borderRadius: 10,
+                  background: palette.orange,
+                  color: "#FFFFFF",
+                  fontSize: 15,
+                  fontWeight: 650,
+                  boxShadow: "0 10px 26px rgba(196, 80, 0, 0.28)",
+                }}
+              >
+                Join the waitlist
+              </Link>
+            </div>
             <p className="home-start-lead" style={{ marginTop: 16, maxWidth: 420, fontSize: 15 }}>
               Returning user?{" "}
               <Link href="/signin" style={{ color: palette.orange, fontWeight: 600 }}>

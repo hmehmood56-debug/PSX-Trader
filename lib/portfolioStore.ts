@@ -96,6 +96,12 @@ export function getGuestPortfolioBundle(): PortfolioBundle {
   return readBundle();
 }
 
+/** Clears guest localStorage after login or signup so the UI does not reuse a stale guest identity. */
+export function clearGuestPortfolioStorage(): void {
+  writeBundle(emptyBundle());
+  notifyPortfolioChanged();
+}
+
 export function setGuestPortfolioBundle(bundle: PortfolioBundle): void {
   writeBundle(bundle);
   notifyPortfolioChanged();

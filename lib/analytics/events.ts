@@ -16,6 +16,8 @@ export type AnalyticsEventName =
   | "deposit_virtual_funds"
   | "withdraw_virtual_funds"
   | "options_viewed"
-  | "option_trade_executed";
+  | "option_trade_executed"
+  | "real_trading_waitlist_viewed"
+  | "real_trading_waitlist_joined";
 
 export type AnalyticsMetadata = Record<string, unknown>;

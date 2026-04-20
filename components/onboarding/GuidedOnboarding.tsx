@@ -104,6 +104,12 @@ export function GuidedOnboarding() {
                   Start setup
                 </button>
               </div>
+              <p className={styles.waitlistHint}>
+                Prefer live trading later?{" "}
+                <Link href="/waitlist" className={styles.waitlistLink}>
+                  Join the waitlist
+                </Link>
+              </p>
             </>
           )}
 

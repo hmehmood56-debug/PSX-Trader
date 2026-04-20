@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useLivePrices } from "@/lib/priceSimulator";
 import { getStockByTicker } from "@/lib/mockData";
 import { formatPKRWithSymbol } from "@/lib/format";
@@ -53,7 +54,7 @@ function labelStyle(): CSSProperties {
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { portfolio, transactions: txs, portfolioReady } = usePortfolio();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { getQuote, getMarketSnapshot } = useLivePrices();
 
   useEffect(() => setMounted(true), []);
@@ -86,7 +87,7 @@ export default function DashboardPage() {
   const displayName =
     (user?.user_metadata?.username as string | undefined) ??
     user?.email?.split("@")[0] ??
-    "Investor";
+    "Account";
 
   const rows = useMemo(() => {
     return portfolio.holdings.map((h) => {
@@ -158,7 +159,7 @@ export default function DashboardPage() {
     return smoothed;
   }, [txs, unrealizedPnl]);
 
-  if (!mounted || !portfolioReady) return null;
+  if (!mounted || !portfolioReady || authLoading) return null;
 
   return (
     <div style={{ background: COLORS.bg }}>
@@ -168,10 +169,70 @@ export default function DashboardPage() {
             <div style={{ marginBottom: 8 }}>
               <PerchWordmark compact />
             </div>
-            <h1>Welcome back, {displayName}</h1>
-            <p>Here&apos;s your portfolio snapshot today</p>
+            {user ? (
+              <>
+                <h1>Welcome back, {displayName}</h1>
+                <p>Here&apos;s your portfolio snapshot today</p>
+              </>
+            ) : (
+              <>
+                <p
+                  style={{
+                    display: "inline-block",
+                    margin: "0 0 8px",
+                    padding: "4px 10px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: COLORS.muted,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: 999,
+                    background: COLORS.bgSecondary,
+                  }}
+                >
+                  Preview mode
+                </p>
+                <h1>Practice portfolio</h1>
+                <p>Simulation only. Numbers here are not a real brokerage account.</p>
+              </>
+            )}
           </div>
         </section>
+        {!user ? (
+          <div
+            style={{
+              marginBottom: 24,
+              padding: "16px 18px",
+              borderRadius: 14,
+              border: `1px solid ${COLORS.border}`,
+              background: COLORS.bgSecondary,
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: COLORS.text }}>
+              Create an account to save your progress and get access to real trading features.
+            </p>
+            <Link
+              href="/signup"
+              style={{
+                marginTop: 12,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 44,
+                padding: "0 18px",
+                borderRadius: 10,
+                background: COLORS.orange,
+                color: "#fff",
+                fontSize: 15,
+                fontWeight: 650,
+                textDecoration: "none",
+              }}
+            >
+              Create account
+            </Link>
+          </div>
+        ) : null}
         <div className="perch-dashboard-stats">
           <StatCard
             label="Portfolio Value"

@@ -2,6 +2,7 @@
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import styles from "@/components/auth/AuthShell.module.css";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { usePortfolio } from "@/components/PortfolioProvider";
 import {
   friendlyAuthError,
@@ -9,15 +10,22 @@ import {
   validatePasswordFormat,
   validateUsernameFormat,
 } from "@/lib/perchAuthEmail";
+import { clearGuestPortfolioStorage } from "@/lib/portfolioStore";
 import { createClient } from "@/utils/supabase/client";
 import { logAnalyticsEvent } from "@/lib/analytics/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function SignInPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const { refreshPortfolio } = usePortfolio();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) router.replace("/dashboard");
+  }, [user, authLoading, router]);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -54,6 +62,7 @@ export default function SignInPage() {
       }
 
       await refreshPortfolio();
+      clearGuestPortfolioStorage();
       void logAnalyticsEvent("login_completed", {
         route: "/signin",
         username,
@@ -63,6 +72,14 @@ export default function SignInPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (!authLoading && user) {
+    return (
+      <div className="perch-shell" style={{ paddingTop: 48, color: "#6B6B6B" }}>
+        Redirecting…
+      </div>
+    );
   }
 
   return (
