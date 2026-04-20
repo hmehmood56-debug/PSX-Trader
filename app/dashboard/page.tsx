@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { useLivePrices } from "@/lib/priceSimulator";
 import { getStockByTicker } from "@/lib/mockData";
-import { formatPKRWithSymbol } from "@/lib/format";
 import { usePortfolio } from "@/hooks/usePortfolioState";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { useMemo, useState, useEffect, type CSSProperties } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { PortfolioSections } from "@/components/dashboard/PortfolioSections";
 import { PerchWordmark } from "@/components/PerchWordmark";
 import { logAnalyticsEvent } from "@/lib/analytics/client";
@@ -21,35 +20,6 @@ const COLORS = {
   gain: "#007A4C",
   loss: "#C0392B",
 } as const;
-
-function signedPkr(n: number): string {
-  const sign = n >= 0 ? "+" : "";
-  return `${sign}${formatPKRWithSymbol(n, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
-function cardStyle(): CSSProperties {
-  return {
-    background: "linear-gradient(180deg, #FFFFFF 0%, #FCFCFC 100%)",
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 16,
-    padding: 24,
-    boxShadow: "0 10px 26px rgba(26, 26, 26, 0.05)",
-    minHeight: 132,
-  };
-}
-
-function labelStyle(): CSSProperties {
-  return {
-    fontSize: 11,
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    color: COLORS.muted,
-    fontWeight: 600,
-  };
-}
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
@@ -164,9 +134,9 @@ export default function DashboardPage() {
   return (
     <div style={{ background: COLORS.bg }}>
       <div className="perch-shell perch-shell-wide perch-psx-shell">
-        <section className="dashboard-header">
+        <section className="dashboard-header dashboard-header--brokerage">
           <div>
-            <div style={{ marginBottom: 8 }}>
+            <div className="perch-dashboard-brand-line">
               <PerchWordmark compact />
             </div>
             {user ? (
@@ -233,62 +203,18 @@ export default function DashboardPage() {
             </Link>
           </div>
         ) : null}
-        <div className="perch-dashboard-stats">
-          <StatCard
-            label="Portfolio Value"
-            value={formatPKRWithSymbol(portfolioValue)}
-          />
-          <StatCard
-            label="Cash Available"
-            value={formatPKRWithSymbol(portfolio.cash)}
-          />
-          <StatCard
-            label="Portfolio Health"
-            value={signedPkr(todayPnL)}
-            valueColor={todayPnL >= 0 ? COLORS.gain : COLORS.loss}
-          />
-          <StatCard
-            label="Market Breadth"
-            value={`${Math.round(market.marketBreadth * 100)}%`}
-            valueColor={market.marketBreadth >= 0.5 ? COLORS.gain : COLORS.loss}
-          />
-        </div>
-
         <PortfolioSections
           rows={rows}
           txs={txs}
           cash={portfolio.cash}
           holdingsValue={holdingsValue}
+          portfolioValue={portfolioValue}
+          todayPnL={todayPnL}
+          unrealizedPnl={unrealizedPnl}
+          marketBreadth={market.marketBreadth}
           performancePoints={performancePoints}
         />
-      </div>
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  valueColor?: string;
-}) {
-  return (
-    <div style={cardStyle()}>
-      <div style={labelStyle()}>{label}</div>
-      <div
-        style={{
-          marginTop: 14,
-          fontSize: "clamp(28px, 4vw, 34px)",
-          fontWeight: 760,
-          color: valueColor ?? COLORS.text,
-          fontVariantNumeric: "tabular-nums",
-          lineHeight: 1.06,
-        }}
-      >
-        {value}
+        <footer className="perch-dashboard-footer">© 2026 Perch Capital. All rights reserved.</footer>
       </div>
     </div>
   );

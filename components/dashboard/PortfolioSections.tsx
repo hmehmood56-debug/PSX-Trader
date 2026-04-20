@@ -3,11 +3,10 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import {
   Area,
-  AreaChart,
-  Bar,
-  BarChart,
   CartesianGrid,
+  ComposedChart,
   Line,
+  ReferenceDot,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -43,7 +42,9 @@ const COLORS = {
   loss: "#C0392B",
 } as const;
 
-const ALLOCATION_COLORS = ["#C45000", "#D46C30", "#E28957", "#EEA67F", "#F4BFA1", "#B85A1A"];
+/** Muted bar fills for allocation (non–top holding) */
+const ALLOCATION_MUTED = ["#94A3AF", "#A1A1AA", "#B4B4B8", "#BFBFBF", "#C4C4C4", "#C9C9C9", "#CECECE"] as const;
+
 const TIMEFRAME_LABELS = ["1D", "1W", "1M", "1Y", "5Y", "ALL"] as const;
 type Timeframe = (typeof TIMEFRAME_LABELS)[number];
 
@@ -65,21 +66,19 @@ function pointsForTimeframe(timeframe: Timeframe): number {
   }
 }
 
-function cardStyle(): CSSProperties {
-  return {
-    background: "linear-gradient(180deg, #FFFFFF 0%, #FCFCFC 100%)",
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 16,
-    padding: 24,
-    boxShadow: "0 10px 26px rgba(26, 26, 26, 0.05)",
-  };
+function signedPkr(n: number): string {
+  const sign = n >= 0 ? "+" : "";
+  return `${sign}${formatPKRWithSymbol(n, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 function sectionLabelStyle(): CSSProperties {
   return {
-    fontSize: 11,
+    fontSize: 10,
     textTransform: "uppercase",
-    letterSpacing: "0.05em",
+    letterSpacing: "0.07em",
     color: COLORS.muted,
     fontWeight: 600,
   };
@@ -90,17 +89,26 @@ export function PortfolioSections({
   txs,
   cash,
   holdingsValue,
+  portfolioValue,
+  todayPnL,
+  unrealizedPnl,
+  marketBreadth,
   performancePoints,
 }: {
   rows: HoldingRow[];
   txs: Transaction[];
   cash: number;
   holdingsValue: number;
+  portfolioValue: number;
+  todayPnL: number;
+  unrealizedPnl: number;
+  marketBreadth: number;
   performancePoints: PerformancePoint[];
 }) {
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
   const latestPnl = performancePoints[performancePoints.length - 1]?.pnl ?? 0;
   const trendColor = latestPnl >= 0 ? COLORS.gain : COLORS.loss;
+  const dayColor = todayPnL >= 0 ? COLORS.gain : COLORS.loss;
 
   const filteredPerformancePoints = useMemo(() => {
     const count = pointsForTimeframe(timeframe);
@@ -124,18 +132,41 @@ export function PortfolioSections({
     return base.slice(0, 8);
   }, [rows, totalInvested]);
 
+  const lastPoint = filteredPerformancePoints[filteredPerformancePoints.length - 1];
+
+  /** Render-only path: insert midpoints with small wobble so segments are not ruler-straight */
+  const chartSeriesPoints = useMemo(() => {
+    const pts = filteredPerformancePoints;
+    if (pts.length <= 1) return pts;
+    const out: PerformancePoint[] = [pts[0]];
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1];
+      const curr = pts[i];
+      const leg = Math.abs(curr.pnl - prev.pnl);
+      const scale = Math.max(leg, Math.abs(latestPnl) * 0.025, 6);
+      const midLinear = (prev.pnl + curr.pnl) / 2;
+      const wobble = scale * 0.055 * Math.sin(i * 1.91 + prev.pnl * 1e-7);
+      out.push({ label: `·${i}`, pnl: midLinear + wobble });
+      out.push(curr);
+    }
+    return out;
+  }, [filteredPerformancePoints, latestPnl]);
+
   return (
     <>
-      <div style={{ marginTop: 16, ...cardStyle() }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between" }}>
-          <div>
-            <div style={sectionLabelStyle()}>Portfolio performance</div>
-            <div style={{ marginTop: 8, fontSize: 24, fontWeight: 720, color: trendColor }}>
-              {latestPnl >= 0 ? "+" : ""}
-              {formatPKRWithSymbol(latestPnl)}
+      {/* Hero — flush to page; no card frame */}
+      <section className="perch-dashboard-hero">
+        <div className="perch-dashboard-hero__top">
+          <div className="perch-dashboard-hero__value-block">
+            <div className="perch-dashboard-hero__eyebrow">Portfolio</div>
+            <div className="perch-dashboard-hero__value">{formatPKRWithSymbol(portfolioValue)}</div>
+            <div className="perch-dashboard-hero__day" style={{ color: dayColor }}>
+              <span className="perch-dashboard-hero__day-label">Day</span>{" "}
+              <span className="perch-dashboard-hero__day-num">{signedPkr(todayPnL)}</span>
             </div>
+            <div className="perch-dashboard-hero__secondary">Unrealized {signedPkr(unrealizedPnl)}</div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <div className="perch-dashboard-hero__tf">
             {TIMEFRAME_LABELS.map((label) => {
               const active = timeframe === label;
               return (
@@ -143,18 +174,12 @@ export function PortfolioSections({
                   key={label}
                   type="button"
                   onClick={() => setTimeframe(label)}
+                  className="perch-dashboard-tf-btn"
+                  data-active={active ? "true" : "false"}
                   style={{
-                    minHeight: 34,
-                    borderRadius: 999,
-                    border: active ? "1px solid #AF4300" : `1px solid ${COLORS.border}`,
-                    background: active ? COLORS.orange : "#FFFFFF",
-                    color: active ? "#FFFFFF" : COLORS.muted,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    letterSpacing: "0.04em",
-                    padding: "0 12px",
-                    cursor: "pointer",
-                    transition: "all 170ms ease",
+                    borderColor: active ? COLORS.orange : COLORS.border,
+                    color: active ? COLORS.orange : COLORS.muted,
+                    background: active ? "rgba(196, 80, 0, 0.07)" : "transparent",
                   }}
                 >
                   {label}
@@ -163,217 +188,254 @@ export function PortfolioSections({
             })}
           </div>
         </div>
-        <div style={{ marginTop: 14, width: "100%", height: 290 }}>
+
+        <div className="perch-dashboard-chart-head">
+          <span style={sectionLabelStyle()}>Cumulative P&amp;L</span>
+        </div>
+        <div className="perch-dashboard-chart-wrap">
+          <div className="perch-dashboard-chart-live">
+            <span className="perch-dashboard-chart-live__lbl">Last</span>
+            <span className="perch-dashboard-chart-live__val" style={{ color: trendColor }}>
+              {latestPnl >= 0 ? "+" : ""}
+              {formatPKRWithSymbol(latestPnl)}
+            </span>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredPerformancePoints} margin={{ top: 8, right: 8, left: 0, bottom: 6 }}>
-              <defs>
-                <linearGradient id="perchPnlFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={trendColor} stopOpacity={0.32} />
-                  <stop offset="95%" stopColor={trendColor} stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid stroke="#F1F1F1" vertical={false} strokeDasharray="0" />
-              <XAxis dataKey="label" tick={{ fill: COLORS.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+            <ComposedChart data={chartSeriesPoints} margin={{ top: 6, right: 4, left: 2, bottom: 0 }}>
+              <CartesianGrid stroke="#E8E8E8" strokeDasharray="2 3" vertical={false} horizontal />
+              <XAxis
+                dataKey="label"
+                tick={{ fill: "#6E6E6E", fontSize: 9 }}
+                axisLine={{ stroke: "#D8D8D8" }}
+                tickLine={false}
+                tickMargin={4}
+                minTickGap={36}
+                interval="preserveStartEnd"
+                tickFormatter={(v) => (typeof v === "string" && v.startsWith("·") ? "" : String(v))}
+              />
               <YAxis
-                width={72}
-                tick={{ fill: COLORS.muted, fontSize: 11 }}
+                width={54}
+                tick={{ fill: "#6E6E6E", fontSize: 8 }}
                 tickFormatter={(v) => `${Math.round(Number(v))}`}
                 axisLine={false}
                 tickLine={false}
+                domain={["auto", "auto"]}
               />
               <Tooltip
+                cursor={{ stroke: "#C8C8C8", strokeWidth: 1 }}
                 formatter={(v: number) => [formatPKRWithSymbol(v), "P&L"]}
+                labelFormatter={(label) =>
+                  typeof label === "string" && label.startsWith("·") ? "" : String(label)
+                }
+                labelStyle={{ fontSize: 9, color: "#6E6E6E", marginBottom: 2 }}
+                itemStyle={{ fontSize: 11, fontWeight: 600, padding: 0 }}
                 contentStyle={{
-                  background: "rgba(255,255,255,0.98)",
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: 10,
-                  boxShadow: "0 12px 24px rgba(20,20,20,0.09)",
+                  padding: "4px 8px",
+                  border: "1px solid #D0D0D0",
+                  borderRadius: 2,
+                  boxShadow: "none",
+                  fontSize: 11,
                 }}
               />
-              <Area type="monotone" dataKey="pnl" stroke="none" fill="url(#perchPnlFill)" fillOpacity={1} />
-              <Line type="monotone" dataKey="pnl" stroke={trendColor} strokeWidth={3} dot={false} activeDot={{ r: 4, strokeWidth: 0, fill: trendColor }} />
-            </AreaChart>
+              <Area
+                type="monotone"
+                dataKey="pnl"
+                stroke="none"
+                fill={trendColor}
+                fillOpacity={0.035}
+                isAnimationActive={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="pnl"
+                stroke={trendColor}
+                strokeWidth={2.5}
+                dot={false}
+                activeDot={{ r: 3, strokeWidth: 0, fill: trendColor }}
+                isAnimationActive={false}
+              />
+              {lastPoint ? (
+                <ReferenceDot
+                  x={lastPoint.label}
+                  y={lastPoint.pnl}
+                  r={3.5}
+                  fill={trendColor}
+                  stroke="#fff"
+                  strokeWidth={1.5}
+                  ifOverflow="visible"
+                />
+              ) : null}
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </section>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: 16,
-          marginTop: 16,
-        }}
-      >
-        <div style={{ ...cardStyle() }}>
-          <div style={sectionLabelStyle()}>Allocation by stock</div>
-          {allocationRows.length === 0 ? (
-            <div style={{ marginTop: 12, color: COLORS.muted, fontSize: 14 }}>Allocation appears once you hold shares.</div>
-          ) : (
-            <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
-              {allocationRows.map((item, index) => (
-                <div key={item.ticker}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, marginBottom: 6 }}>
-                    <span style={{ fontWeight: 700, letterSpacing: "0.03em", color: COLORS.text }}>{item.ticker}</span>
-                    <span style={{ color: COLORS.muted, fontWeight: 700 }}>{item.pct.toFixed(0)}%</span>
-                  </div>
-                  <div style={{ height: 9, borderRadius: 999, background: "#F2F2F2", overflow: "hidden" }}>
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${Math.min(100, Math.max(3, item.pct))}%`,
-                        borderRadius: 999,
-                        background: ALLOCATION_COLORS[index % ALLOCATION_COLORS.length],
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      <div className="perch-dashboard-compact-metrics" role="group" aria-label="Account metrics">
+        <div className="perch-dashboard-compact-metrics__inline">
+          <span className="perch-dashboard-compact-metrics__k">Cash</span>
+          <span className="perch-dashboard-compact-metrics__v">{formatPKRWithSymbol(cash)}</span>
         </div>
-
-        <div style={{ ...cardStyle() }}>
-          <div style={sectionLabelStyle()}>Cash vs invested</div>
-          <div style={{ marginTop: 14, height: 220 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                layout="vertical"
-                data={[{ name: "Portfolio Mix", cash, invested: totalInvested }]}
-                margin={{ top: 12, right: 8, left: 0, bottom: 2 }}
-              >
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="name" hide />
-                <Tooltip
-                  formatter={(value: number, key: string) => [
-                    formatPKRWithSymbol(value),
-                    key === "cash" ? "Cash" : "Invested",
-                  ]}
-                  contentStyle={{
-                    background: "rgba(255,255,255,0.98)",
-                    border: `1px solid ${COLORS.border}`,
-                    borderRadius: 10,
-                    boxShadow: "0 12px 24px rgba(20,20,20,0.09)",
-                  }}
-                />
-                <Bar dataKey="cash" stackId="mix" fill="#8A8A8A" radius={[8, 0, 0, 8]} />
-                <Bar dataKey="invested" stackId="mix" fill={COLORS.orange} radius={[0, 8, 8, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{ display: "grid", gap: 10, marginTop: -2 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-              <span style={{ color: COLORS.muted }}>Cash</span>
-              <span style={{ fontWeight: 700, color: COLORS.text }}>
-                {cashPct.toFixed(0)}% ({formatPKRWithSymbol(cash)})
-              </span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-              <span style={{ color: COLORS.muted }}>Invested</span>
-              <span style={{ fontWeight: 700, color: COLORS.text }}>
-                {investedPct.toFixed(0)}% ({formatPKRWithSymbol(totalInvested)})
-              </span>
-            </div>
-          </div>
+        <div className="perch-dashboard-compact-metrics__inline">
+          <span className="perch-dashboard-compact-metrics__k">Inv</span>
+          <span className="perch-dashboard-compact-metrics__v">{formatPKRWithSymbol(totalInvested)}</span>
+        </div>
+        <div className="perch-dashboard-compact-metrics__inline">
+          <span className="perch-dashboard-compact-metrics__k">U. P&amp;L</span>
+          <span className="perch-dashboard-compact-metrics__v" style={{ color: unrealizedPnl >= 0 ? COLORS.gain : COLORS.loss }}>
+            {signedPkr(unrealizedPnl)}
+          </span>
+        </div>
+        <div className="perch-dashboard-compact-metrics__inline">
+          <span className="perch-dashboard-compact-metrics__k">Breadth</span>
+          <span className="perch-dashboard-compact-metrics__v" style={{ color: marketBreadth >= 0.5 ? COLORS.gain : COLORS.loss }}>
+            {`${Math.round(marketBreadth * 100)}%`}
+          </span>
         </div>
       </div>
 
-      <div style={{ marginTop: 16, ...cardStyle(), padding: 0 }}>
-        <div style={{ padding: 24, borderBottom: `1px solid ${COLORS.border}` }}>
-          <div style={sectionLabelStyle()}>Holdings</div>
-        </div>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: COLORS.bgSecondary }}>
-                {["Stock", "Shares", "Avg buy", "Last", "Value", "P&L", "P&L %"].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      textAlign: h === "Stock" ? "left" : "right",
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      color: COLORS.muted,
-                      fontWeight: 600,
-                      padding: "12px 16px",
-                      borderBottom: `1px solid ${COLORS.border}`,
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ padding: 24, color: COLORS.muted }}>
-                    No open positions yet.
-                  </td>
-                </tr>
-              ) : (
-                rows.map((r) => {
-                  const up = r.pnl >= 0;
-                  return (
-                    <tr key={r.ticker} style={{ height: 62 }}>
-                      <td style={{ padding: "10px 16px", borderBottom: "1px solid #EFEFEF" }}>
-                        <div style={{ color: COLORS.text, fontWeight: 700, letterSpacing: "0.04em" }}>{r.ticker}</div>
-                        <div
-                          style={{
-                            color: COLORS.muted,
-                            fontSize: 12.5,
-                            maxWidth: 320,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {r.name}
-                        </div>
-                      </td>
-                      <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{r.shares}</td>
-                      <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{formatPKRWithSymbol(r.avgBuyPrice)}</td>
-                      <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{formatPKRWithSymbol(r.px)}</td>
-                      <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{formatPKRWithSymbol(r.value)}</td>
-                      <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 760, color: up ? COLORS.gain : COLORS.loss }}>
-                        {up ? "+" : ""}
-                        {formatPKRWithSymbol(r.pnl)}
-                      </td>
-                      <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 760, color: up ? COLORS.gain : COLORS.loss }}>
-                        {up ? "+" : ""}
-                        {r.pnlPct.toFixed(2)}%
+      <div className="perch-dashboard-main-grid">
+        <div style={{ minWidth: 0 }}>
+          <div className="perch-dashboard-table-shell">
+            <div className="perch-dashboard-table-shell__label">
+              <div style={sectionLabelStyle()}>Holdings</div>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table className="perch-dashboard-data-table">
+                <thead>
+                  <tr>
+                    {["Stock", "Shares", "Avg buy", "Last", "Value", "P&L", "P&L %"].map((h) => (
+                      <th
+                        key={h}
+                        className={h === "Stock" ? "perch-dashboard-data-table__left" : "perch-dashboard-data-table__right"}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="perch-dashboard-data-table__empty">
+                        No open positions yet.
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                  ) : (
+                    rows.map((r) => {
+                      const up = r.pnl >= 0;
+                      return (
+                        <tr key={r.ticker}>
+                          <td className="perch-dashboard-data-table__td perch-dashboard-data-table__left">
+                            <div style={{ color: COLORS.text, fontWeight: 700, letterSpacing: "0.02em" }}>{r.ticker}</div>
+                            <div className="perch-dashboard-data-table__sub">{r.name}</div>
+                          </td>
+                          <td className="perch-dashboard-data-table__td perch-dashboard-data-table__right perch-dashboard-data-table__num">
+                            {r.shares}
+                          </td>
+                          <td className="perch-dashboard-data-table__td perch-dashboard-data-table__right perch-dashboard-data-table__num">
+                            {formatPKRWithSymbol(r.avgBuyPrice)}
+                          </td>
+                          <td className="perch-dashboard-data-table__td perch-dashboard-data-table__right perch-dashboard-data-table__num">
+                            {formatPKRWithSymbol(r.px)}
+                          </td>
+                          <td className="perch-dashboard-data-table__td perch-dashboard-data-table__right perch-dashboard-data-table__num">
+                            {formatPKRWithSymbol(r.value)}
+                          </td>
+                          <td
+                            className="perch-dashboard-data-table__td perch-dashboard-data-table__right perch-dashboard-data-table__num"
+                            style={{ color: up ? COLORS.gain : COLORS.loss, fontWeight: 650 }}
+                          >
+                            {up ? "+" : ""}
+                            {formatPKRWithSymbol(r.pnl)}
+                          </td>
+                          <td
+                            className="perch-dashboard-data-table__td perch-dashboard-data-table__right perch-dashboard-data-table__num"
+                            style={{ color: up ? COLORS.gain : COLORS.loss, fontWeight: 650 }}
+                          >
+                            {up ? "+" : ""}
+                            {r.pnlPct.toFixed(2)}%
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
+
+        <aside className="perch-dashboard-sidebar perch-dashboard-sidebar--flush">
+          <div className="perch-dashboard-side-block">
+            <div style={sectionLabelStyle()}>Allocation</div>
+            {allocationRows.length === 0 ? (
+              <div className="perch-dashboard-side-block__hint">Allocation appears once you hold shares.</div>
+            ) : (
+              <div className="perch-dashboard-alloc">
+                {allocationRows.map((item, index) => (
+                  <div
+                    key={item.ticker}
+                    className={
+                      index === 0
+                        ? "perch-dashboard-alloc__row perch-dashboard-alloc__row--lead"
+                        : "perch-dashboard-alloc__row"
+                    }
+                  >
+                    <span className="perch-dashboard-alloc__ticker">{item.ticker}</span>
+                    <div className="perch-dashboard-alloc__track">
+                      <div
+                        className="perch-dashboard-alloc__fill"
+                        style={{
+                          width: `${Math.min(100, Math.max(0.5, item.pct))}%`,
+                          background: index === 0 ? COLORS.orange : ALLOCATION_MUTED[(index - 1) % ALLOCATION_MUTED.length],
+                        }}
+                      />
+                    </div>
+                    <span className="perch-dashboard-alloc__pct">{item.pct.toFixed(0)}%</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="perch-dashboard-side-block">
+            <div style={sectionLabelStyle()}>Cash vs invested</div>
+            <div className="perch-dashboard-cashbar-head">
+              <span className="perch-dashboard-cashbar-head__tag">Cash</span>
+              <span className="perch-dashboard-cashbar-head__tag perch-dashboard-cashbar-head__tag--inv">Invested</span>
+            </div>
+            <div className="perch-dashboard-cashbar" aria-hidden>
+              <div className="perch-dashboard-cashbar__cash" style={{ width: `${cashPct}%` }} />
+              <div className="perch-dashboard-cashbar__inv" style={{ width: `${investedPct}%` }} />
+            </div>
+            <div className="perch-dashboard-cashbar__legend">
+              <span className="perch-dashboard-cashbar__line">
+                {cashPct.toFixed(0)}% · {formatPKRWithSymbol(cash)}
+              </span>
+              <span className="perch-dashboard-cashbar__line">
+                {investedPct.toFixed(0)}% · {formatPKRWithSymbol(totalInvested)}
+              </span>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      <div style={{ marginTop: 16, ...cardStyle(), padding: 0 }}>
-        <div style={{ padding: 24, borderBottom: `1px solid ${COLORS.border}` }}>
-          <div style={sectionLabelStyle()}>Transaction history</div>
+      <section className="perch-dashboard-table-block">
+        <div className="perch-dashboard-table-shell__label">
+          <div style={sectionLabelStyle()}>Recent activity</div>
         </div>
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <table className="perch-dashboard-data-table perch-dashboard-data-table--txn">
             <thead>
-              <tr style={{ background: COLORS.bgSecondary }}>
+              <tr>
                 {["Time", "Side", "Ticker", "Shares", "Price", "Total"].map((h) => (
                   <th
                     key={h}
-                    style={{
-                      textAlign: h === "Time" || h === "Side" || h === "Ticker" ? "left" : "right",
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      color: COLORS.muted,
-                      fontWeight: 600,
-                      padding: "12px 16px",
-                      borderBottom: `1px solid ${COLORS.border}`,
-                    }}
+                    className={
+                      h === "Time" || h === "Side" || h === "Ticker"
+                        ? "perch-dashboard-data-table__left"
+                        : "perch-dashboard-data-table__right"
+                    }
                   >
                     {h}
                   </th>
@@ -383,48 +445,42 @@ export function PortfolioSections({
             <tbody>
               {txs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: 24, color: COLORS.muted }}>
+                  <td colSpan={6} className="perch-dashboard-data-table__empty">
                     No transactions yet.
                   </td>
                 </tr>
               ) : (
                 txs.map((t) => (
-                  <tr key={t.id} style={{ height: 58 }}>
-                    <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", color: COLORS.muted, fontSize: 12 }}>
+                  <tr key={t.id}>
+                    <td className="perch-dashboard-data-table__td perch-dashboard-data-table__left perch-dashboard-data-table__time">
                       {new Date(t.timestamp).toLocaleString("en-PK")}
                     </td>
-                    <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF" }}>
+                    <td className="perch-dashboard-data-table__td perch-dashboard-data-table__left">
                       <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          minWidth: 52,
-                          minHeight: 26,
-                          borderRadius: 999,
-                          padding: "0 10px",
-                          fontSize: 11,
-                          fontWeight: 800,
-                          letterSpacing: "0.06em",
-                          border: t.type === "BUY" ? "1px solid #BFE3D2" : "1px solid #F0C5BD",
-                          color: t.type === "BUY" ? COLORS.gain : COLORS.loss,
-                          background: t.type === "BUY" ? "#F2FAF6" : "#FFF5F3",
-                        }}
+                        className={
+                          t.type === "BUY" ? "perch-dashboard-txn-badge perch-dashboard-txn-badge--buy" : "perch-dashboard-txn-badge perch-dashboard-txn-badge--sell"
+                        }
                       >
                         {t.type}
                       </span>
                     </td>
-                    <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", fontWeight: 700, letterSpacing: "0.03em" }}>{t.ticker}</td>
-                    <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{t.shares}</td>
-                    <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{formatPKRWithSymbol(t.price)}</td>
-                    <td style={{ padding: "0 16px", borderBottom: "1px solid #EFEFEF", textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{formatPKRWithSymbol(t.total)}</td>
+                    <td className="perch-dashboard-data-table__td perch-dashboard-data-table__left" style={{ fontWeight: 700 }}>
+                      {t.ticker}
+                    </td>
+                    <td className="perch-dashboard-data-table__td perch-dashboard-data-table__right perch-dashboard-data-table__num">{t.shares}</td>
+                    <td className="perch-dashboard-data-table__td perch-dashboard-data-table__right perch-dashboard-data-table__num">
+                      {formatPKRWithSymbol(t.price)}
+                    </td>
+                    <td className="perch-dashboard-data-table__td perch-dashboard-data-table__right perch-dashboard-data-table__num">
+                      {formatPKRWithSymbol(t.total)}
+                    </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </>
   );
 }
