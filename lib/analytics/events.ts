@@ -14,6 +14,8 @@ export type AnalyticsEventName =
   | "trade_ticket_opened"
   | "trade_executed"
   | "deposit_virtual_funds"
-  | "withdraw_virtual_funds";
+  | "withdraw_virtual_funds"
+  | "options_viewed"
+  | "option_trade_executed";
 
 export type AnalyticsMetadata = Record<string, unknown>;

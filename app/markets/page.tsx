@@ -91,6 +91,12 @@ export default async function MarketsHubPage() {
       cta: "Open PSX Paper Trading",
     },
     {
+      title: "Simulated PSX Options",
+      description: "Practice options trading using live PSX prices",
+      href: "/markets/options",
+      cta: "Open Options Simulator",
+    },
+    {
       title: "Live Crypto",
       description:
         "Track BTC, ETH, and SOL with live pricing, 24h change, and market cap updates through a dedicated crypto market module.",
