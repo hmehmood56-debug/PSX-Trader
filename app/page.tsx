@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { PerchWordmark } from "@/components/PerchWordmark";
 import { PageEventTracker } from "@/components/analytics/PageEventTracker";
 
 const palette = {
@@ -13,7 +12,7 @@ export default function LandingPage() {
   return (
     <div
       style={{
-        background: `linear-gradient(180deg, #FAFAF8 0%, ${palette.bg} 42%, ${palette.bg} 100%)`,
+        background: `linear-gradient(180deg, #FAFAF8 0%, ${palette.bg} 38%, ${palette.bg} 100%)`,
       }}
     >
       <PageEventTracker eventName="landing_view" metadata={{ route: "/" }} />
@@ -21,132 +20,82 @@ export default function LandingPage() {
         <section className="home-hero">
           <div className="home-hero-copy">
             <div className="home-brand-lockup">
-              <PerchWordmark />
-              <span>Live PSX Paper Trading</span>
+              <span>PERCH CAPITAL</span>
             </div>
-            <h1 style={{ color: palette.text }}>Build confidence before you invest live</h1>
-            <p className="home-start-lead">
-              Practice PSX investing in a clean, brokerage-style workspace with realistic market data,
-              disciplined portfolio tools, and a beginner-friendly first-trade flow.
-            </p>
-            <div className="landing-cta-row home-start-ctas">
-              <Link
-                href="/start"
-                style={{
-                  textDecoration: "none",
-                  background: palette.orange,
-                  color: "#FFFFFF",
-                  fontWeight: 600,
-                  borderRadius: 8,
-                  boxShadow: "0 12px 28px rgba(196, 80, 0, 0.22)",
-                }}
-              >
+            <h1 className="home-hero-headline" style={{ color: palette.text }}>
+              Trading made simple.
+            </h1>
+            <p className="home-hero-subline">Real markets. Zero risk.</p>
+            <p className="home-hero-trust">Built for the Pakistan Stock Exchange.</p>
+            <div className="landing-cta-row home-start-ctas home-hero-ctas">
+              <Link href="/start" className="home-cta-primary">
                 Start Here
               </Link>
-              <Link
-                href="/markets"
-                style={{
-                  textDecoration: "none",
-                  border: `1px solid ${palette.border}`,
-                  color: palette.text,
-                  fontWeight: 600,
-                  borderRadius: 8,
-                  background: "#FFFFFF",
-                }}
-              >
+              <Link href="/markets" className="home-cta-secondary">
                 Explore Markets
               </Link>
             </div>
-            <div
-              style={{
-                marginTop: 28,
-                maxWidth: 460,
-                padding: "20px 22px",
-                borderRadius: 14,
-                border: `1px solid #E8D4C7`,
-                background: "linear-gradient(125deg, #FFF8F2 0%, #FFFFFF 100%)",
-                boxShadow: "0 16px 40px rgba(196, 80, 0, 0.1)",
-              }}
-            >
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: palette.orange,
-                }}
-              >
-                Real trading
-              </p>
-              <p
-                style={{
-                  margin: "10px 0 0",
-                  color: palette.text,
-                  fontSize: 17,
-                  fontWeight: 650,
-                  lineHeight: 1.35,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                Live brokerage is on the way. Get priority access when we launch. Join the waitlist in one tap.
-              </p>
-              <Link
-                href="/waitlist"
-                style={{
-                  marginTop: 16,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textDecoration: "none",
-                  minHeight: 46,
-                  padding: "12px 22px",
-                  borderRadius: 10,
-                  background: palette.orange,
-                  color: "#FFFFFF",
-                  fontSize: 15,
-                  fontWeight: 650,
-                  boxShadow: "0 10px 26px rgba(196, 80, 0, 0.28)",
-                }}
-              >
-                Join the waitlist
-              </Link>
-            </div>
-            <p className="home-start-lead" style={{ marginTop: 16, maxWidth: 420, fontSize: 15 }}>
+            <aside className="home-waitlist-block" aria-label="Real trading waitlist">
+              <div className="home-waitlist-block-inner">
+                <p className="home-waitlist-eyebrow">LIVE TRADING</p>
+                <p className="home-waitlist-title">Live trading is coming</p>
+                <p className="home-waitlist-body">Get early access when we launch.</p>
+                <p className="home-waitlist-trust">No spam. Early access only.</p>
+                <Link href="/waitlist" className="home-waitlist-cta">
+                  Join the waitlist
+                </Link>
+              </div>
+            </aside>
+            <p className="home-start-lead home-hero-returning" style={{ maxWidth: 420, fontSize: 15 }}>
               Returning user?{" "}
-              <Link href="/signin" style={{ color: palette.orange, fontWeight: 600 }}>
+              <Link href="/signin" className="home-signin-link">
                 Sign in
               </Link>
             </p>
           </div>
-          <div className="home-market-panel" aria-label="Market snapshot panel">
-            <div className="home-market-head">
-              <span>Pakistan Stock Exchange (Live Feed)</span>
-              <strong>Market Snapshot</strong>
-            </div>
-            <div className="home-market-strip">
-              <div>
-                <span>KSE-100</span>
-                <strong>76,421.33</strong>
+          <div className="home-product-preview" aria-label="Product preview">
+            <div className="home-product-preview-glow" aria-hidden />
+            <div className="home-product-preview-frame">
+              <div className="home-product-preview-chrome">
+                <span className="home-product-preview-dots" aria-hidden>
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                <span className="home-product-preview-chrome-label">Paper workspace</span>
               </div>
-              <div>
-                <span>Advance / Decline</span>
-                <strong>214 / 128</strong>
-              </div>
-              <div>
-                <span>Turnover</span>
-                <strong>PKR 8.4B</strong>
+              <div className="home-product-preview-body">
+                <div className="home-market-head home-product-preview-head">
+                  <span>Live PSX feed</span>
+                  <strong>Portfolio overview</strong>
+                </div>
+                <div className="home-market-strip">
+                  <div>
+                    <span>KSE-100</span>
+                    <strong>76,421.33</strong>
+                  </div>
+                  <div>
+                    <span>Advance / Decline</span>
+                    <strong>214 / 128</strong>
+                  </div>
+                  <div>
+                    <span>Turnover</span>
+                    <strong>PKR 8.4B</strong>
+                  </div>
+                </div>
+                <div className="home-market-sparkline" aria-hidden>
+                  <span />
+                </div>
+                <p className="home-product-preview-caption">
+                  Practice with live quotes and portfolio tools—without putting capital at risk.
+                </p>
               </div>
             </div>
-            <div className="home-market-sparkline" aria-hidden>
-              <span />
-            </div>
-            <p>
-              Live market snapshot with paper trading tools for disciplined practice.
-            </p>
           </div>
         </section>
+        <footer className="home-landing-footer">
+          <p>© 2026 Perch Capital. All rights reserved.</p>
+        </footer>
       </div>
     </div>
   );
