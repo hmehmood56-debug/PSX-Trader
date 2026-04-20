@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { joinRealTradingWaitlist, getRealTradingWaitlistStatus } from "@/app/actions/waitlist";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { logAnalyticsEvent } from "@/lib/analytics/client";
 import { REAL_TRADING_INTEREST_OPTIONS, type RealTradingInterestId } from "@/lib/waitlistInterest";
@@ -28,25 +29,87 @@ const BUILDING_POINTS: { title: string; body: string }[] = [
 
 const SIGNUP_WITH_RETURN = "/signup?next=/waitlist";
 
+type SuccessVariant = "confirmed" | "returning" | "already";
+
 export function RealTradingWaitlist() {
   const { user, loading } = useAuth();
   const [interest, setInterest] = useState<RealTradingInterestId | null>(null);
-  const [joined, setJoined] = useState(false);
+  const [membershipLoading, setMembershipLoading] = useState(false);
+  const [membership, setMembership] = useState<{
+    interest_type: RealTradingInterestId;
+  } | null>(null);
+  const [successVariant, setSuccessVariant] = useState<SuccessVariant>("confirmed");
+  const [joinBusy, setJoinBusy] = useState(false);
+  /** Explicit: show success layout (not derived from fragile combos). */
+  const [showSuccessView, setShowSuccessView] = useState(false);
+  /** Prevents a slow initial status fetch from clearing state after a successful join in-session. */
+  const joinCompletedRef = useRef(false);
 
-  function join() {
-    if (!interest || !user) return;
-    void logAnalyticsEvent("real_trading_waitlist_joined", {
-      route: "/waitlist",
-      interest_type: interest,
+  useEffect(() => {
+    if (!user) {
+      setMembership(null);
+      setShowSuccessView(false);
+      setMembershipLoading(false);
+      joinCompletedRef.current = false;
+      return;
+    }
+    let cancelled = false;
+    setMembershipLoading(true);
+    void getRealTradingWaitlistStatus().then((res) => {
+      if (cancelled) return;
+      setMembershipLoading(false);
+      if (res.ok && res.row) {
+        setMembership({ interest_type: res.row.interest_type });
+        setSuccessVariant("returning");
+        setShowSuccessView(true);
+      } else if (!joinCompletedRef.current) {
+        setMembership(null);
+        setShowSuccessView(false);
+      }
     });
-    setJoined(true);
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  async function handleJoinClick() {
+    if (!interest || !user) return;
+    setJoinBusy(true);
+    try {
+      const res = await joinRealTradingWaitlist(interest);
+      if (!res.ok) {
+        return;
+      }
+      joinCompletedRef.current = true;
+      setMembership({ interest_type: res.row.interest_type });
+      setShowSuccessView(true);
+      if (res.alreadyMember) {
+        setSuccessVariant("already");
+      } else {
+        setSuccessVariant("confirmed");
+        void logAnalyticsEvent("real_trading_waitlist_joined", {
+          route: "/waitlist",
+          interest_type: res.row.interest_type,
+        });
+      }
+    } finally {
+      setJoinBusy(false);
+    }
   }
 
-  const selectedLabel = interest
-    ? REAL_TRADING_INTEREST_OPTIONS.find((o) => o.id === interest)?.label
-    : null;
+  const selectedLabel =
+    membership != null
+      ? REAL_TRADING_INTEREST_OPTIONS.find((o) => o.id === membership.interest_type)?.label ??
+        membership.interest_type
+      : interest != null
+        ? REAL_TRADING_INTEREST_OPTIONS.find((o) => o.id === interest)?.label ?? interest
+        : null;
 
-  if (joined && interest && selectedLabel) {
+  const showSuccess = showSuccessView && membership != null;
+
+  if (showSuccess) {
+    const isAlreadyCopy = successVariant === "already";
+    const isReturning = successVariant === "returning";
     return (
       <div className={styles.page}>
         <div className={styles.successShell} role="status">
@@ -63,12 +126,22 @@ export function RealTradingWaitlist() {
                 />
               </svg>
             </div>
-            <p className={styles.successKicker}>Confirmed</p>
-            <h2 className={styles.successTitle}>You are on the list</h2>
-            <p className={styles.successBody}>We will notify you when real trading goes live.</p>
-            <p className={styles.successPriority}>Early users will get priority access.</p>
+            <p className={styles.successKicker}>{isAlreadyCopy ? "Waitlist" : "Confirmed"}</p>
+            <h2 className={styles.successTitle}>
+              {isAlreadyCopy ? "You are already on the list." : "You are on the list"}
+            </h2>
+            <p className={styles.successBody}>
+              {isAlreadyCopy
+                ? "We will contact you when real trading is ready."
+                : isReturning
+                  ? "We have your spot saved. We will notify you when real trading goes live."
+                  : "We will notify you when real trading goes live."}
+            </p>
+            {!isAlreadyCopy ? (
+              <p className={styles.successPriority}>Early users will get priority access.</p>
+            ) : null}
             <p className={styles.successInterest}>
-              Your focus: <strong>{selectedLabel}</strong>
+              Your focus: <strong>{selectedLabel ?? membership.interest_type}</strong>
             </p>
             <div className={styles.successActions}>
               <Link href="/markets" className={styles.successPrimaryLink}>
@@ -127,6 +200,8 @@ export function RealTradingWaitlist() {
             Create free account (no email required) to join waitlist
           </Link>
         </div>
+      ) : membershipLoading ? (
+        <p className={styles.authLoading}>Loading your waitlist status…</p>
       ) : (
         <>
           <div className={styles.conversionPanel}>
@@ -159,8 +234,15 @@ export function RealTradingWaitlist() {
               })}
             </div>
 
-            <button type="button" className={styles.cta} disabled={!interest} onClick={join}>
-              Join the waitlist
+            <button
+              type="button"
+              className={styles.cta}
+              disabled={!interest || joinBusy}
+              onClick={() => {
+                void handleJoinClick();
+              }}
+            >
+              {joinBusy ? "Saving…" : "Join the waitlist"}
             </button>
           </div>
 
