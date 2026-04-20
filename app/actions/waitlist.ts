@@ -27,9 +27,10 @@ async function requireUser() {
   return { supabase, user };
 }
 
-export async function getRealTradingWaitlistStatus():
+export async function getRealTradingWaitlistStatus(): Promise<
   | { ok: true; row: WaitlistRow | null }
-  | { ok: false; error: string } {
+  | { ok: false; error: string }
+> {
   const { supabase, user } = await requireUser();
   if (!supabase || !user) {
     return { ok: false, error: "Not signed in" };
@@ -60,9 +61,10 @@ export async function getRealTradingWaitlistStatus():
   };
 }
 
-export async function joinRealTradingWaitlist(interestType: string):
+export async function joinRealTradingWaitlist(interestType: string): Promise<
   | { ok: true; alreadyMember: boolean; row: WaitlistRow }
-  | { ok: false; error: string } {
+  | { ok: false; error: string }
+> {
   const { supabase, user } = await requireUser();
   if (!supabase || !user) {
     return { ok: false, error: "Not signed in" };
