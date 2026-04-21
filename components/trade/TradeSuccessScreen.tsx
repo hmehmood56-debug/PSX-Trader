@@ -133,8 +133,15 @@ export function TradeSuccessScreen({
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.iconCircle} aria-hidden>
-        {variant === "firstTrade" ? <FirstTradeGrowthIcon /> : <CheckCircleIcon />}
+      <div
+        className={`${styles.successIconWrapper} ${
+          variant === "firstTrade" ? styles.firstTradeGlow : styles.standardTradeGlow
+        }`}
+        aria-hidden
+      >
+        <div className={styles.iconCircle}>
+          {variant === "firstTrade" ? <FirstTradeGrowthIcon /> : <CheckCircleIcon />}
+        </div>
       </div>
       {variant === "firstTrade" && <div className={styles.badge}>First Milestone</div>}
       <h1 className={styles.title}>{title}</h1>
