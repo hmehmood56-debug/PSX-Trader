@@ -13,7 +13,12 @@ import {
 } from "react";
 import { REPLAY_DATASET, type ReplayStockProfile } from "./replayDataset";
 import { inferPsxListingSector } from "./psxSectorInference";
-import { getMarketSnapshotUrl } from "./marketSnapshotUrl";
+import {
+  getMarketSnapshotUrl,
+  getPsxHistoryUrl,
+  getPsxQuoteUrl,
+  getPsxSymbolsUrl,
+} from "./marketSnapshotUrl";
 import { PSX_TERMINAL_WS_URL } from "./psxTerminalApi";
 
 export type TradeSide = "BUY" | "SELL";
@@ -225,7 +230,7 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
       }
       quoteLoadStateRef.current[key] = "loading";
       try {
-        const response = await fetch(`/api/psx-terminal/quote/${encodeURIComponent(key)}`, { cache: "no-store" });
+        const response = await fetch(getPsxQuoteUrl(key), { cache: "no-store" });
         if (!response.ok) {
           quoteLoadStateRef.current[key] = "unavailable";
           quoteRetryAfterRef.current[key] = Date.now() + 25_000;
@@ -275,7 +280,7 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
     if (state === "loading" || state === "loaded" || state === "unavailable") return;
     historyLoadStateRef.current[ticker] = "loading";
     try {
-      const response = await fetch(`/api/psx-terminal/history/${ticker}`, { cache: "no-store" });
+      const response = await fetch(getPsxHistoryUrl(ticker), { cache: "no-store" });
       if (!response.ok) {
         historyLoadStateRef.current[ticker] = "unavailable";
         return;
@@ -307,7 +312,7 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
     let canceled = false;
     const loadSymbols = async () => {
       try {
-        const response = await fetch("/api/psx-terminal/symbols", { cache: "no-store" });
+        const response = await fetch(getPsxSymbolsUrl(), { cache: "no-store" });
         if (!response.ok) return;
         const payload = (await response.json()) as { data?: string[] };
         if (!Array.isArray(payload.data) || payload.data.length === 0) return;

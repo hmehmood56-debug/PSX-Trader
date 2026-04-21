@@ -15,6 +15,7 @@ import {
 import type { Stock } from "@/lib/mockData";
 import { useLivePrices, type LiveQuote } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
+import { getPsxChartUrl } from "@/lib/marketSnapshotUrl";
 import { usePortfolio } from "@/hooks/usePortfolioState";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 import { startRouteProgress } from "@/lib/routeProgress";
@@ -184,10 +185,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     setChartLoadState("loading");
     const loadChart = async () => {
       try {
-        const res = await fetch(
-          `/api/psx-terminal/chart/${encodeURIComponent(ticker)}?range=${encodeURIComponent(range)}`,
-          { cache: "no-store" }
-        );
+        const res = await fetch(getPsxChartUrl(ticker, range), { cache: "no-store" });
         if (!res.ok) {
           if (!cancelled) {
             setChartSeries([]);

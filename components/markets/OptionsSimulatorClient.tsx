@@ -15,6 +15,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { usePortfolio } from "@/components/PortfolioProvider";
 import { logAnalyticsEvent } from "@/lib/analytics/client";
 import { formatPKRWithSymbol } from "@/lib/format";
+import { getPsxHistoryUrl, getPsxQuoteUrl } from "@/lib/marketSnapshotUrl";
 import { getOptionsOwnerKey } from "@/lib/optionsOwner";
 import { purchaseSimulatedOption } from "@/lib/optionsExecution";
 import {
@@ -173,8 +174,8 @@ export function OptionsSimulatorClient({ ticker }: { ticker: string }) {
   const loadMarket = useCallback(async () => {
     try {
       const [qRes, hRes] = await Promise.all([
-        fetch(`/api/psx-terminal/quote/${encodeURIComponent(upper)}`, { cache: "no-store" }),
-        fetch(`/api/psx-terminal/history/${encodeURIComponent(upper)}`, { cache: "no-store" }),
+        fetch(getPsxQuoteUrl(upper), { cache: "no-store" }),
+        fetch(getPsxHistoryUrl(upper), { cache: "no-store" }),
       ]);
       const qJson = (await qRes.json()) as QuotePayload;
       const px = qJson.data && typeof qJson.data.price === "number" ? qJson.data.price : null;

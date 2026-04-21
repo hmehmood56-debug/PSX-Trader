@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { formatPKRWithSymbol } from "@/lib/format";
+import { getPsxQuoteUrl, getPsxSymbolsUrl } from "@/lib/marketSnapshotUrl";
 import { startRouteProgress } from "@/lib/routeProgress";
 
 const COLORS = {
@@ -37,7 +38,7 @@ export function OptionsMarketListClient() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/psx-terminal/symbols", { cache: "no-store" });
+        const res = await fetch(getPsxSymbolsUrl(), { cache: "no-store" });
         const payload = (await res.json()) as SymbolsResponse;
         const list = Array.isArray(payload.data) ? payload.data : [];
         if (!cancelled) {
@@ -78,7 +79,7 @@ export function OptionsMarketListClient() {
         await Promise.all(
           chunk.map(async (t) => {
             try {
-              const res = await fetch(`/api/psx-terminal/quote/${encodeURIComponent(t)}`, {
+              const res = await fetch(getPsxQuoteUrl(t), {
                 cache: "no-store",
               });
               const json = (await res.json()) as QuotePayload;
