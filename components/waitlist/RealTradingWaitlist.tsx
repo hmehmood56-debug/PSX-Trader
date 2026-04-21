@@ -30,6 +30,14 @@ const BUILDING_POINTS: { title: string; body: string }[] = [
 const SIGNUP_WITH_RETURN = "/signup?next=/waitlist";
 
 type SuccessVariant = "confirmed" | "returning" | "already";
+const WAITLIST_CONTACT_LINE = (
+  <>
+    Questions or partnerships?{" "}
+    <a href="mailto:hello@joinperch.me" style={{ color: "inherit" }}>
+      hello@joinperch.me
+    </a>
+  </>
+);
 
 export function RealTradingWaitlist() {
   const { user, loading } = useAuth();
@@ -152,6 +160,7 @@ export function RealTradingWaitlist() {
         </div>
         <p className={styles.footerNote}>
           Perch paper trading is unchanged. This list is only for future live brokerage features.
+          {" "}{WAITLIST_CONTACT_LINE}
         </p>
       </div>
     );
@@ -248,6 +257,7 @@ export function RealTradingWaitlist() {
 
           <p className={styles.footerNote}>
             We use your selection to prioritize rollout and keep communication focused.
+            {" "}{WAITLIST_CONTACT_LINE}
           </p>
         </>
       )}

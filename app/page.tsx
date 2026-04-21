@@ -95,6 +95,12 @@ export default function LandingPage() {
         </section>
         <footer className="home-landing-footer">
           <p>© 2026 Perch Capital. All rights reserved.</p>
+          <p>
+            Contact:{" "}
+            <a href="mailto:hello@joinperch.me" style={{ color: "inherit", textDecoration: "none" }}>
+              hello@joinperch.me
+            </a>
+          </p>
         </footer>
       </div>
     </div>
