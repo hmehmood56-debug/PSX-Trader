@@ -13,6 +13,7 @@ import {
 } from "react";
 import { REPLAY_DATASET, type ReplayStockProfile } from "./replayDataset";
 import { inferPsxListingSector } from "./psxSectorInference";
+import { getMarketSnapshotUrl } from "./marketSnapshotUrl";
 import { PSX_TERMINAL_WS_URL } from "./psxTerminalApi";
 
 export type TradeSide = "BUY" | "SELL";
@@ -177,7 +178,7 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
 
   const loadSnapshot = useCallback(async () => {
     try {
-      const response = await fetch("/api/psx-terminal/market", { cache: "no-store" });
+      const response = await fetch(getMarketSnapshotUrl(), { cache: "no-store" });
       if (!response.ok) return;
       const payload = (await response.json()) as {
         data?: Array<{
