@@ -92,6 +92,60 @@
   row-gap: 8px;
 }
 
+.moreMenuWrap {
+  position: relative;
+}
+
+.moreButton {
+  height: 34px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: #4a4a4a;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.moreButton:hover {
+  background: #f7f7f7;
+}
+
+.moreButton:focus-visible {
+  outline: 2px solid #c45000;
+  outline-offset: 2px;
+}
+
+.moreMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 172px;
+  padding: 6px;
+  border: 1px solid #ece8e4;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(23, 23, 23, 0.08);
+  z-index: 40;
+}
+
+.moreMenuItem {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.moreMenuItem:hover {
+  background: #f7f7f7;
+}
+
 .authLoadingSlot {
   height: 34px;
   min-width: 196px;

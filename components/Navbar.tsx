@@ -2,12 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import styles from "./Navbar.module.css";
 import { PerchWordmark } from "./PerchWordmark";
 
-const links = [
+const desktopLinks = [
+  { href: "/", label: "Home" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/markets", label: "Markets" },
+];
+
+const mobileLinks = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/markets", label: "Markets" },
@@ -25,6 +31,8 @@ export function Navbar() {
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
   const signedInLabel = user ? accountLabel(user) : "";
   /** One of three mutually exclusive UI modes. Never mix guest and signed-in controls in the same render. */
   const authMode = authLoading ? "loading" : user ? "signedIn" : "guest";
@@ -33,7 +41,19 @@ export function Navbar() {
 
   useEffect(() => {
     closeMenu();
+    setMoreOpen(false);
   }, [pathname, closeMenu]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (!moreMenuRef.current?.contains(event.target as Node)) {
+        setMoreOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [moreOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -67,7 +87,7 @@ export function Navbar() {
         </Link>
 
         <nav className={styles.desktopNav} aria-label="Primary">
-          {links.map((l) => {
+          {desktopLinks.map((l) => {
             const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
             return (
               <Link
@@ -87,6 +107,32 @@ export function Navbar() {
               Join Waitlist
             </Link>
             <span className={styles.authLoadingSlot} aria-hidden />
+            <div className={styles.moreMenuWrap} ref={moreMenuRef}>
+              <button
+                type="button"
+                className={styles.moreButton}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((open) => !open)}
+              >
+                More ▾
+              </button>
+              {moreOpen ? (
+                <div className={styles.moreMenu} role="menu">
+                  <Link href="/account" className={styles.moreMenuItem} role="menuitem" onClick={() => setMoreOpen(false)}>
+                    Account
+                  </Link>
+                  <a
+                    href="mailto:hello@joinperch.me?subject=Perch%20Inquiry"
+                    className={styles.moreMenuItem}
+                    role="menuitem"
+                    onClick={() => setMoreOpen(false)}
+                  >
+                    Contact
+                  </a>
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : authMode === "signedIn" ? (
           <div className={styles.desktopCtas}>
@@ -96,6 +142,32 @@ export function Navbar() {
             <span className={styles.userLabel} title={user?.email ?? undefined}>
               {signedInLabel}
             </span>
+            <div className={styles.moreMenuWrap} ref={moreMenuRef}>
+              <button
+                type="button"
+                className={styles.moreButton}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((open) => !open)}
+              >
+                More ▾
+              </button>
+              {moreOpen ? (
+                <div className={styles.moreMenu} role="menu">
+                  <Link href="/account" className={styles.moreMenuItem} role="menuitem" onClick={() => setMoreOpen(false)}>
+                    Account
+                  </Link>
+                  <a
+                    href="mailto:hello@joinperch.me?subject=Perch%20Inquiry"
+                    className={styles.moreMenuItem}
+                    role="menuitem"
+                    onClick={() => setMoreOpen(false)}
+                  >
+                    Contact
+                  </a>
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : (
           <div className={styles.desktopCtas}>
@@ -111,6 +183,32 @@ export function Navbar() {
             <Link href="/start" className={styles.ctaPrimary}>
               Start Here
             </Link>
+            <div className={styles.moreMenuWrap} ref={moreMenuRef}>
+              <button
+                type="button"
+                className={styles.moreButton}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((open) => !open)}
+              >
+                More ▾
+              </button>
+              {moreOpen ? (
+                <div className={styles.moreMenu} role="menu">
+                  <Link href="/account" className={styles.moreMenuItem} role="menuitem" onClick={() => setMoreOpen(false)}>
+                    Account
+                  </Link>
+                  <a
+                    href="mailto:hello@joinperch.me?subject=Perch%20Inquiry"
+                    className={styles.moreMenuItem}
+                    role="menuitem"
+                    onClick={() => setMoreOpen(false)}
+                  >
+                    Contact
+                  </a>
+                </div>
+              ) : null}
+            </div>
           </div>
         )}
 
@@ -151,7 +249,7 @@ export function Navbar() {
           </button>
         </div>
         <nav className={styles.mobileNav} aria-label="Mobile primary">
-          {links.map((l) => {
+          {mobileLinks.map((l) => {
             const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
             return (
               <Link
