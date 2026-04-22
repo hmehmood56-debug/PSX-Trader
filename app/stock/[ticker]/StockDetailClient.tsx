@@ -3,15 +3,6 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import {
-  Line,
-  LineChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import type { Stock } from "@/lib/mockData";
 import { useLivePrices, type LiveQuote } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
@@ -21,9 +12,12 @@ import { StockLogo } from "@/components/common/StockLogo";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 import { startRouteProgress } from "@/lib/routeProgress";
 import { logAnalyticsEvent } from "@/lib/analytics/client";
-
-type Point = { date: string; price: number; volume: number };
-type ChartRange = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
+import { BarChart3, FileText } from "lucide-react";
+import {
+  StockPriceLwcChart,
+  type StockDetailChartRange,
+  type StockChartPoint,
+} from "./StockPriceLwcChart";
 
 const COLORS = {
   orange: "#C45000",
@@ -39,14 +33,12 @@ const COLORS = {
   loss: "#C0392B",
 } as const;
 
-function panelStyle(): CSSProperties {
-  return {
-    background: COLORS.bgElevated,
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 14,
-    padding: 20,
-  };
-}
+/** Deeper, less saturated than brand orange — chart accent only */
+const CHART_LINE = "#8B4510";
+const CHART_FILL_TOP = "rgba(139, 69, 16, 0.09)";
+const ORDER_BORDER = "#E9E3DC";
+const PANEL_TINT = "#FAF8F5";
+const TOGGLE_INACTIVE = "#F1EEEA";
 
 function statLabelStyle(): CSSProperties {
   return {
@@ -58,7 +50,14 @@ function statLabelStyle(): CSSProperties {
   };
 }
 
-const CHART_RANGES: readonly ChartRange[] = ["1D", "1W", "1M", "3M", "1Y", "ALL"] as const;
+const CHART_RANGES: readonly StockDetailChartRange[] = [
+  "1D",
+  "1W",
+  "1M",
+  "3M",
+  "1Y",
+  "ALL",
+] as const;
 
 const NOT_AVAILABLE = "Not available";
 
@@ -94,7 +93,7 @@ function formatMoneyOrNA(
   return fmt(value);
 }
 
-function sortChartPointsAsc(points: Point[]): Point[] {
+function sortChartPointsAsc(points: StockChartPoint[]): StockChartPoint[] {
   return [...points].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
@@ -130,9 +129,9 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     lastStreamQuoteRef.current = null;
     prevTickerSyncRef.current = ticker;
   }
-  const history = getHistory(ticker) as Point[];
+  const history = getHistory(ticker) as StockChartPoint[];
   const [detailStats, setDetailStats] = useState<DetailStatsPayload | null>(null);
-  const [chartSeries, setChartSeries] = useState<Point[]>([]);
+  const [chartSeries, setChartSeries] = useState<StockChartPoint[]>([]);
   const [chartLoadState, setChartLoadState] = useState<"idle" | "loading" | "ready" | "empty">("idle");
   const { portfolio, buyStock, sellStock } = usePortfolio();
   const [mode, setMode] = useState<"BUY" | "SELL">("BUY");
@@ -145,7 +144,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     timestampLabel: string;
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [range, setRange] = useState<ChartRange>("1D");
+  const [range, setRange] = useState<StockDetailChartRange>("1D");
 
   const quoteFromDetail = useMemo(
     () => (detailStats?.tick ? liveQuoteFromDetailTick(detailStats.tick) : null),
@@ -194,8 +193,10 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
           }
           return;
         }
-        const json = (await res.json()) as { data?: Point[] };
-        const rows = Array.isArray(json.data) ? sortChartPointsAsc(json.data as Point[]) : [];
+        const json = (await res.json()) as { data?: StockChartPoint[] };
+        const rows = Array.isArray(json.data)
+          ? sortChartPointsAsc(json.data as StockChartPoint[])
+          : [];
         if (cancelled) return;
         setChartSeries(rows);
         setChartLoadState(rows.length > 0 ? "ready" : "empty");
@@ -286,6 +287,103 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
 
   const marketCapDisplay =
     base.marketCap > 0 ? formatCompactPKR(base.marketCap) : NOT_AVAILABLE;
+  const baseMeta = base as Stock & {
+    description?: string;
+    founded?: string | number;
+    hq?: string;
+    headquarters?: string;
+    employees?: string | number;
+    website?: string;
+  };
+  const overviewText =
+    (typeof baseMeta.description === "string" && baseMeta.description.trim()) ||
+    `${base.name} operates in the ${base.sector} sector on PSX.`;
+  const foundedText =
+    baseMeta.founded != null && `${baseMeta.founded}`.trim().length > 0 ? `${baseMeta.founded}` : null;
+  const hqText =
+    (typeof baseMeta.hq === "string" && baseMeta.hq.trim()) ||
+    (typeof baseMeta.headquarters === "string" && baseMeta.headquarters.trim()) ||
+    null;
+  const employeesText =
+    baseMeta.employees != null && `${baseMeta.employees}`.trim().length > 0
+      ? `${baseMeta.employees}`
+      : null;
+  const websiteText =
+    typeof baseMeta.website === "string" && baseMeta.website.trim()
+      ? baseMeta.website
+      : null;
+  const stock = {
+    open: typeof dayOpen === "number" && Number.isFinite(dayOpen) ? dayOpen : null,
+    prevClose: prevClose,
+    high: localHigh > 0 ? localHigh : null,
+    low: localLow > 0 ? localLow : null,
+    volume: hasQuote ? volume : null,
+    turnover: turnover,
+    avgVolume: averageVolume,
+    marketCap: base.marketCap > 0 ? base.marketCap : null,
+  };
+  const cleanNumericValue = (val: unknown): number | null => {
+    if (val === null || val === undefined) return null;
+    if (typeof val === "number") return Number.isFinite(val) ? val : null;
+    const normalized = String(val)
+      .replace(
+        /\b(open|prev\s*close|high|low|volume|turnover|avg\s*vol|mkt\s*cap|range)\b/gi,
+        ""
+      )
+      .replace(/\s+/g, " ")
+      .trim();
+    const cleaned = normalized.replace(/[^\d.-]/g, "");
+    if (!cleaned) return null;
+    const parsed = Number(cleaned);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+  const formatPrice = (val: unknown): string => {
+    if (val === null || val === undefined) return "-";
+    const num = cleanNumericValue(val);
+    if (num === null) return "-";
+    return `Rs. ${num.toFixed(2)}`;
+  };
+
+  const formatNumber = (val: unknown): string => {
+    if (val === null || val === undefined) return "-";
+    const num = cleanNumericValue(val);
+    if (num === null) return "-";
+    const abs = Math.abs(num);
+    if (abs >= 1_000_000_000_000) return `${(num / 1_000_000_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}T`;
+    if (abs >= 1_000_000_000) return `${(num / 1_000_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}B`;
+    if (abs >= 1_000_000) return `${(num / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}M`;
+    if (abs >= 1_000) return `${(num / 1_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}K`;
+    return num.toLocaleString("en-US", { maximumFractionDigits: 2 });
+  };
+  const formatCurrencyCompact = (val: number | null | undefined): string => {
+    if (val == null || !Number.isFinite(val)) return NOT_AVAILABLE;
+    return `Rs. ${formatNumber(val)}`;
+  };
+  const formattedOpen = formatPrice(stock?.open);
+  const formattedPrevClose = formatPrice(stock?.prevClose);
+  const formattedHigh = formatPrice(stock?.high);
+  const formattedLow = formatPrice(stock?.low);
+  const formattedVolume = formatNumber(stock?.volume);
+  const formattedTurnover = formatNumber(stock?.turnover);
+  const formattedAvgVol = formatNumber(stock?.avgVolume);
+  const formattedMktCap = formatNumber(stock?.marketCap);
+  const formattedRange = hasDetailRange
+    ? `${formatPrice(rangeLow)} - ${formatPrice(rangeHigh)}`
+    : "";
+  const dayRangeLow = localLow > 0 ? localLow : null;
+  const dayRangeHigh = localHigh > 0 ? localHigh : null;
+  const currentRangePrice =
+    typeof price === "number" && Number.isFinite(price) && price > 0 ? price : null;
+  const getRangePosition = (
+    low: number | null,
+    high: number | null,
+    current: number | null
+  ): number => {
+    if (low == null || high == null || current == null || high <= low) return 0;
+    const ratio = ((current - low) / (high - low)) * 100;
+    return Math.min(100, Math.max(0, ratio));
+  };
+  const dayRangePosition = getRangePosition(dayRangeLow, dayRangeHigh, currentRangePrice);
 
   const holding = useMemo(
     () => portfolio.holdings.find((h) => h.ticker === ticker),
@@ -413,278 +511,278 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
         </div>
 
         <div className="perch-stock-detail-grid">
-          <div className="perch-stock-detail-main" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div
+            className="perch-stock-detail-main"
+            style={{ display: "flex", flexDirection: "column", gap: 12 }}
+          >
             <section>
-              <div style={statLabelStyle()}>{base.sector}</div>
               <div
+                className="perch-stock-identity"
                 style={{
-                  marginTop: 8,
                   display: "flex",
-                  alignItems: "flex-start",
-                  gap: 14,
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  marginBottom: 10,
                 }}
               >
-                <StockLogo ticker={base.ticker} size={44} />
+                <span
+                  style={{
+                    fontSize: 10,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.12em",
+                    color: COLORS.muted,
+                    fontWeight: 700,
+                  }}
+                >
+                  {base.sector}
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 76,
+                    height: 76,
+                    padding: 10,
+                    borderRadius: 14,
+                    background: "#FFF4EB",
+                    border: `1px solid ${ORDER_BORDER}`,
+                    flexShrink: 0,
+                  }}
+                >
+                  <StockLogo ticker={base.ticker} size={56} />
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <h1
+                  <div
                     style={{
-                      margin: 0,
-                      fontSize: "clamp(22px, 5vw, 32px)",
-                      fontWeight: 750,
-                      lineHeight: 1.12,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "baseline",
+                      gap: "4px 12px",
                     }}
                   >
-                    {base.name}
-                  </h1>
-                  <div className="perch-stock-ticker">
-                    {base.ticker}
+                    <h1
+                      style={{
+                        margin: 0,
+                        fontSize: "clamp(20px, 4.2vw, 30px)",
+                        fontWeight: 800,
+                        lineHeight: 1.1,
+                        letterSpacing: "-0.02em",
+                        color: COLORS.text,
+                      }}
+                    >
+                      {base.name}
+                    </h1>
+                    <span
+                      style={{
+                        fontSize: 11.5,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: COLORS.muted,
+                      }}
+                    >
+                      {base.ticker}
+                    </span>
                   </div>
                 </div>
               </div>
             </section>
 
             <section
-              className="perch-stock-price-row"
               style={{
-                paddingBottom: 8,
-                borderBottom: `1px solid ${COLORS.border}`,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 18,
+                overflow: "hidden",
+                background: "linear-gradient(180deg, #FDFDFC 0%, #FAFAF9 100%)",
+                boxShadow: "0 1px 0 rgba(0,0,0,0.04)",
               }}
             >
-              <div>
-                <div style={statLabelStyle()}>Last price</div>
-                <div
-                  className="perch-stock-price-big"
-                  style={{
-                    marginTop: 8,
-                    lineHeight: 1,
-                    fontWeight: 760,
-                    color: COLORS.text,
-                  }}
-                >
-                  {hasQuote && price != null ? formatPKRWithSymbol(price) : "Awaiting live price"}
-                </div>
-              </div>
-              <div className="perch-stock-change-block">
-                <div
-                  className="perch-fin-number"
-                  style={{
-                    fontSize: "clamp(17px, 4vw, 20px)",
-                    fontWeight: 740,
-                    color: hasQuote ? (up ? COLORS.gain : COLORS.loss) : COLORS.mutedSoft,
-                  }}
-                >
-                  {hasQuote ? (
-                    <>
-                      {up ? "+" : ""}
-                      {change.toFixed(2)} ({up ? "+" : ""}
-                      {changePct.toFixed(2)}%)
-                    </>
-                  ) : (
-                    "—"
-                  )}
-                </div>
-                <div style={{ fontSize: 12, color: COLORS.mutedSoft, marginTop: 4 }}>
-                  Today&apos;s change
-                </div>
-              </div>
-            </section>
-
-            <section
-              style={{
-                border: `1px solid ${COLORS.borderStrong}`,
-                borderRadius: 16,
-                padding: "clamp(14px, 3vw, 18px) clamp(14px, 3vw, 20px) 12px",
-                background: "#FFFFFF",
-              }}
-            >
-              <div style={statLabelStyle()}>
-                Price chart
-              </div>
-              <div className="perch-stock-range-row" style={{ marginTop: 12 }}>
-                {CHART_RANGES.map((item) => {
-                  const active = item === range;
-                  return (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => setRange(item)}
-                      className={`perch-range-btn${active ? " perch-range-btn-active" : ""}`}
+              <div
+                className="perch-stock-price-row"
+                style={{
+                  padding: "10px 18px 4px",
+                  borderBottom: `1px solid ${COLORS.border}`,
+                }}
+              >
+                <div>
+                  <div style={statLabelStyle()}>Last</div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "baseline",
+                      gap: "6px 14px",
+                      marginTop: 2,
+                    }}
+                  >
+                    <div
+                      className="perch-stock-price-big perch-stock-price-big-stock2"
                       style={{
-                        minHeight: 34,
-                        padding: "0 12px",
-                        borderRadius: 999,
-                        border: active ? `1px solid #AF4300` : `1px solid ${COLORS.border}`,
-                        background: active ? "#C45000" : "#FFFFFF",
-                        color: active ? "#FFFFFF" : COLORS.muted,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        letterSpacing: "0.04em",
-                        cursor: "pointer",
-                        WebkitTapHighlightColor: "transparent",
-                        transition: "all 170ms ease",
+                        lineHeight: 1,
+                        fontWeight: 760,
+                        color: COLORS.text,
                       }}
-                      aria-pressed={active}
                     >
-                      {item}
-                    </button>
-                  );
-                })}
+                      {hasQuote && price != null ? formatPKRWithSymbol(price) : "Awaiting live price"}
+                    </div>
+                    {hasQuote ? (
+                      <span
+                        className="perch-fin-number"
+                        style={{
+                          fontSize: "clamp(15px, 3.4vw, 18px)",
+                          fontWeight: 680,
+                          color: up ? COLORS.gain : COLORS.loss,
+                        }}
+                      >
+                        {up ? "+" : ""}
+                        {change.toFixed(2)} ({up ? "+" : ""}
+                        {changePct.toFixed(2)}%)
+                      </span>
+                    ) : null}
+                  </div>
+                  <div
+                    style={{
+                      display: "inline-block",
+                      marginTop: 6,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      letterSpacing: "0.04em",
+                      color: COLORS.muted,
+                      background: "rgba(0, 0, 0, 0.04)",
+                      padding: "3px 10px",
+                      borderRadius: 999,
+                    }}
+                  >
+                    PSX
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: "4px 18px 0",
+                }}
+              >
+                <div className="perch-stock-range-row">
+                  {CHART_RANGES.map((item) => {
+                    const active = item === range;
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setRange(item)}
+                        className={`perch-range-btn${active ? " perch-range-btn-active" : ""}`}
+                        style={{
+                          minHeight: 32,
+                          padding: "0 12px",
+                          borderRadius: 999,
+                          border: active ? `1px solid #AF4300` : `1px solid ${COLORS.border}`,
+                          background: active ? "#C45000" : "transparent",
+                          color: active ? "#FFFFFF" : COLORS.muted,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          letterSpacing: "0.04em",
+                          cursor: "pointer",
+                          WebkitTapHighlightColor: "transparent",
+                          transition: "all 170ms ease",
+                        }}
+                        aria-pressed={active}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <div
                 className="perch-stock-chart-box"
                 style={{
                   width: "100%",
-                  marginTop: 12,
+                  marginTop: 0,
+                  paddingLeft: 4,
+                  paddingRight: 2,
+                  paddingBottom: 2,
                   opacity: chartLoadState === "loading" ? 0.5 : 1,
                   transition: "opacity 180ms ease",
                 }}
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 10, right: 4, left: -8, bottom: 4 }}>
-                    <CartesianGrid stroke="#F3F3F3" vertical={false} strokeDasharray="0" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fill: COLORS.mutedSoft, fontSize: 11 }}
-                      minTickGap={22}
-                      interval="preserveStartEnd"
-                      tickFormatter={(value: string) =>
-                        range === "1D"
-                          ? new Date(value).toLocaleTimeString("en-PK", {
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })
-                          : new Date(value).toLocaleDateString("en-PK", {
-                              month: "short",
-                              day: "numeric",
-                            })
-                      }
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      domain={["auto", "auto"]}
-                      width={56}
-                      tick={{ fill: COLORS.mutedSoft, fontSize: 11 }}
-                      tickFormatter={(v) => `${Math.round(Number(v))}`}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: "rgba(255,255,255,0.98)",
-                        border: `1px solid ${COLORS.borderStrong}`,
-                        borderRadius: 10,
-                        boxShadow: "0 14px 28px rgba(14,14,14,0.1)",
-                        padding: "8px 10px",
-                      }}
-                      labelStyle={{ color: COLORS.muted, fontSize: 12, fontWeight: 600 }}
-                      labelFormatter={(value: string) =>
-                        range === "1D"
-                          ? new Date(value).toLocaleString("en-PK", {
-                              weekday: "short",
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })
-                          : new Date(value).toLocaleDateString("en-PK", {
-                              weekday: "short",
-                              month: "short",
-                              day: "numeric",
-                            })
-                      }
-                      formatter={(value: number) => [formatPKRWithSymbol(value), "Price"]}
-                    />
-                    <Line
-                      type="monotoneX"
-                      dataKey="price"
-                      stroke={COLORS.orange}
-                      strokeWidth={3}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      dot={false}
-                      isAnimationActive
-                      animationDuration={280}
-                      animationEasing="ease-in-out"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <StockPriceLwcChart
+                  data={chartData}
+                  range={range}
+                  lineColor={CHART_LINE}
+                  lineColorFaint={CHART_FILL_TOP}
+                />
               </div>
-              <div className="perch-stock-ohlc-grid" style={{ marginTop: 14 }}>
-                <div>
-                  <div style={statLabelStyle()}>Open</div>
-                  <div className="perch-stock-ohlc-value">
-                    {formatMoneyOrNA(
-                      typeof dayOpen === "number" && Number.isFinite(dayOpen) ? dayOpen : null,
-                      formatPKRWithSymbol,
-                      { allowZero: true }
-                    )}
-                  </div>
+            </section>
+            <section className="perch-stock-key-stats-section" style={{ marginTop: 10 }}>
+              <h2 className="perch-stock-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <BarChart3 className="w-3.5 h-3.5 opacity-80" style={{ color: "#C45000" }} />
+                <span>Key Stats</span>
+              </h2>
+
+              <div className="perch-stock-key-stats-grid">
+                <div className="perch-stock-key-stat-item">
+                  <span className="perch-stock-key-stat-label">Open</span>
+                  <span className="perch-stock-key-stat-value">{formattedOpen}</span>
                 </div>
-                <div>
-                  <div style={statLabelStyle()}>High</div>
-                  <div className="perch-stock-ohlc-value">
-                    {localHigh > 0 ? formatPKRWithSymbol(localHigh) : NOT_AVAILABLE}
-                  </div>
+                <div className="perch-stock-key-stat-item">
+                  <span className="perch-stock-key-stat-label">Prev close</span>
+                  <span className="perch-stock-key-stat-value">{formattedPrevClose}</span>
                 </div>
-                <div>
-                  <div style={statLabelStyle()}>Low</div>
-                  <div className="perch-stock-ohlc-value">
-                    {localLow > 0 ? formatPKRWithSymbol(localLow) : NOT_AVAILABLE}
-                  </div>
+                <div className="perch-stock-key-stat-item">
+                  <span className="perch-stock-key-stat-label">High</span>
+                  <span className="perch-stock-key-stat-value">{formattedHigh}</span>
                 </div>
-                <div>
-                  <div style={statLabelStyle()}>Prev close</div>
-                  <div className="perch-stock-ohlc-value">
-                    {formatMoneyOrNA(prevClose, formatPKRWithSymbol, { allowZero: true })}
-                  </div>
+                <div className="perch-stock-key-stat-item">
+                  <span className="perch-stock-key-stat-label">Low</span>
+                  <span className="perch-stock-key-stat-value">{formattedLow}</span>
                 </div>
-                <div>
-                  <div style={statLabelStyle()}>Day volume</div>
-                  <div className="perch-stock-ohlc-value">
-                    {hasQuote ? formatCompactPKR(volume) : NOT_AVAILABLE}
-                  </div>
+                <div className="perch-stock-key-stat-item">
+                  <span className="perch-stock-key-stat-label">Volume</span>
+                  <span className="perch-stock-key-stat-value">{formattedVolume}</span>
                 </div>
-              </div>
-              <div style={{ marginTop: 12, color: COLORS.mutedSoft, fontSize: 12 }}>
-                Live market data.
+                <div className="perch-stock-key-stat-item">
+                  <span className="perch-stock-key-stat-label">Turnover</span>
+                  <span className="perch-stock-key-stat-value">{formattedTurnover}</span>
+                </div>
+                <div className="perch-stock-key-stat-item">
+                  <span className="perch-stock-key-stat-label">Avg vol</span>
+                  <span className="perch-stock-key-stat-value">{formattedAvgVol}</span>
+                </div>
+                <div className="perch-stock-key-stat-item">
+                  <span className="perch-stock-key-stat-label">Mkt cap</span>
+                  <span className="perch-stock-key-stat-value">{formattedMktCap}</span>
+                </div>
+                {formattedRange ? (
+                  <div className="perch-stock-key-stat-item">
+                    <span className="perch-stock-key-stat-label">Range</span>
+                    <span className="perch-stock-key-stat-value">{formattedRange}</span>
+                  </div>
+                ) : null}
               </div>
             </section>
 
-            <section style={{ ...panelStyle(), background: "#FFFFFF" }}>
-              <div className="perch-stock-stats-grid">
-                <div>
-                  <div style={statLabelStyle()}>Price range (recent history)</div>
-                <div
-                  className="perch-fin-number perch-stock-stat-number"
-                  style={{
-                    marginTop: 6,
-                    fontWeight: 720,
-                    fontSize: 18,
-                    color: COLORS.text,
-                  }}
-                >
-                    {hasDetailRange
-                      ? `${formatPKRWithSymbol(rangeLow!)} – ${formatPKRWithSymbol(rangeHigh!)}`
-                      : NOT_AVAILABLE}
-                  </div>
-                </div>
-                <div>
-                  <div style={statLabelStyle()}>Market cap</div>
-                  <div className="perch-fin-number perch-stock-stat-number" style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
-                    {marketCapDisplay}
-                  </div>
-                </div>
-                <div>
-                  <div style={statLabelStyle()}>Average volume</div>
-                  <div className="perch-fin-number perch-stock-stat-number" style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
-                    {formatMoneyOrNA(averageVolume, formatCompactPKR)}
-                  </div>
-                </div>
-                <div>
-                  <div style={statLabelStyle()}>Turnover</div>
-                  <div className="perch-fin-number perch-stock-stat-number" style={{ marginTop: 6, fontWeight: 700, fontSize: 18, color: COLORS.text }}>
-                    {formatMoneyOrNA(turnover, formatCompactPKR)}
-                  </div>
-                </div>
+            <section className="perch-stock-overview-section" style={{ marginTop: 10 }}>
+              <h2 className="perch-stock-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <FileText className="w-3.5 h-3.5 opacity-80" style={{ color: "#C45000" }} />
+                <span>Overview</span>
+              </h2>
+              <p className="perch-stock-overview-text">{overviewText}</p>
+              <div className="perch-stock-meta-row">
+                {foundedText ? <span className="perch-stock-meta-item">Founded {foundedText}</span> : null}
+                {hqText ? <span className="perch-stock-meta-item">HQ {hqText}</span> : null}
+                {employeesText ? <span className="perch-stock-meta-item">Employees {employeesText}</span> : null}
+                {websiteText ? <span className="perch-stock-meta-item">Website {websiteText}</span> : null}
               </div>
             </section>
           </div>
@@ -692,238 +790,337 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
           <aside
             className="perch-stock-order-aside"
             style={{
-              border: `1px solid ${COLORS.borderStrong}`,
-              borderRadius: 16,
-              background: "linear-gradient(180deg, #FFFFFF 0%, #FCFCFC 100%)",
-              padding: "clamp(16px, 4vw, 20px)",
-              boxShadow: "0 8px 24px rgba(18,18,18,0.04)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+              width: "100%",
+              maxWidth: 332,
+              justifySelf: "end",
             }}
           >
-            <div style={{ ...statLabelStyle(), color: COLORS.muted }}>
-              Order ticket
-            </div>
-            <div className="perch-fin-number" style={{ marginTop: 6, fontSize: 18, fontWeight: 730, color: COLORS.text }}>
-              {base.ticker}
-            </div>
-            <div style={{ marginTop: 2, fontSize: 13, color: COLORS.muted }}>
-              {base.name}
-            </div>
-
             <div
               style={{
-                marginTop: 16,
-                display: "flex",
-                gap: 8,
-                padding: 4,
-                background: COLORS.bgSecondary,
-                borderRadius: 10,
-                border: `1px solid ${COLORS.border}`,
+                border: `1px solid ${ORDER_BORDER}`,
+                borderRadius: 12,
+                background: "#FFFFFF",
+                padding: "10px 11px",
+                marginBottom: 16,
               }}
             >
-              <button
-                type="button"
-                onClick={() => setMode("BUY")}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  borderRadius: 8,
-                  border: "none",
-                  background: mode === "BUY" ? COLORS.orange : "transparent",
-                  color: mode === "BUY" ? "#FFFFFF" : COLORS.muted,
-                  fontWeight: 720,
-                  letterSpacing: "0.01em",
-                  fontSize: 15,
-                  cursor: "pointer",
-                  WebkitTapHighlightColor: "transparent",
-                }}
-              >
-                Buy
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("SELL")}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  borderRadius: 8,
-                  border: "none",
-                  background: mode === "SELL" ? COLORS.loss : "transparent",
-                  color: mode === "SELL" ? "#FFFFFF" : COLORS.muted,
-                  fontWeight: 720,
-                  letterSpacing: "0.01em",
-                  fontSize: 15,
-                  cursor: "pointer",
-                  WebkitTapHighlightColor: "transparent",
-                }}
-              >
-                Sell
-              </button>
-            </div>
-
-            <div style={{ marginTop: 18 }}>
-              <div style={{ ...statLabelStyle(), color: COLORS.muted }}>
-                Shares
+              <div style={{ fontSize: 11, color: COLORS.mutedSoft, fontWeight: 600, letterSpacing: "0.03em" }}>
+                DAY RANGE
               </div>
-              <input
-                inputMode="numeric"
-                value={sharesInput}
-                onChange={(e) => setSharesInput(e.target.value)}
-                className="perch-ticket-shares-input"
+              <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                <span className="perch-fin-number" style={{ fontSize: 14, fontWeight: 620, color: COLORS.text }}>
+                  {dayRangeLow != null ? formatPKRWithSymbol(dayRangeLow) : "-"}
+                </span>
+                <span className="perch-fin-number" style={{ fontSize: 14, fontWeight: 620, color: COLORS.text }}>
+                  {dayRangeHigh != null ? formatPKRWithSymbol(dayRangeHigh) : "-"}
+                </span>
+              </div>
+              <div style={{ marginTop: 1, display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <span style={{ fontSize: 10.5, color: COLORS.mutedSoft }}>Low</span>
+                <span style={{ fontSize: 10.5, color: COLORS.mutedSoft }}>High</span>
+              </div>
+              <div
+                style={{
+                  marginTop: 8,
+                  position: "relative",
+                  width: "100%",
+                  height: 6,
+                  borderRadius: 999,
+                  background: "#E5E5E5",
+                  overflow: "visible",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${dayRangePosition}%`,
+                    borderRadius: 999,
+                    background: COLORS.orange,
+                  }}
+                />
+                <span
+                  style={{
+                    position: "absolute",
+                    left: `${dayRangePosition}%`,
+                    top: "50%",
+                    width: 9,
+                    height: 9,
+                    borderRadius: "50%",
+                    background: "#3F3A36",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                />
+              </div>
+            </div>
+            <div
+              style={{
+                border: `1px solid ${ORDER_BORDER}`,
+                borderRadius: 16,
+                background: PANEL_TINT,
+                padding: "clamp(12px, 3.2vw, 16px)",
+                boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
+              }}
+            >
+              <div style={{ ...statLabelStyle(), color: COLORS.muted, letterSpacing: "0.1em" }}>
+                Order ticket
+              </div>
+              <div className="perch-fin-number" style={{ marginTop: 3, fontSize: 17, fontWeight: 750, color: COLORS.text }}>
+                {base.ticker}
+              </div>
+              <div style={{ marginTop: 1, fontSize: 12.5, color: COLORS.muted, lineHeight: 1.35, fontWeight: 500 }}>
+                {base.name}
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 12, color: "#8B8682", fontWeight: 600, letterSpacing: "0.01em" }}>
+                  Buying power
+                </div>
+                <div className="perch-fin-number" style={{ marginTop: 2, fontSize: 19, fontWeight: 650, color: "#C45000" }}>
+                  {formatCurrencyCompact(portfolio.cash)}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 10,
+                  display: "flex",
+                  gap: 0,
+                  borderRadius: 8,
+                  background: "#F4F2EF",
+                  padding: 2,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setMode("BUY")}
+                  style={{
+                    flex: 1,
+                    minHeight: 34,
+                    borderRadius: 6,
+                    border: "none",
+                    background: mode === "BUY" ? "#C45000" : "transparent",
+                    color: mode === "BUY" ? "#FFFFFF" : "#6F6C68",
+                    fontWeight: 600,
+                    letterSpacing: "0.01em",
+                    fontSize: 14,
+                    cursor: "pointer",
+                    WebkitTapHighlightColor: "transparent",
+                  }}
+                >
+                  Buy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("SELL")}
+                  style={{
+                    flex: 1,
+                    minHeight: 34,
+                    borderRadius: 6,
+                    border: "none",
+                    background: mode === "SELL" ? COLORS.loss : "transparent",
+                    color: mode === "SELL" ? "#FFFFFF" : "#6F6C68",
+                    fontWeight: 600,
+                    letterSpacing: "0.01em",
+                    fontSize: 14,
+                    cursor: "pointer",
+                    WebkitTapHighlightColor: "transparent",
+                  }}
+                >
+                  Sell
+                </button>
+              </div>
+
+              <div style={{ marginTop: 11 }}>
+                <div style={{ fontSize: 12, color: "#6F6C68", fontWeight: 500 }}>
+                  Order type
+                </div>
+                <div style={{ marginTop: 4, fontSize: 12, color: "#6F6C68", fontWeight: 500 }}>
+                  Market order
+                </div>
+              </div>
+
+              <div style={{ marginTop: 11 }}>
+                <div style={{ ...statLabelStyle(), color: COLORS.muted, letterSpacing: "0.1em" }}>
+                  Quantity
+                </div>
+                <div style={{ position: "relative", marginTop: 6 }}>
+                  <input
+                    inputMode="numeric"
+                    value={sharesInput}
+                    onChange={(e) => setSharesInput(e.target.value)}
+                    className="perch-ticket-shares-input"
+                    style={{
+                      width: "100%",
+                      minHeight: 42,
+                      borderRadius: 8,
+                      border: "1px solid #E8E4DF",
+                      padding: "0 60px 0 14px",
+                      fontSize: 15,
+                      outline: "none",
+                      color: COLORS.text,
+                      background: "#FFFFFF",
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = COLORS.orange;
+                      e.currentTarget.style.boxShadow = "0 0 0 2px rgba(196,80,0,0.1)";
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = COLORS.border;
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  />
+                  <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: COLORS.mutedSoft, fontWeight: 600 }}>
+                    Shares
+                  </span>
+                </div>
+                <div style={{ marginTop: 7, display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }}>
+                  {[10, 50, 100, 500].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setSharesInput(String(preset))}
+                      style={{
+                        minHeight: 28,
+                        borderRadius: 6,
+                        border: "1px solid #E8E4DF",
+                        background: "#FFFFFF",
+                        color: "#6F6C68",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "#F4F2EF";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "#FFFFFF";
+                      }}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 11,
+                  background: "rgba(255,255,255,0.72)",
+                  border: `1px solid ${ORDER_BORDER}`,
+                  borderRadius: 10,
+                  padding: "10px 11px",
+                  fontSize: 13,
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
+                  <div className="perch-ticket-label" style={{ color: "#8B8682", fontWeight: 600 }}>
+                    Estimated amount
+                  </div>
+                  <div className="perch-fin-number" style={{ fontWeight: 650, color: "#1F1F1F", fontSize: 14 }}>
+                    {hasQuote ? formatCurrencyCompact(est) : NOT_AVAILABLE}
+                  </div>
+                </div>
+                <div className="perch-fin-number" style={{ marginTop: 5, color: COLORS.mutedSoft, fontSize: 12.5 }}>
+                  {hasQuote ? `${formatPrice(estimatedExecutionPrice)} per share` : NOT_AVAILABLE}
+                </div>
+              </div>
+
+              {message && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    border: `1px solid ${message.includes("Bought") || message.includes("Sold") ? "#CFE6DB" : "#F0D1CC"}`,
+                    background:
+                      message.includes("Bought") || message.includes("Sold")
+                        ? "#F4FBF7"
+                        : "#FFF6F4",
+                    color:
+                      message.includes("Bought") || message.includes("Sold")
+                        ? COLORS.gain
+                        : COLORS.loss,
+                    borderRadius: 9,
+                    padding: "8px 11px",
+                    fontSize: 13,
+                    fontWeight: 650,
+                  }}
+                  role="status"
+                >
+                  {message}
+                </div>
+              )}
+
+              {mode === "BUY"
+                ? (
+                    <button
+                      type="button"
+                      onClick={onConfirm}
+                      disabled={isSubmitting || !hasQuote}
+                      style={{
+                        marginTop: 12,
+                        width: "100%",
+                        minHeight: 44,
+                        borderRadius: 8,
+                        border: `1px solid ${COLORS.orange}`,
+                        background: "#C45000",
+                        color: "#FFFFFF",
+                        fontWeight: 650,
+                        fontSize: 15,
+                        letterSpacing: "0.02em",
+                        boxShadow: "0 4px 14px rgba(196,80,0,0.2)",
+                        cursor: isSubmitting || !hasQuote ? "not-allowed" : "pointer",
+                        opacity: isSubmitting || !hasQuote ? 0.55 : 1,
+                        WebkitTapHighlightColor: "transparent",
+                      }}
+                    >
+                      {isSubmitting ? "Confirming order..." : `Buy ${ticker}`}
+                    </button>
+                  )
+                : (
+                    <button
+                      type="button"
+                      onClick={onConfirm}
+                      disabled={isSubmitting || !hasQuote}
+                      style={{
+                        marginTop: 12,
+                        width: "100%",
+                        minHeight: 44,
+                        borderRadius: 8,
+                        border: `1px solid ${COLORS.loss}`,
+                        background: "#FFFFFF",
+                        color: COLORS.loss,
+                        fontWeight: 650,
+                        fontSize: 15,
+                        letterSpacing: "0.02em",
+                        cursor: isSubmitting || !hasQuote ? "not-allowed" : "pointer",
+                        opacity: isSubmitting || !hasQuote ? 0.55 : 1,
+                        WebkitTapHighlightColor: "transparent",
+                      }}
+                    >
+                      {isSubmitting ? "Confirming order..." : `Sell ${ticker}`}
+                    </button>
+                  )}
+
+              <button
+                type="button"
                 style={{
                   marginTop: 8,
                   width: "100%",
-                  minHeight: 48,
-                  borderRadius: 10,
-                  border: `1px solid ${COLORS.border}`,
-                  padding: "0 16px",
-                  fontSize: 16,
-                  outline: "none",
-                  color: COLORS.text,
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = COLORS.orange;
-                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(196,80,0,0.18)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = COLORS.border;
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              />
-            </div>
-
-            <div
-              className="perch-ticket-summary"
-              style={{
-                marginTop: 16,
-                background: COLORS.bgElevated,
-                border: `1px solid ${COLORS.borderStrong}`,
-                borderRadius: 12,
-                padding: 16,
-                fontSize: 13,
-              }}
-            >
-              <div className="perch-ticket-row" style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                <div className="perch-ticket-label" style={{ color: COLORS.mutedSoft, fontWeight: 600 }}>
-                  Estimated price
-                </div>
-                <div
-                  className="perch-fin-number perch-ticket-primary-value"
-                  style={{
-                    fontWeight: 740,
-                    color: COLORS.text,
-                    fontSize: 15,
-                  }}
-                >
-                  {hasQuote ? formatPKRWithSymbol(est) : NOT_AVAILABLE}
-                </div>
-              </div>
-              <div className="perch-fin-number perch-ticket-secondary-value" style={{ marginTop: 8, color: COLORS.mutedSoft }}>
-                {hasQuote ? `${formatPKRWithSymbol(estimatedExecutionPrice)} per share` : NOT_AVAILABLE}
-              </div>
-              <div style={{ marginTop: 4, color: COLORS.mutedSoft }}>
-                Estimated fill may vary slightly from the latest market print.
-              </div>
-              <div
-                className="perch-ticket-row"
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  marginTop: 8,
-                }}
-              >
-                <div className="perch-ticket-label" style={{ color: COLORS.mutedSoft, fontWeight: 600 }}>
-                  {mode === "BUY" ? "Available cash" : "Shares owned"}
-                </div>
-                <div
-                  className="perch-fin-number perch-ticket-secondary-strong"
-                  style={{
-                    fontWeight: 730,
-                    color: COLORS.text,
-                    fontSize: 15,
-                  }}
-                >
-                  {mode === "BUY"
-                    ? formatPKRWithSymbol(portfolio.cash)
-                    : `${holding?.shares ?? 0}`}
-                </div>
-              </div>
-            </div>
-
-            {message && (
-              <div
-                style={{
-                  marginTop: 14,
-                  border: `1px solid ${message.includes("Bought") || message.includes("Sold") ? "#CFE6DB" : "#F0D1CC"}`,
-                  background:
-                    message.includes("Bought") || message.includes("Sold")
-                      ? "#F4FBF7"
-                      : "#FFF6F4",
-                  color:
-                    message.includes("Bought") || message.includes("Sold")
-                      ? COLORS.gain
-                      : COLORS.loss,
-                  borderRadius: 10,
-                  padding: "10px 12px",
+                  minHeight: 38,
+                  borderRadius: 8,
+                  border: "1px solid #E8E4DF",
+                  background: "#FFFFFF",
+                  color: "#6F6C68",
+                  fontWeight: 600,
                   fontSize: 13,
-                  fontWeight: 650,
+                  cursor: "pointer",
                 }}
-                role="status"
               >
-                {message}
-              </div>
-            )}
-
-            {mode === "BUY"
-              ? (
-                  <button
-                    type="button"
-                    onClick={onConfirm}
-                    disabled={isSubmitting || !hasQuote}
-                    style={{
-                      marginTop: 16,
-                      width: "100%",
-                      minHeight: 50,
-                      borderRadius: 12,
-                      border: `1px solid ${COLORS.orange}`,
-                      background: COLORS.orange,
-                      color: "#FFFFFF",
-                      fontWeight: 740,
-                      fontSize: 16,
-                      letterSpacing: "0.02em",
-                      boxShadow: "0 6px 18px rgba(196,80,0,0.24)",
-                      cursor: isSubmitting || !hasQuote ? "not-allowed" : "pointer",
-                      opacity: isSubmitting || !hasQuote ? 0.55 : 1,
-                      WebkitTapHighlightColor: "transparent",
-                    }}
-                  >
-                    {isSubmitting ? "Confirming order..." : `Buy ${ticker}`}
-                  </button>
-                )
-              : (
-                  <button
-                    type="button"
-                    onClick={onConfirm}
-                    disabled={isSubmitting || !hasQuote}
-                    style={{
-                      marginTop: 16,
-                      width: "100%",
-                      minHeight: 50,
-                      borderRadius: 12,
-                      border: `1px solid ${COLORS.loss}`,
-                      background: "#FFFFFF",
-                      color: COLORS.loss,
-                      fontWeight: 740,
-                      fontSize: 16,
-                      letterSpacing: "0.02em",
-                      cursor: isSubmitting || !hasQuote ? "not-allowed" : "pointer",
-                      opacity: isSubmitting || !hasQuote ? 0.55 : 1,
-                      WebkitTapHighlightColor: "transparent",
-                    }}
-                  >
-                    {isSubmitting ? "Confirming order..." : `Sell ${ticker}`}
-                  </button>
-                )}
+                Add to Watchlist
+              </button>
+            </div>
           </aside>
         </div>
       </div>
