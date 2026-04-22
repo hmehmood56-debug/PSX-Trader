@@ -17,6 +17,7 @@ import { useLivePrices, type LiveQuote } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { getPsxChartUrl } from "@/lib/marketSnapshotUrl";
 import { usePortfolio } from "@/hooks/usePortfolioState";
+import { StockLogo } from "@/components/common/StockLogo";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 import { startRouteProgress } from "@/lib/routeProgress";
 import { logAnalyticsEvent } from "@/lib/analytics/client";
@@ -415,18 +416,30 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
           <div className="perch-stock-detail-main" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <section>
               <div style={statLabelStyle()}>{base.sector}</div>
-              <h1
+              <div
                 style={{
-                  margin: "8px 0 0",
-                  fontSize: "clamp(22px, 5vw, 32px)",
-                  fontWeight: 750,
-                  lineHeight: 1.12,
+                  marginTop: 8,
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 14,
                 }}
               >
-                {base.name}
-              </h1>
-              <div className="perch-stock-ticker">
-                {base.ticker}
+                <StockLogo ticker={base.ticker} size={44} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h1
+                    style={{
+                      margin: 0,
+                      fontSize: "clamp(22px, 5vw, 32px)",
+                      fontWeight: 750,
+                      lineHeight: 1.12,
+                    }}
+                  >
+                    {base.name}
+                  </h1>
+                  <div className="perch-stock-ticker">
+                    {base.ticker}
+                  </div>
+                </div>
               </div>
             </section>
 
