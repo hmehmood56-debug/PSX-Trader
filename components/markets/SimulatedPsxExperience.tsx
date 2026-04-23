@@ -2,16 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { startRouteProgress } from "@/lib/routeProgress";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLivePrices, type ReplayStock } from "@/lib/priceSimulator";
 import { formatCompactPKR, formatPKRWithSymbol } from "@/lib/format";
+import { BarChart3, Circle, Gauge, TrendingDown, TrendingUp } from "lucide-react";
 
 const COLORS = {
-  orange: "#C45000",
-  bg: "#FFFFFF",
+  orange: "#EA580C",
+  bg: "#FAFAFA",
+  bgSecondary: "#F7F7F7",
   border: "#E8E8E8",
   text: "#1A1A1A",
   muted: "#6B6B6B",
+  mutedSoft: "#8A8A8A",
   gain: "#007A4C",
   loss: "#C0392B",
 } as const;
@@ -22,7 +25,6 @@ function SearchHero({
   sector,
   setSector,
   sectors,
-  isPlaceholderData,
   sessionState,
 }: {
   q: string;
@@ -30,84 +32,74 @@ function SearchHero({
   sector: string;
   setSector: (value: string) => void;
   sectors: string[];
-  isPlaceholderData: boolean;
   sessionState: string;
 }) {
+  const isLive = sessionState === "live";
   return (
     <section
       style={{
-        background: "linear-gradient(140deg, #FFF8F2 0%, #FFFFFF 100%)",
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: 20,
-        padding: 20,
-        boxShadow: "0 8px 24px rgba(196,80,0,0.08)",
+        padding: 0,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10,
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ fontSize: 12, color: COLORS.muted, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-          Live PSX market feed
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
+        <div>
+          <h1
+            className="flex items-center gap-2"
+            style={{
+              margin: 0,
+              fontSize: "clamp(19px, 3.8vw, 22px)",
+              fontWeight: 600,
+              color: "#262626",
+              letterSpacing: "-0.01em",
+              lineHeight: 1.2,
+            }}
+          >
+            <span
+              style={{
+                width: 3,
+                height: 18,
+                borderRadius: 3,
+                background: COLORS.orange,
+                display: "inline-block",
+              }}
+            />
+            Pakistan Stock Exchange
+            {isLive ? (
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a]" />
+                <span className="text-sm text-gray-600 font-medium">Live Market</span>
+              </span>
+            ) : null}
+          </h1>
+          <p style={{ marginTop: 4, marginBottom: 0, color: "#737373", fontSize: 13, lineHeight: "18px", maxWidth: 780 }}>
+            Live Pakistan market data for screening and discovery.
+          </p>
         </div>
-        <span
-          style={{
-            fontSize: 10,
-            color: "#355b48",
-            fontWeight: 700,
-            border: `1px solid #d8e3db`,
-            borderRadius: 6,
-            padding: "5px 8px",
-            background: "#f4faf6",
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-          }}
-        >
-          {isPlaceholderData ? "Connecting to live feed" : "LIVE MARKET"}
-        </span>
       </div>
-      <h1
-        style={{
-          margin: "8px 0 0",
-          fontSize: "clamp(22px, 5vw, 30px)",
-          color: COLORS.text,
-          letterSpacing: "-0.02em",
-          lineHeight: 1.15,
-        }}
-      >
-        Pakistan Stock Exchange (Paper Trading)
-      </h1>
-      <p style={{ marginTop: 10, marginBottom: 0, color: COLORS.muted, fontSize: 14, lineHeight: "22px", maxWidth: 780 }}>
-        Live Pakistan market data with paper trading, virtual cash, and portfolio tracking.
-      </p>
-      <div className="perch-psx-search-grid" style={{ marginTop: 12 }}>
+
+      <div className="perch-psx-search-grid" style={{ marginTop: 10 }}>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search ticker or company"
+          placeholder="Search PSX stocks (e.g. OGDC, HBL)"
           aria-label="Search ticker or company"
           style={{
             width: "100%",
-            height: 56,
-            borderRadius: 14,
-            border: `1px solid ${COLORS.border}`,
+            height: 48,
+            borderRadius: 12,
+            border: "1px solid #e5e5e5",
             padding: "0 18px",
-            fontSize: 16,
+            fontSize: 15,
             outline: "none",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            background: "#FFFFFF",
           }}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = COLORS.orange;
-            e.currentTarget.style.boxShadow = "0 0 0 4px rgba(196,80,0,0.18)";
+            e.currentTarget.style.boxShadow = "0 0 0 1px rgba(234,88,12,0.35)";
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = COLORS.border;
-            e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)";
+            e.currentTarget.style.borderColor = "#e5e5e5";
+            e.currentTarget.style.boxShadow = "none";
           }}
         />
 
@@ -117,9 +109,9 @@ function SearchHero({
           aria-label="Filter by sector"
           style={{
             width: "100%",
-            height: 56,
-            borderRadius: 14,
-            border: `1px solid ${COLORS.border}`,
+            height: 48,
+            borderRadius: 12,
+            border: "1px solid #e5e5e5",
             padding: "0 14px",
             fontSize: 15,
             outline: "none",
@@ -132,6 +124,183 @@ function SearchHero({
             </option>
           ))}
         </select>
+      </div>
+    </section>
+  );
+}
+
+function MarketSnapshotStrip({
+  breadth,
+  turnover,
+  sectorLeadership,
+}: {
+  breadth: number;
+  turnover: number;
+  sectorLeadership: string;
+}) {
+  const advancers = Math.round(Math.max(0, Math.min(1, breadth)) * 100);
+  return (
+    <section
+      style={{
+        marginTop: 14,
+        border: `1px solid #ececec`,
+        borderRadius: 12,
+        background: "#FFFFFF",
+        padding: "14px",
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: 10,
+        }}
+      >
+        <div style={{ background: "#f0fdf4", borderRadius: 10, padding: "10px 12px" }}>
+          <div style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase", letterSpacing: "0.06em" }}>Market Breadth</div>
+          <div style={{ marginTop: 3, fontSize: 20, fontWeight: 700, color: COLORS.text }}>{advancers}% Advancers</div>
+        </div>
+        <div style={{ background: "#fafaf9", borderRadius: 10, padding: "10px 12px" }}>
+          <div style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase", letterSpacing: "0.06em" }}>Turnover</div>
+          <div style={{ marginTop: 3, fontSize: 18, fontWeight: 700, color: COLORS.text }}>{formatCompactPKR(turnover)}</div>
+        </div>
+        <div style={{ background: "#fff7ed", borderRadius: 10, padding: "10px 12px" }}>
+          <div style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase", letterSpacing: "0.06em" }}>Sector Leadership</div>
+          <div style={{ marginTop: 3, fontSize: 15, fontWeight: 700, color: COLORS.text }}>{sectorLeadership}</div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CompactSnapshotRow({
+  mostActive,
+  topGainer,
+  topLoser,
+  sentiment,
+}: {
+  mostActive: ReplayStock | null;
+  topGainer: ReplayStock | null;
+  topLoser: ReplayStock | null;
+  sentiment: "Bullish" | "Neutral" | "Bearish";
+}) {
+  return (
+    <section
+      style={{
+        marginTop: 12,
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+        gap: 10,
+      }}
+    >
+      <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 12, background: "#FFFFFF", padding: "11px 12px" }}>
+        <span style={{ width: 24, height: 24, borderRadius: 8, background: "#fff7ed", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <BarChart3 className="w-4 h-4" color="#9A3412" />
+        </span>
+        <div style={{ marginTop: 6, fontSize: 10, color: COLORS.mutedSoft, textTransform: "uppercase", letterSpacing: "0.06em" }}>Most Active</div>
+        <div style={{ marginTop: 2, fontWeight: 700, color: COLORS.text, fontSize: 14 }}>{mostActive?.ticker ?? "N/A"}</div>
+        <div style={{ marginTop: 1, color: COLORS.muted, fontSize: 12 }}>
+          {mostActive ? `Vol ${formatCompactPKR(mostActive.volume)}` : "No live volume"}
+        </div>
+      </div>
+
+      <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 12, background: "#FFFFFF", padding: "11px 12px" }}>
+        <span style={{ width: 24, height: 24, borderRadius: 8, background: "#ecfdf3", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <TrendingUp className="w-4 h-4" color={COLORS.gain} />
+        </span>
+        <div style={{ marginTop: 6, fontSize: 10, color: COLORS.mutedSoft, textTransform: "uppercase", letterSpacing: "0.06em" }}>Top Gainer</div>
+        <div style={{ marginTop: 2, fontWeight: 700, color: COLORS.text, fontSize: 14 }}>{topGainer?.ticker ?? "N/A"}</div>
+        <div style={{ marginTop: 1, color: COLORS.gain, fontSize: 12, fontWeight: 700 }}>
+          {topGainer ? `+${topGainer.changePercent.toFixed(2)}%` : "No gainers"}
+        </div>
+      </div>
+
+      <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 12, background: "#FFFFFF", padding: "11px 12px" }}>
+        <span style={{ width: 24, height: 24, borderRadius: 8, background: "#fff1f2", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <TrendingDown className="w-4 h-4" color={COLORS.loss} />
+        </span>
+        <div style={{ marginTop: 6, fontSize: 10, color: COLORS.mutedSoft, textTransform: "uppercase", letterSpacing: "0.06em" }}>Top Loser</div>
+        <div style={{ marginTop: 2, fontWeight: 700, color: COLORS.text, fontSize: 14 }}>{topLoser?.ticker ?? "N/A"}</div>
+        <div style={{ marginTop: 1, color: COLORS.loss, fontSize: 12, fontWeight: 700 }}>
+          {topLoser ? `${topLoser.changePercent.toFixed(2)}%` : "No losers"}
+        </div>
+      </div>
+
+      <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 12, background: "#FFFFFF", padding: "11px 12px" }}>
+        <span style={{ width: 24, height: 24, borderRadius: 8, background: "#fff7ed", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <Gauge className="w-4 h-4" color="#9A3412" />
+        </span>
+        <div style={{ marginTop: 6, fontSize: 10, color: COLORS.mutedSoft, textTransform: "uppercase", letterSpacing: "0.06em" }}>Market Sentiment</div>
+        <div style={{ marginTop: 2, fontWeight: 700, color: COLORS.text, fontSize: 14 }}>{sentiment}</div>
+      </div>
+    </section>
+  );
+}
+
+function TrendingSection({
+  stocks,
+  onOpen,
+}: {
+  stocks: ReplayStock[];
+  onOpen: (ticker: string) => void;
+}) {
+  return (
+    <section style={{ marginTop: 18 }}>
+      <h2 style={{ margin: 0, fontSize: "clamp(16px, 3.4vw, 18px)", color: COLORS.text, fontWeight: 600 }}>
+        Trending now
+      </h2>
+      <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
+        {stocks.map((stock) => {
+          const up = stock.change >= 0;
+          return (
+            <button
+              key={stock.ticker}
+              type="button"
+              onClick={() => onOpen(stock.ticker)}
+              style={{
+                textAlign: "left",
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 12,
+                background: "#FFFFFF",
+                cursor: "pointer",
+                padding: 14,
+                WebkitTapHighlightColor: "transparent",
+                display: "grid",
+                gridTemplateColumns: "3px 1fr",
+                gap: 10,
+              }}
+            >
+              <span style={{ background: COLORS.orange, borderRadius: 3 }} />
+              <span>
+                <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: COLORS.text, fontWeight: 700, fontSize: 15 }}>{stock.ticker}</span>
+                </span>
+                <span style={{ marginTop: 6, color: COLORS.muted, fontSize: 12, lineHeight: "16px", minHeight: 32, display: "block" }}>
+                  {stock.name}
+                </span>
+                <span style={{ marginTop: 8, color: COLORS.text, fontWeight: 700, fontSize: 19, display: "block" }}>
+                  {formatPKRWithSymbol(stock.price)}
+                </span>
+                <span style={{ marginTop: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span
+                    style={{
+                      color: up ? COLORS.gain : COLORS.loss,
+                      fontWeight: 700,
+                      fontSize: 14,
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {up ? "+" : ""}
+                    {stock.changePercent.toFixed(2)}%
+                  </span>
+                  <span style={{ color: COLORS.muted, fontSize: 12, fontVariantNumeric: "tabular-nums" }}>
+                    Vol {formatCompactPKR(stock.volume)}
+                  </span>
+                </span>
+              </span>
+            </button>
+          );
+        })}
       </div>
     </section>
   );
@@ -150,23 +319,23 @@ function MarketTickerTape({
     <section
       style={{
         marginTop: 16,
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: 14,
+        border: "1px solid rgba(26,26,26,0.06)",
+        borderRadius: 12,
         overflow: "hidden",
-        background: "#FFFFFF",
+        background: "#8B3A1B",
+        padding: "16px 12px",
+        boxShadow: "none",
       }}
     >
-      <div style={{ padding: "10px 14px", fontSize: 12, color: COLORS.muted, fontWeight: 600 }}>
-        Live PSX ticker
-      </div>
       <div
         className="perch-ticker-row"
         style={{
-          borderTop: `1px solid ${COLORS.border}`,
           whiteSpace: "nowrap",
+          background: "transparent",
+          borderRadius: 8,
         }}
       >
-        <div className="perch-ticker-track">
+        <div className="perch-ticker-track" style={{ animationDuration: "58s", animationTimingFunction: "linear" }}>
           {tape.map((s, idx) => {
             const up = s.hasLiveQuote && s.change >= 0;
             return (
@@ -176,19 +345,19 @@ function MarketTickerTape({
                 onClick={() => onOpen(s.ticker)}
                 style={{
                   minHeight: 48,
-                  padding: "0 14px",
+                  padding: "0 20px",
                   border: "none",
                   background: "transparent",
                   cursor: "pointer",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 8,
-                  borderRight: `1px solid ${COLORS.border}`,
+                  gap: 14,
+                  borderRight: "1px solid rgba(26,26,26,0.12)",
                   WebkitTapHighlightColor: "transparent",
                 }}
               >
-                <span style={{ color: COLORS.orange, fontWeight: 700 }}>{s.ticker}</span>
-                <span style={{ color: COLORS.text, fontVariantNumeric: "tabular-nums" }}>
+                <span style={{ color: "#1A1A1A", fontWeight: 600 }}>{s.ticker}</span>
+                <span style={{ color: "#1A1A1A", fontVariantNumeric: "tabular-nums", fontSize: 13 }}>
                   {s.hasLiveQuote ? formatPKRWithSymbol(s.price) : "—"}
                 </span>
                 <span
@@ -196,6 +365,7 @@ function MarketTickerTape({
                     color: s.hasLiveQuote ? (up ? COLORS.gain : COLORS.loss) : COLORS.muted,
                     fontWeight: 700,
                     fontVariantNumeric: "tabular-nums",
+                    fontSize: 12,
                   }}
                 >
                   {s.hasLiveQuote ? (
@@ -215,164 +385,9 @@ function MarketTickerTape({
     </section>
   );
 }
-
-function StockSection({
-  title,
-  subtitle,
-  stocks,
-  onOpen,
-}: {
-  title: string;
-  subtitle: string;
-  stocks: ReplayStock[];
-  onOpen: (ticker: string) => void;
-}) {
-  return (
-    <section style={{ marginTop: 22 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          gap: 10,
-          flexWrap: "wrap",
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: "clamp(17px, 3.8vw, 20px)", color: COLORS.text }}>{title}</h2>
-        <span style={{ fontSize: 12, color: COLORS.muted }}>{subtitle}</span>
-      </div>
-      <div className="perch-stock-card-grid" style={{ marginTop: 12 }}>
-        {stocks.map((stock) => (
-          <StockCard key={stock.ticker} stock={stock} onOpen={onOpen} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function MarketDepthStrip({
-  breadth,
-  turnover,
-  sectorLeadership,
-}: {
-  breadth: number;
-  turnover: number;
-  sectorLeadership: string;
-}) {
-  return (
-    <section
-      style={{
-        marginTop: 16,
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: 14,
-        background: "#fffdfb",
-        padding: "12px 14px",
-        display: "grid",
-        gap: 10,
-        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-      }}
-    >
-      <div>
-        <div style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          Market breadth
-        </div>
-        <div style={{ marginTop: 4, fontWeight: 700, color: COLORS.text }}>{Math.round(breadth * 100)}% advancers</div>
-      </div>
-      <div>
-        <div style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          Turnover estimate
-        </div>
-        <div style={{ marginTop: 4, fontWeight: 700, color: COLORS.text }}>{formatCompactPKR(turnover)}</div>
-      </div>
-      <div>
-        <div style={{ fontSize: 11, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          Sector leadership
-        </div>
-        <div style={{ marginTop: 4, fontWeight: 700, color: COLORS.text }}>{sectorLeadership}</div>
-      </div>
-    </section>
-  );
-}
-
-function StockCard({
-  stock,
-  onOpen,
-}: {
-  stock: ReplayStock;
-  onOpen: (ticker: string) => void;
-}) {
-  const up = stock.hasLiveQuote && stock.change >= 0;
-  return (
-    <button
-      type="button"
-      onClick={() => onOpen(stock.ticker)}
-      style={{
-        textAlign: "left",
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: 14,
-        background: "#FFFFFF",
-        cursor: "pointer",
-        padding: "clamp(14px, 3vw, 16px)",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-        WebkitTapHighlightColor: "transparent",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ color: COLORS.orange, fontWeight: 800, fontSize: 16 }}>{stock.ticker}</div>
-        <div style={{ fontSize: 12, color: COLORS.muted }}>{stock.sector}</div>
-      </div>
-      <div
-        style={{
-          marginTop: 6,
-          color: COLORS.muted,
-          fontSize: 13,
-          minHeight: 34,
-          lineHeight: "17px",
-          overflow: "hidden",
-        }}
-      >
-        {stock.name}
-      </div>
-      <div style={{ marginTop: 10, color: COLORS.text, fontWeight: 700, fontSize: 18 }}>
-        {stock.hasLiveQuote ? formatPKRWithSymbol(stock.price) : "—"}
-      </div>
-      <div
-        style={{
-          marginTop: 8,
-          display: "flex",
-          justifyContent: "space-between",
-          fontSize: 13,
-          alignItems: "center",
-        }}
-      >
-        <span
-          style={{
-            color: stock.hasLiveQuote ? (up ? COLORS.gain : COLORS.loss) : COLORS.muted,
-            fontWeight: 700,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {stock.hasLiveQuote ? (
-            <>
-              {up ? "+" : ""}
-              {stock.change.toFixed(2)} ({up ? "+" : ""}
-              {stock.changePercent.toFixed(2)}%)
-            </>
-          ) : (
-            "Awaiting live quote"
-          )}
-        </span>
-        <span style={{ color: COLORS.muted, fontVariantNumeric: "tabular-nums" }}>
-          {stock.hasLiveQuote ? `Vol ${formatCompactPKR(stock.volume)}` : "—"}
-        </span>
-      </div>
-    </button>
-  );
-}
-
 export function SimulatedPsxExperience() {
   const router = useRouter();
-  const { getStocksWithLive, isPlaceholderData, getMarketSnapshot } = useLivePrices();
+  const { getStocksWithLive, getMarketSnapshot } = useLivePrices();
   const allStocks = getStocksWithLive();
   const stocks = useMemo(() => allStocks.filter((stock) => stock.ticker.length > 0), [allStocks]);
   const market = getMarketSnapshot();
@@ -383,9 +398,6 @@ export function SimulatedPsxExperience() {
 
   const [q, setQ] = useState("");
   const [sector, setSector] = useState("All");
-  const [page, setPage] = useState(1);
-  const PAGE_SIZE = 48;
-
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return stocks.filter((s) => {
@@ -398,40 +410,49 @@ export function SimulatedPsxExperience() {
     });
   }, [stocks, q, sector]);
 
-  const trending = useMemo(
+  const globalLive = useMemo(
+    () => stocks.filter((s) => s.hasLiveQuote),
+    [stocks]
+  );
+  const mostActive = useMemo(
+    () => [...globalLive].sort((a, b) => b.volume - a.volume)[0] ?? null,
+    [globalLive]
+  );
+  const topGainer = useMemo(
+    () => [...globalLive].sort((a, b) => b.changePercent - a.changePercent)[0] ?? null,
+    [globalLive]
+  );
+  const topLoser = useMemo(
+    () => [...globalLive].sort((a, b) => a.changePercent - b.changePercent)[0] ?? null,
+    [globalLive]
+  );
+  const marketSentiment = useMemo((): "Bullish" | "Neutral" | "Bearish" => {
+    const b = market.marketBreadth;
+    if (b >= 0.58) return "Bullish";
+    if (b <= 0.42) return "Bearish";
+    return "Neutral";
+  }, [market.marketBreadth]);
+
+  const trendingNow = useMemo(
     () =>
       [...filtered]
         .filter((s) => s.hasLiveQuote)
         .sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
-        .slice(0, 6),
-    [filtered]
-  );
-
-  const mostActive = useMemo(
-    () =>
-      [...filtered]
-        .filter((s) => s.hasLiveQuote)
-        .sort((a, b) => b.volume - a.volume)
-        .slice(0, 6),
+        .slice(0, 4),
     [filtered]
   );
 
   const marketTape = useMemo(
     () =>
-      [...filtered]
-        .filter((s) => s.hasLiveQuote)
+      [...globalLive]
         .sort((a, b) => b.volume - a.volume)
         .slice(0, 80),
-    [filtered]
+    [globalLive]
   );
-  const hasSearch = q.trim().length > 0 || sector !== "All";
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pagedListings = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  useEffect(() => {
-    setPage(1);
-  }, [q, sector]);
-
+  const sectorLeadership = useMemo(() => {
+    const leaders = (market.sectorLeaders ?? []).slice(0, 2).map((s) => s.sector.replace("_", " "));
+    return leaders.length > 0 ? leaders.join(" / ") : "N/A";
+  }, [market.sectorLeaders]);
   return (
     <div style={{ background: COLORS.bg }}>
       <div className="perch-shell perch-shell-wide perch-psx-shell">
@@ -441,19 +462,23 @@ export function SimulatedPsxExperience() {
           sector={sector}
           setSector={setSector}
           sectors={sectors}
-          isPlaceholderData={isPlaceholderData}
           sessionState={market.sessionState}
         />
 
-        <MarketDepthStrip
+        <MarketTickerTape items={marketTape} onOpen={(ticker) => router.push(`/stock/${ticker}`)} />
+        <CompactSnapshotRow
+          mostActive={mostActive}
+          topGainer={topGainer}
+          topLoser={topLoser}
+          sentiment={marketSentiment}
+        />
+        <MarketSnapshotStrip
           breadth={market.marketBreadth}
           turnover={market.turnoverEstimate}
-          sectorLeadership={market.sectorLeaders.map((s) => s.sector.replace("_", " ")).join(" / ")}
+          sectorLeadership={sectorLeadership}
         />
 
-        <MarketTickerTape items={marketTape} onOpen={(ticker) => router.push(`/stock/${ticker}`)} />
-
-        {filtered.length === 0 ? (
+        {stocks.length === 0 ? (
           <div
             style={{
               marginTop: 20,
@@ -468,74 +493,28 @@ export function SimulatedPsxExperience() {
           </div>
         ) : (
           <>
-            <StockSection
-              title={hasSearch ? "Search results" : "Trending now"}
-              subtitle={hasSearch ? `${filtered.length} listings found` : "Largest movers from the live market feed"}
-              stocks={hasSearch ? filtered.slice(0, 8) : trending}
+            <TrendingSection
+              stocks={trendingNow}
               onOpen={(ticker) => {
                 startRouteProgress();
                 router.push(`/stock/${ticker}`);
               }}
             />
-            <StockSection
-              title="Most active"
-              subtitle="Highest traded volume from the live feed"
-              stocks={mostActive}
-              onOpen={(ticker) => {
-                startRouteProgress();
-                router.push(`/stock/${ticker}`);
-              }}
-            />
-            <StockSection
-              title="All PSX listings"
-              subtitle={`${filtered.length} total symbols in live universe`}
-              stocks={pagedListings}
-              onOpen={(ticker) => {
-                startRouteProgress();
-                router.push(`/stock/${ticker}`);
-              }}
-            />
-            <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ color: COLORS.muted, fontSize: 12 }}>
-                Page {page} of {totalPages}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                  disabled={page === 1}
-                  style={{
-                    minHeight: 36,
-                    borderRadius: 10,
-                    border: `1px solid ${COLORS.border}`,
-                    background: "#fff",
-                    padding: "0 12px",
-                    color: COLORS.text,
-                    cursor: page === 1 ? "not-allowed" : "pointer",
-                    opacity: page === 1 ? 0.5 : 1,
-                  }}
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={page >= totalPages}
-                  style={{
-                    minHeight: 36,
-                    borderRadius: 10,
-                    border: `1px solid ${COLORS.border}`,
-                    background: "#fff",
-                    padding: "0 12px",
-                    color: COLORS.text,
-                    cursor: page >= totalPages ? "not-allowed" : "pointer",
-                    opacity: page >= totalPages ? 0.5 : 1,
-                  }}
-                >
-                  Next
-                </button>
+            {filtered.length === 0 ? (
+              <div
+                style={{
+                  marginTop: 14,
+                  border: `1px solid ${COLORS.border}`,
+                  borderRadius: 12,
+                  background: "#FFFFFF",
+                  padding: 12,
+                  color: COLORS.muted,
+                  fontSize: 13,
+                }}
+              >
+                No matching ticker in current universe.
               </div>
-            </div>
+            ) : null}
           </>
         )}
       </div>
