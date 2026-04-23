@@ -101,6 +101,9 @@ type Props = {
   range: StockDetailChartRange;
   lineColor: string;
   lineColorFaint: string;
+  showVolume?: boolean;
+  minimalGrid?: boolean;
+  priceScaleMargins?: { top: number; bottom: number };
 };
 
 export function StockPriceLwcChart({
@@ -108,6 +111,9 @@ export function StockPriceLwcChart({
   range,
   lineColor,
   lineColorFaint,
+  showVolume = true,
+  minimalGrid = false,
+  priceScaleMargins,
 }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -186,7 +192,7 @@ export function StockPriceLwcChart({
         pinch: false,
       },
       grid: {
-        vertLines: { color: GRID, style: 0, visible: true },
+        vertLines: { color: GRID, style: 0, visible: !minimalGrid },
         horzLines: { color: GRID, style: 0, visible: true },
       },
       crosshair: {
@@ -207,20 +213,23 @@ export function StockPriceLwcChart({
     area.priceScale().applyOptions({
       borderVisible: true,
       borderColor: SCALE_BORDER,
-      scaleMargins: { top: 0.08, bottom: 0.2 },
+      scaleMargins: priceScaleMargins ?? { top: 0.08, bottom: showVolume ? 0.2 : 0.08 },
     });
 
-    const vol = chart.addHistogramSeries({
-      color: VOL_NEUTRAL,
-      priceFormat: { type: "volume" },
-      priceScaleId: "vol",
-      base: 0,
-    });
-    vol.priceScale().applyOptions({
-      scaleMargins: { top: 0.72, bottom: 0 },
-      borderVisible: false,
-      visible: false,
-    });
+    let vol: ISeriesApi<"Histogram", Time> | null = null;
+    if (showVolume) {
+      vol = chart.addHistogramSeries({
+        color: VOL_NEUTRAL,
+        priceFormat: { type: "volume" },
+        priceScaleId: "vol",
+        base: 0,
+      });
+      vol.priceScale().applyOptions({
+        scaleMargins: { top: 0.72, bottom: 0 },
+        borderVisible: false,
+        visible: false,
+      });
+    }
 
     chartRef.current = chart;
     areaRef.current = area;
@@ -242,7 +251,7 @@ export function StockPriceLwcChart({
       areaRef.current = null;
       volRef.current = null;
     };
-  }, [range]);
+  }, [range, showVolume, minimalGrid, priceScaleMargins, lineColor, lineColorFaint]);
 
   useEffect(() => {
     if (!areaRef.current || !chartRef.current) return;

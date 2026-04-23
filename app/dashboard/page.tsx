@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { portfolio, transactions: txs, portfolioReady } = usePortfolio();
   const { user, loading: authLoading } = useAuth();
-  const { getQuote, getMarketSnapshot } = useLivePrices();
+  const { getQuote } = useLivePrices();
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
@@ -53,12 +53,6 @@ export default function DashboardPage() {
     return pnl;
   }, [portfolio.holdings, getQuote]);
 
-  const market = getMarketSnapshot();
-  const displayName =
-    (user?.user_metadata?.username as string | undefined) ??
-    user?.email?.split("@")[0] ??
-    "Account";
-
   const rows = useMemo(() => {
     return portfolio.holdings.map((h) => {
       const q = getQuote(h.ticker);
@@ -75,144 +69,71 @@ export default function DashboardPage() {
   const unrealizedPnl = rows.reduce((sum, r) => sum + r.pnl, 0);
 
   const performancePoints = useMemo(() => {
-    if (txs.length === 0) {
-      return [
-        { label: "Start", pnl: 0 },
-        { label: "Now", pnl: unrealizedPnl },
-      ];
-    }
+    const nowIso = new Date().toISOString();
+    const currentMarks = new Map<string, number>();
+    for (const row of rows) currentMarks.set(row.ticker, row.px);
 
-    const ascending = [...txs].sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    const sortedTxs = [...txs].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
+    const netBuyCost = sortedTxs.reduce((sum, tx) => {
+      return tx.type === "BUY" ? sum + tx.total : sum - tx.total;
+    }, 0);
+    const estimatedStartingCash = Math.max(0, portfolio.cash + netBuyCost);
 
-    const book: Record<string, { shares: number; avg: number }> = {};
-    let realized = 0;
-    const points: { label: string; pnl: number }[] = [{ label: "Start", pnl: 0 }];
+    let runningCash = estimatedStartingCash;
+    const holdings = new Map<string, number>();
+    const points: { date: string; value: number }[] = [];
 
-    for (const tx of ascending) {
-      const key = tx.ticker;
-      const pos = book[key] ?? { shares: 0, avg: 0 };
+    for (const tx of sortedTxs) {
+      const priorShares = holdings.get(tx.ticker) ?? 0;
       if (tx.type === "BUY") {
-        const totalShares = pos.shares + tx.shares;
-        const nextAvg =
-          totalShares === 0
-            ? 0
-            : (pos.avg * pos.shares + tx.price * tx.shares) / totalShares;
-        book[key] = { shares: totalShares, avg: nextAvg };
+        holdings.set(tx.ticker, priorShares + tx.shares);
+        runningCash -= tx.total;
       } else {
-        const sold = Math.min(tx.shares, pos.shares);
-        realized += (tx.price - pos.avg) * sold;
-        const nextShares = Math.max(0, pos.shares - sold);
-        book[key] = { shares: nextShares, avg: nextShares === 0 ? 0 : pos.avg };
+        const soldShares = Math.min(priorShares, tx.shares);
+        holdings.set(tx.ticker, Math.max(0, priorShares - soldShares));
+        runningCash += tx.total;
       }
-
+      const markedHoldingsValue = Array.from(holdings.entries()).reduce((sum, [ticker, shares]) => {
+        if (shares <= 0) return sum;
+        return sum + shares * (currentMarks.get(ticker) ?? tx.price);
+      }, 0);
       points.push({
-        label: new Date(tx.timestamp).toLocaleDateString("en-PK", {
-          month: "short",
-          day: "numeric",
-        }),
-        pnl: realized,
+        date: tx.timestamp,
+        value: Math.max(0, runningCash + markedHoldingsValue),
       });
     }
 
-    const len = points.length;
-    const smoothed = points.map((p, idx) => ({
-      label: p.label,
-      pnl: p.pnl + unrealizedPnl * (idx / Math.max(1, len - 1)),
-    }));
-    smoothed[smoothed.length - 1] = {
-      label: "Now",
-      pnl: realized + unrealizedPnl,
-    };
-    return smoothed;
-  }, [txs, unrealizedPnl]);
+    points.push({ date: nowIso, value: Math.max(0, portfolioValue) });
+    if (points.length === 1) {
+      const backfill = new Date();
+      backfill.setDate(backfill.getDate() - 7);
+      return [
+        { date: backfill.toISOString(), value: Math.max(0, portfolioValue) },
+        points[0],
+      ];
+    }
+    return points;
+  }, [txs, rows, portfolio.cash, portfolioValue]);
 
   if (!mounted || !portfolioReady || authLoading) return null;
 
   return (
     <div style={{ background: COLORS.bg }}>
       <div className="perch-shell perch-shell-wide perch-psx-shell">
-        <section className="dashboard-header dashboard-header--brokerage">
-          <div>
-            <div className="perch-dashboard-brand-line">
-              <PerchWordmark compact />
-            </div>
-            {user ? (
-              <>
-                <h1>Welcome back, {displayName}</h1>
-                <p>Here&apos;s your portfolio snapshot today</p>
-              </>
-            ) : (
-              <>
-                <p
-                  style={{
-                    display: "inline-block",
-                    margin: "0 0 8px",
-                    padding: "4px 10px",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: COLORS.muted,
-                    border: `1px solid ${COLORS.border}`,
-                    borderRadius: 999,
-                    background: COLORS.bgSecondary,
-                  }}
-                >
-                  Preview mode
-                </p>
-                <h1>Practice portfolio</h1>
-                <p>Simulation only. Numbers here are not a real brokerage account.</p>
-              </>
-            )}
-          </div>
-        </section>
-        {!user ? (
-          <div
-            style={{
-              marginBottom: 24,
-              padding: "16px 18px",
-              borderRadius: 14,
-              border: `1px solid ${COLORS.border}`,
-              background: COLORS.bgSecondary,
-            }}
-          >
-            <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: COLORS.text }}>
-              Create an account to save your progress and get access to real trading features.
-            </p>
-            <Link
-              href="/signup"
-              style={{
-                marginTop: 12,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: 44,
-                padding: "0 18px",
-                borderRadius: 10,
-                background: COLORS.orange,
-                color: "#fff",
-                fontSize: 15,
-                fontWeight: 650,
-                textDecoration: "none",
-              }}
-            >
-              Create account
-            </Link>
-          </div>
-        ) : null}
+        <div className="perch-dashboard-brand-line">
+          <PerchWordmark compact />
+        </div>
         <PortfolioSections
           rows={rows}
           txs={txs}
           cash={portfolio.cash}
-          holdingsValue={holdingsValue}
           portfolioValue={portfolioValue}
           todayPnL={todayPnL}
           unrealizedPnl={unrealizedPnl}
-          marketBreadth={market.marketBreadth}
           performancePoints={performancePoints}
+          isGuest={!user}
         />
         <footer className="perch-dashboard-footer">© 2026 Perch Capital. All rights reserved.</footer>
       </div>
