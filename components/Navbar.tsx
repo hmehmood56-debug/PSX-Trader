@@ -82,7 +82,7 @@ export function Navbar() {
     <header className={`${styles.header} ${menuOpen ? styles.mobileOpen : ""}`}>
       <div className={styles.inner}>
         <Link href="/" className={styles.brand} onClick={closeMenu}>
-          <PerchWordmark />
+          <PerchWordmark className={styles.brandWordmark} tone="navbar" />
           {authMode === "guest" ? <span className={styles.previewPill}>Preview</span> : null}
         </Link>
 
@@ -103,9 +103,6 @@ export function Navbar() {
 
         {authMode === "loading" ? (
           <div className={styles.desktopCtas}>
-            <Link href="/waitlist" className={styles.ctaWaitlist}>
-              Join Waitlist
-            </Link>
             <span className={styles.authLoadingSlot} aria-hidden />
             <div className={styles.moreMenuWrap} ref={moreMenuRef}>
               <button
@@ -136,9 +133,6 @@ export function Navbar() {
           </div>
         ) : authMode === "signedIn" ? (
           <div className={styles.desktopCtas}>
-            <Link href="/waitlist" className={styles.ctaWaitlist}>
-              Join Waitlist
-            </Link>
             <span className={styles.userLabel} title={user?.email ?? undefined}>
               {signedInLabel}
             </span>
@@ -171,17 +165,14 @@ export function Navbar() {
           </div>
         ) : (
           <div className={styles.desktopCtas}>
-            <Link href="/signin" className={styles.ctaSecondary}>
+            <Link href="/signin" className={styles.ctaSignIn}>
               Sign in
             </Link>
-            <Link href="/signup" className={styles.ctaSecondary}>
+            <Link href="/signup" className={styles.ctaCreateAccount}>
               Create account
             </Link>
-            <Link href="/waitlist" className={styles.ctaWaitlist}>
-              Join Waitlist
-            </Link>
             <Link href="/start" className={styles.ctaPrimary}>
-              Start Here
+              Start Here <span aria-hidden>→</span>
             </Link>
             <div className={styles.moreMenuWrap} ref={moreMenuRef}>
               <button
@@ -272,27 +263,15 @@ export function Navbar() {
         ) : null}
         {authMode === "loading" ? (
           <div className={styles.mobileCtas}>
-            <Link href="/waitlist" className={styles.mobileCtaWaitlist} onClick={closeMenu}>
-              Join Waitlist
-            </Link>
             <div className={styles.mobileAuthLoadingSlot} aria-hidden />
           </div>
-        ) : authMode === "signedIn" ? (
-          <div className={styles.mobileCtas}>
-            <Link href="/waitlist" className={styles.mobileCtaWaitlist} onClick={closeMenu}>
-              Join Waitlist
-            </Link>
-          </div>
-        ) : (
+        ) : authMode === "signedIn" ? null : (
           <div className={styles.mobileCtas}>
             <Link href="/signin" className={styles.mobileCtaSecondary} onClick={closeMenu}>
               Sign in
             </Link>
             <Link href="/signup" className={styles.mobileCtaSecondary} onClick={closeMenu}>
               Create account
-            </Link>
-            <Link href="/waitlist" className={styles.mobileCtaWaitlist} onClick={closeMenu}>
-              Join Waitlist
             </Link>
             <Link href="/start" className={styles.mobileCtaPrimary} onClick={closeMenu}>
               Start Here

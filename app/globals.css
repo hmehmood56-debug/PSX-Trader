@@ -40,6 +40,18 @@ p {
   padding-right: clamp(16px, 4vw, 32px);
 }
 
+.home-landing-shell {
+  max-width: none;
+}
+
+.home-landing-canvas {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 10% 14%, rgba(255, 255, 255, 0.58) 0%, transparent 42%),
+    radial-gradient(circle at 86% 84%, rgba(236, 228, 216, 0.45) 0%, transparent 48%),
+    linear-gradient(135deg, #fafaf9 0%, #f4f1eb 55%, #f2eee7 100%);
+}
+
 .perch-shell-wide {
   max-width: 1200px;
 }
@@ -62,18 +74,21 @@ p {
 }
 
 .home-hero {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
-  align-items: stretch;
-  padding: clamp(36px, 8vw, 78px) 0 clamp(42px, 10vw, 96px);
+  min-height: calc(100dvh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(20px, 3.4vw, 44px);
+  padding: clamp(8px, 1.8vw, 18px) 0 10px;
 }
 
-@media (min-width: 980px) {
+@media (max-width: 979px) {
   .home-hero {
-    grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.82fr);
-    gap: clamp(28px, 4vw, 48px);
-    align-items: center;
+    min-height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 20px 0 28px;
   }
 }
 
@@ -82,35 +97,37 @@ p {
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
-  max-width: 560px;
-}
-
-@media (min-width: 980px) {
-  .home-hero-copy {
-    padding-right: clamp(8px, 2vw, 20px);
-  }
+  max-width: 640px;
+  flex: 1 1 52%;
+  padding-right: clamp(0px, 1.2vw, 14px);
 }
 
 .home-hero-headline {
   margin-top: 6px;
-  font-size: clamp(34px, 6.5vw, 52px);
-  line-height: 1.08;
-  font-weight: 720;
+  font-size: clamp(35px, 5vw, 55px);
+  line-height: 1.04;
+  font-weight: 650;
   letter-spacing: -0.03em;
   text-wrap: balance;
+  color: #292623 !important;
+}
+
+.home-hero-headline span {
+  color: #b6682d;
+  font-weight: 710;
 }
 
 .home-hero-subline {
-  margin-top: 16px;
-  font-size: clamp(18px, 2.8vw, 22px);
-  line-height: 1.35;
-  font-weight: 600;
+  margin-top: 12px;
+  font-size: clamp(17px, 2.4vw, 21px);
+  line-height: 1.28;
+  font-weight: 540;
   letter-spacing: -0.02em;
-  color: #3a3a3a;
+  color: #44413d;
 }
 
 .home-hero-trust {
-  margin-top: 10px;
+  margin-top: 6px;
   font-size: 13px;
   line-height: 1.45;
   font-weight: 500;
@@ -119,29 +136,45 @@ p {
 }
 
 .home-hero-ctas {
-  margin-top: 28px;
+  margin-top: 16px;
 }
 
 .home-cta-primary {
   text-decoration: none;
-  background: #c45000;
+  background: linear-gradient(168deg, #e18a45 0%, #cb6117 52%, #a94a0b 100%);
   color: #ffffff;
-  font-weight: 650;
-  border-radius: 10px;
+  font-weight: 680;
+  border-radius: 12px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.12) inset,
-    0 14px 32px rgba(196, 80, 0, 0.26);
-  border: 1px solid rgba(180, 70, 0, 0.35);
+    0 1px 0 rgba(255, 232, 208, 0.52) inset,
+    0 14px 30px rgba(160, 67, 8, 0.28);
+  border: 1px solid rgba(168, 74, 12, 0.7);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.home-cta-primary:hover {
+  background: linear-gradient(168deg, #e69553 0%, #ce671f 52%, #af5012 100%);
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 238, 219, 0.58) inset,
+    0 16px 32px rgba(160, 67, 8, 0.34);
 }
 
 .home-cta-secondary {
   text-decoration: none;
   border: 1px solid #e0d8d0;
-  color: #2a2a2a;
+  color: #443d37;
   font-weight: 600;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.72);
+  border-radius: 12px;
+  background: rgba(255, 253, 250, 0.82);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.home-cta-secondary:hover {
+  border-color: #d7c8ba;
+  color: #332e29;
+  background: rgba(255, 249, 242, 0.92);
 }
 
 .home-waitlist-block {
@@ -233,151 +266,423 @@ p {
 }
 
 .home-hero-returning {
-  margin-top: 34px;
+  margin-top: 10px;
   font-size: 13px !important;
-  color: #98918a;
+  color: #898078;
 }
 
 .home-signin-link {
-  color: #8f8881;
-  font-weight: 500;
+  color: #bf5a11;
+  font-weight: 560;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(191, 90, 17, 0.34);
+}
+
+.home-signin-link:hover {
+  color: #a84d0d;
+  text-decoration-color: rgba(168, 77, 13, 0.55);
 }
 
 .home-product-preview {
   position: relative;
-  perspective: 1200px;
-  align-self: stretch;
+  align-self: center;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-  padding: clamp(20px, 4vw, 36px) 0;
-}
-
-@media (min-width: 980px) {
-  .home-product-preview {
-    justify-content: flex-end;
-    padding-top: clamp(12px, 2vw, 28px);
-  }
+  flex: 1 1 48%;
+  min-width: min(100%, 440px);
+  max-width: 560px;
+  padding: 0;
 }
 
 .home-product-preview-glow {
   position: absolute;
-  inset: 6% 4% 10% 8%;
-  border-radius: 30px;
+  inset: 8% 6% 10% 6%;
+  border-radius: 34px;
   background: radial-gradient(
-    ellipse 72% 62% at 52% 44%,
-    rgba(196, 80, 0, 0.2) 0%,
-    rgba(196, 80, 0, 0.07) 46%,
+    ellipse 70% 62% at 54% 42%,
+    rgba(188, 128, 82, 0.17) 0%,
+    rgba(188, 128, 82, 0.06) 48%,
     transparent 72%
   );
-  filter: blur(20px);
+  filter: blur(16px);
   pointer-events: none;
   z-index: 0;
 }
 
-.home-product-preview-frame {
+.home-product-preview-body {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 450px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #fbf9f6 100%);
-  border: 1px solid rgba(224, 216, 208, 0.95);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.88) inset,
-    0 34px 68px rgba(24, 20, 16, 0.16),
-    0 10px 20px rgba(24, 20, 16, 0.08);
-  transform: rotateX(2.5deg) rotateY(-6deg) translateY(4px);
-  transform-style: preserve-3d;
-  transition: transform 0.35s ease;
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: scale(0.9);
+  transform-origin: center;
 }
 
-@media (min-width: 980px) {
-  .home-product-preview-frame {
-    transform: rotateX(2.8deg) rotateY(-6.5deg) translateY(2px) scale(1.02);
-  }
-}
-
-.home-product-preview-chrome {
+.home-heatmap-head {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px 10px;
-  border-bottom: 1px solid #ebe4dc;
-  background: linear-gradient(180deg, #faf8f5 0%, #f5f2ee 100%);
-  border-radius: 18px 18px 0 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.home-product-preview-dots {
-  display: inline-flex;
-  gap: 5px;
-  flex-shrink: 0;
+.home-heatmap-head span {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7f776f;
+  font-weight: 650;
 }
 
-.home-product-preview-dots > span {
+.home-heatmap-head strong {
   display: block;
+  margin-top: 3px;
+  color: #38332e;
+  font-size: clamp(18px, 3.4vw, 20px);
+  line-height: 1.18;
+}
+
+.home-heatmap-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 58px;
+  gap: 4px;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  grid-template-areas:
+    "energy energy banks fertilizer"
+    "energy energy cement tech"
+    "consumer consumer cement tech";
+}
+
+.home-heatmap-cell {
+  border-radius: 10px;
+  min-height: 58px;
+  padding: 10px 11px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+  transition: background 0.35s ease, transform 0.35s ease, opacity 0.35s ease;
+  border: 0;
+  box-shadow: none;
+}
+
+.home-heatmap-cell-up {
+  background: linear-gradient(165deg, rgba(225, 241, 223, 0.84) 0%, rgba(176, 213, 179, 0.82) 100%);
+}
+
+.home-heatmap-cell-down {
+  background: linear-gradient(165deg, rgba(246, 232, 226, 0.84) 0%, rgba(228, 183, 172, 0.82) 100%);
+}
+
+.home-heatmap-cell span {
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #3b3834;
+  font-weight: 600;
+}
+
+.home-heatmap-cell strong {
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 740;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-heatmap-cell-up strong {
+  color: #2f7a3f;
+}
+
+.home-heatmap-cell-down strong {
+  color: #a84c36;
+}
+
+.home-heatmap-cell-energy {
+  grid-area: energy;
+}
+
+.home-heatmap-cell-banks {
+  grid-area: banks;
+}
+
+.home-heatmap-cell-fertilizer {
+  grid-area: fertilizer;
+}
+
+.home-heatmap-cell-cement {
+  grid-area: cement;
+}
+
+.home-heatmap-cell-tech {
+  grid-area: tech;
+}
+
+.home-heatmap-cell-consumer {
+  grid-area: consumer;
+}
+
+.home-live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #5f6e61;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.home-live-indicator i {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #dcd6cf;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04) inset;
+  background: #4da867;
+  box-shadow: 0 0 0 5px rgba(77, 168, 103, 0.13);
 }
 
-.home-product-preview-dots > span:nth-child(1) {
-  background: #e2a598;
-}
-
-.home-product-preview-dots > span:nth-child(2) {
-  background: #ddc9a4;
-}
-
-.home-product-preview-dots > span:nth-child(3) {
-  background: #a8c9a0;
-}
-
-.home-product-preview-chrome-label {
+.home-activity-head h3 {
+  margin-top: 12px;
   font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.06em;
+  line-height: 1.3;
+  color: #786f66;
+  font-weight: 620;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: #7a726a;
 }
 
-.home-product-preview-body {
-  padding: clamp(14px, 2.5vw, 18px) clamp(14px, 2.5vw, 18px) clamp(16px, 2.5vw, 20px);
+.home-activity-feed {
+  margin: 5px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
 }
 
-.home-product-preview-head span {
-  font-size: 10px;
-  letter-spacing: 0.09em;
+.home-activity-feed li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 6px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  transition: opacity 0.35s ease, transform 0.35s ease, background 0.35s ease;
 }
 
-.home-product-preview-head strong {
-  margin-top: 4px;
-  font-size: clamp(17px, 3.4vw, 20px);
-}
-
-.home-product-preview-body .home-market-strip {
-  margin-top: 12px;
-}
-
-.home-product-preview-body .home-market-sparkline {
-  margin-top: 12px;
-  height: 84px;
-}
-
-.home-product-preview-caption {
-  margin-top: 12px;
+.home-activity-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 12px;
-  line-height: 1.55;
-  color: #6f6a65;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.home-activity-icon-buy {
+  background: rgba(75, 160, 99, 0.15);
+  color: #2e7940;
+}
+
+.home-activity-icon-sell {
+  background: rgba(180, 92, 70, 0.14);
+  color: #a14934;
+}
+
+.home-activity-copy {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.home-activity-copy span {
+  color: #565048;
+  font-size: 11.5px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-activity-copy small {
+  color: #93897f;
+  font-size: 10.5px;
+  line-height: 1.3;
+}
+
+.home-activity-tag {
+  font-size: 9.5px;
+  line-height: 1.2;
+  color: #725d43;
+  background: rgba(230, 211, 189, 0.5);
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.home-activity-feed li:last-child {
+  opacity: 0.9;
+}
+
+.home-activity-item-older {
+  opacity: 0.68;
+}
+
+.home-activity-item-fresh {
+  animation: homeActivityIn 0.45s ease;
+}
+
+.home-inline-waitlist {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+  max-width: 620px;
+  border-radius: 16px;
+  border: 1px solid rgba(220, 207, 193, 0.65);
+  background: linear-gradient(160deg, rgba(255, 252, 247, 0.95) 0%, rgba(251, 246, 239, 0.92) 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.66) inset,
+    0 14px 32px rgba(33, 25, 18, 0.07);
+  padding: 16px 18px;
+}
+
+.home-inline-waitlist-label {
+  margin: 0;
+  font-size: 22px;
+  color: #2f2a25;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.home-inline-waitlist-subcopy {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.48;
+  color: #61574f;
+}
+
+.home-inline-waitlist-benefits {
+  margin: 2px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.home-inline-waitlist-benefits li {
+  color: #4f463f;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.home-inline-waitlist-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 12px;
+  border: 1px solid rgba(168, 74, 12, 0.72);
+  background: linear-gradient(168deg, #e18a45 0%, #cb6117 52%, #a94a0b 100%);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  width: fit-content;
+  box-shadow:
+    0 1px 0 rgba(255, 234, 213, 0.52) inset,
+    0 10px 24px rgba(160, 67, 8, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.home-inline-waitlist-cta:hover {
+  background: linear-gradient(168deg, #e69553 0%, #ce671f 52%, #af5012 100%);
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 238, 219, 0.58) inset,
+    0 13px 27px rgba(160, 67, 8, 0.34);
+}
+
+.home-inline-waitlist-scarcity {
+  margin: 0;
+  font-size: 11.5px;
+  color: #8f857b;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 640px) {
+  .home-heatmap-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 64px;
+    grid-template-areas:
+      "energy energy"
+      "banks fertilizer"
+      "cement tech"
+      "consumer consumer";
+  }
+
+  .home-activity-feed li {
+    grid-template-columns: auto 1fr;
+  }
+
+  .home-activity-tag {
+    display: none;
+  }
+
+  .home-inline-waitlist {
+    margin-top: 12px;
+  }
+}
+
+.home-heatmap-cell-flash {
+  animation: homeHeatmapPulse 0.55s ease;
+}
+
+@keyframes homeHeatmapPulse {
+  0% {
+    transform: scale(0.98);
+    opacity: 0.82;
+    filter: saturate(0.95);
+  }
+  55% {
+    transform: scale(1.015);
+    opacity: 1;
+    filter: saturate(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: saturate(1);
+  }
+}
+
+@keyframes homeActivityIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .home-landing-footer {
-  padding: clamp(28px, 6vw, 48px) 0 clamp(24px, 5vw, 40px);
-  border-top: 1px solid rgba(236, 230, 224, 0.85);
-  margin-top: clamp(8px, 2vw, 16px);
+  padding: 8px 0 12px;
+  border-top: none;
+  margin-top: 0;
 }
 
 .home-landing-footer p {

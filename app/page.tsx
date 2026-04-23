@@ -1,29 +1,88 @@
 import Link from "next/link";
 import { PageEventTracker } from "@/components/analytics/PageEventTracker";
+import { LiveMarketSurface, type LiveSectorCell } from "@/components/home/LiveMarketSurface";
 
-const palette = {
-  orange: "#C45000",
-  bg: "#FFFFFF",
-  border: "#ECE8E4",
-  text: "#171717",
-} as const;
+type SectorStock = {
+  symbol: string;
+  changePct: number;
+};
+
+const groupedSectorMoves: Array<{ sector: string; stocks: SectorStock[] }> = [
+  {
+    sector: "Energy",
+    stocks: [
+      { symbol: "PSO", changePct: 1.1 },
+      { symbol: "OGDC", changePct: 0.8 },
+      { symbol: "PPL", changePct: -0.2 },
+    ],
+  },
+  {
+    sector: "Banks",
+    stocks: [
+      { symbol: "MCB", changePct: 0.6 },
+      { symbol: "HBL", changePct: 0.3 },
+      { symbol: "UBL", changePct: -0.1 },
+    ],
+  },
+  {
+    sector: "Fertilizer",
+    stocks: [
+      { symbol: "ENGRO", changePct: 1.4 },
+      { symbol: "FFC", changePct: 0.7 },
+      { symbol: "EFERT", changePct: 0.5 },
+    ],
+  },
+  {
+    sector: "Cement",
+    stocks: [
+      { symbol: "LUCK", changePct: 0.2 },
+      { symbol: "DGKC", changePct: -0.5 },
+      { symbol: "MLCF", changePct: -0.1 },
+    ],
+  },
+  {
+    sector: "Tech",
+    stocks: [
+      { symbol: "SYS", changePct: 1.3 },
+      { symbol: "TRG", changePct: 0.4 },
+      { symbol: "NETSOL", changePct: 0.2 },
+    ],
+  },
+  {
+    sector: "Consumer",
+    stocks: [
+      { symbol: "MARI", changePct: 0.4 },
+      { symbol: "NESTLE", changePct: -0.2 },
+      { symbol: "UNITY", changePct: 0.3 },
+    ],
+  },
+];
+
+const initialHeatmapPreview: LiveSectorCell[] = groupedSectorMoves.map((group) => {
+  const avg = group.stocks.reduce((sum, stock) => sum + stock.changePct, 0) / group.stocks.length;
+  return {
+    sector: group.sector,
+    move: Math.round(avg * 10) / 10,
+  };
+});
 
 export default function LandingPage() {
   return (
     <div
+      className="home-landing-canvas"
       style={{
-        background: `linear-gradient(180deg, #FAFAF8 0%, ${palette.bg} 38%, ${palette.bg} 100%)`,
+        background: `linear-gradient(135deg, #fffdf9 0%, #f6f1ea 52%, #f3eee7 100%)`,
       }}
     >
       <PageEventTracker eventName="landing_view" metadata={{ route: "/" }} />
-      <div className="perch-shell">
+      <div className="perch-shell home-landing-shell">
         <section className="home-hero">
           <div className="home-hero-copy">
             <div className="home-brand-lockup">
               <span>PERCH CAPITAL</span>
             </div>
-            <h1 className="home-hero-headline" style={{ color: palette.text }}>
-              Trading made simple.
+            <h1 className="home-hero-headline">
+              Trading made <span>simple</span>.
             </h1>
             <p className="home-hero-subline">Real markets. Zero risk.</p>
             <p className="home-hero-trust">Built for the Pakistan Stock Exchange.</p>
@@ -35,17 +94,21 @@ export default function LandingPage() {
                 Explore Markets
               </Link>
             </div>
-            <aside className="home-waitlist-block" aria-label="Real trading waitlist">
-              <div className="home-waitlist-block-inner">
-                <p className="home-waitlist-eyebrow">LIVE TRADING</p>
-                <p className="home-waitlist-title">Live trading is coming</p>
-                <p className="home-waitlist-body">Get early access when we launch.</p>
-                <p className="home-waitlist-trust">No spam. Early access only.</p>
-                <Link href="/waitlist" className="home-waitlist-cta">
-                  Join the waitlist
-                </Link>
-              </div>
-            </aside>
+            <div className="home-inline-waitlist" aria-label="Real trading waitlist">
+              <p className="home-inline-waitlist-label">Early access to real markets.</p>
+              <p className="home-inline-waitlist-subcopy">
+                Be first to trade live on Perch when brokerage launches. Get priority access as we roll out in phases.
+              </p>
+              <ul className="home-inline-waitlist-benefits" aria-label="Early access benefits">
+                <li>Trade with real capital (when live)</li>
+                <li>Priority rollout access</li>
+                <li>Early feature access</li>
+              </ul>
+              <Link href="/waitlist" className="home-inline-waitlist-cta">
+                Get early access →
+              </Link>
+              <p className="home-inline-waitlist-scarcity">Rolling out in phases</p>
+            </div>
             <p className="home-start-lead home-hero-returning" style={{ maxWidth: 420, fontSize: 15 }}>
               Returning user?{" "}
               <Link href="/signin" className="home-signin-link">
@@ -53,44 +116,9 @@ export default function LandingPage() {
               </Link>
             </p>
           </div>
-          <div className="home-product-preview" aria-label="Product preview">
+          <div className="home-product-preview" aria-label="Market heatmap preview">
             <div className="home-product-preview-glow" aria-hidden />
-            <div className="home-product-preview-frame">
-              <div className="home-product-preview-chrome">
-                <span className="home-product-preview-dots" aria-hidden>
-                  <span />
-                  <span />
-                  <span />
-                </span>
-                <span className="home-product-preview-chrome-label">Paper workspace</span>
-              </div>
-              <div className="home-product-preview-body">
-                <div className="home-market-head home-product-preview-head">
-                  <span>Live PSX feed</span>
-                  <strong>Portfolio overview</strong>
-                </div>
-                <div className="home-market-strip">
-                  <div>
-                    <span>KSE-100</span>
-                    <strong>76,421.33</strong>
-                  </div>
-                  <div>
-                    <span>Advance / Decline</span>
-                    <strong>214 / 128</strong>
-                  </div>
-                  <div>
-                    <span>Turnover</span>
-                    <strong>PKR 8.4B</strong>
-                  </div>
-                </div>
-                <div className="home-market-sparkline" aria-hidden>
-                  <span />
-                </div>
-                <p className="home-product-preview-caption">
-                  Practice with live quotes and portfolio tools—without putting capital at risk.
-                </p>
-              </div>
-            </div>
+            <LiveMarketSurface initialCells={initialHeatmapPreview} />
           </div>
         </section>
         <footer className="home-landing-footer">
