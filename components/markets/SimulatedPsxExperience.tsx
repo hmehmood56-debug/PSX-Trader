@@ -43,15 +43,38 @@ function SearchHero({
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
         <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 24 }}>
+            {isLive ? (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  borderRadius: 999,
+                  background: "#e8f3ec",
+                  color: "#2f5d42",
+                  padding: "4px 10px",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  lineHeight: 1,
+                }}
+              >
+                <span style={{ width: 7, height: 7, borderRadius: 999, background: "#4b8a63", display: "inline-block" }} />
+                Live Market
+              </span>
+            ) : null}
+          </div>
           <h1
-            className="flex items-center gap-2"
             style={{
-              margin: 0,
+              margin: "6px 0 0",
               fontSize: "clamp(19px, 3.8vw, 22px)",
               fontWeight: 600,
               color: "#262626",
               letterSpacing: "-0.01em",
               lineHeight: 1.2,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
             }}
           >
             <span
@@ -64,14 +87,8 @@ function SearchHero({
               }}
             />
             Pakistan Stock Exchange
-            {isLive ? (
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a]" />
-                <span className="text-sm text-gray-600 font-medium">Live Market</span>
-              </span>
-            ) : null}
           </h1>
-          <p style={{ marginTop: 4, marginBottom: 0, color: "#737373", fontSize: 13, lineHeight: "18px", maxWidth: 780 }}>
+          <p style={{ marginTop: 6, marginBottom: 0, color: "#737373", fontSize: 13, lineHeight: "18px", maxWidth: 780 }}>
             Live Pakistan market data for screening and discovery.
           </p>
         </div>
@@ -319,22 +336,65 @@ function MarketTickerTape({
     <section
       style={{
         marginTop: 16,
-        border: "1px solid rgba(26,26,26,0.06)",
-        borderRadius: 12,
+        border: "1px solid rgba(20, 10, 5, 0.38)",
+        borderRadius: 9,
         overflow: "hidden",
-        background: "#8B3A1B",
-        padding: "16px 12px",
-        boxShadow: "none",
+        background: "linear-gradient(132deg, #693320 0%, #74402a 48%, #663220 100%)",
+        boxShadow: "inset 0 1px 0 rgba(255, 242, 232, 0.14), inset 0 -1px 0 rgba(43, 21, 12, 0.35)",
+        position: "relative",
       }}
     >
       <div
-        className="perch-ticker-row"
         style={{
-          whiteSpace: "nowrap",
-          background: "transparent",
-          borderRadius: 8,
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          background: "linear-gradient(180deg, rgba(255,240,228,0.08) 0%, rgba(255,240,228,0.02) 24%, rgba(0,0,0,0) 64%)",
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          minHeight: 52,
+          position: "relative",
+          zIndex: 1,
         }}
       >
+        <div
+          style={{
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "0 12px",
+            minHeight: 52,
+            borderRight: "1px solid rgba(255, 225, 201, 0.16)",
+          }}
+        >
+          <Circle size={7} fill="#d4efe0" color="#d4efe0" />
+          <span
+            style={{
+              color: "#f8e9dd",
+              fontSize: 10,
+              letterSpacing: "0.08em",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Live PSX Ticker
+          </span>
+        </div>
+        <div
+          className="perch-ticker-row"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            whiteSpace: "nowrap",
+            background: "transparent",
+          }}
+        >
         <div className="perch-ticker-track" style={{ animationDuration: "58s", animationTimingFunction: "linear" }}>
           {tape.map((s, idx) => {
             const up = s.hasLiveQuote && s.change >= 0;
@@ -344,28 +404,28 @@ function MarketTickerTape({
                 type="button"
                 onClick={() => onOpen(s.ticker)}
                 style={{
-                  minHeight: 48,
-                  padding: "0 20px",
+                  minHeight: 52,
+                  padding: "0 14px 0 15px",
                   border: "none",
                   background: "transparent",
                   cursor: "pointer",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 14,
-                  borderRight: "1px solid rgba(26,26,26,0.12)",
+                  gap: 10,
+                  borderRight: "1px solid rgba(255, 229, 210, 0.1)",
                   WebkitTapHighlightColor: "transparent",
                 }}
               >
-                <span style={{ color: "#1A1A1A", fontWeight: 600 }}>{s.ticker}</span>
-                <span style={{ color: "#1A1A1A", fontVariantNumeric: "tabular-nums", fontSize: 13 }}>
+                <span style={{ color: "#fff0e3", fontWeight: 700, fontSize: 13.5, letterSpacing: "0.01em" }}>{s.ticker}</span>
+                <span style={{ color: "#f3dfcf", fontVariantNumeric: "tabular-nums", fontSize: 12.5, fontWeight: 500 }}>
                   {s.hasLiveQuote ? formatPKRWithSymbol(s.price) : "—"}
                 </span>
                 <span
                   style={{
-                    color: s.hasLiveQuote ? (up ? COLORS.gain : COLORS.loss) : COLORS.muted,
-                    fontWeight: 700,
+                    color: s.hasLiveQuote ? (up ? "#8fc5a7" : "#d9a09a") : "#d5b9a7",
+                    fontWeight: 600,
                     fontVariantNumeric: "tabular-nums",
-                    fontSize: 12,
+                    fontSize: 11.5,
                   }}
                 >
                   {s.hasLiveQuote ? (
@@ -380,6 +440,7 @@ function MarketTickerTape({
               </button>
             );
           })}
+        </div>
         </div>
       </div>
     </section>
