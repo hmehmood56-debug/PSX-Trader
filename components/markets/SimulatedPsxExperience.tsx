@@ -254,6 +254,248 @@ function CompactSnapshotRow({
   );
 }
 
+const SEARCH_RESULTS_MAX = 25;
+
+function SearchResultsSection({
+  stocks,
+  query,
+  onOpen,
+}: {
+  stocks: ReplayStock[];
+  query: string;
+  onOpen: (ticker: string) => void;
+}) {
+  const qTrim = query.trim();
+  const total = stocks.length;
+  const visible = stocks.slice(0, SEARCH_RESULTS_MAX);
+  const showCapLine = total > SEARCH_RESULTS_MAX;
+
+  return (
+    <section style={{ marginTop: 18 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <h2
+          style={{
+            margin: 0,
+            fontSize: "clamp(16px, 3.4vw, 18px)",
+            color: COLORS.text,
+            fontWeight: 600,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <span
+            style={{
+              width: 3,
+              height: 16,
+              borderRadius: 3,
+              background: COLORS.orange,
+              display: "inline-block",
+            }}
+          />
+          Matching listings
+        </h2>
+        {total > 0 ? (
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: COLORS.muted,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {total} {total === 1 ? "listing" : "listings"}
+          </span>
+        ) : null}
+      </div>
+      {qTrim ? (
+        <p
+          style={{
+            margin: "6px 0 0",
+            fontSize: 12,
+            color: COLORS.muted,
+            lineHeight: 1.4,
+            maxWidth: 720,
+          }}
+        >
+          Search: <span style={{ color: COLORS.text, fontWeight: 600 }}>&ldquo;{qTrim}&rdquo;</span>
+        </p>
+      ) : null}
+      {total === 0 ? (
+        <div
+          style={{
+            marginTop: 12,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 14,
+            background: "#FFFFFF",
+            boxShadow: "0 1px 0 rgba(0,0,0,0.04)",
+            padding: 0,
+            display: "grid",
+            gridTemplateColumns: "4px 1fr",
+            gap: 0,
+            overflow: "hidden",
+          }}
+        >
+          <span style={{ background: `linear-gradient(180deg, ${COLORS.orange} 0%, #f59e0b 100%)` }} />
+          <div style={{ padding: "20px 18px" }}>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: COLORS.text, letterSpacing: "-0.01em" }}>
+              No matching PSX listing found.
+            </p>
+            <p style={{ margin: "8px 0 0", fontSize: 13, color: COLORS.muted, lineHeight: 1.5 }}>
+              Try another ticker, company name, or choose a different sector to widen results.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div
+            style={{
+              marginTop: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            {visible.map((stock) => {
+              const up = stock.hasLiveQuote && stock.change >= 0;
+              return (
+                <button
+                  key={stock.ticker}
+                  type="button"
+                  onClick={() => onOpen(stock.ticker)}
+                  style={{
+                    textAlign: "left",
+                    width: "100%",
+                    minHeight: 56,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: 12,
+                    background: "#FEFEFC",
+                    cursor: "pointer",
+                    padding: 0,
+                    display: "grid",
+                    gridTemplateColumns: "4px 1fr",
+                    gap: 0,
+                    overflow: "hidden",
+                    boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
+                    WebkitTapHighlightColor: "transparent",
+                  }}
+                >
+                  <span style={{ background: COLORS.orange, minHeight: "100%" }} />
+                  <div
+                    style={{
+                      padding: "12px 14px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                      minWidth: 0,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "flex-start",
+                        justifyContent: "space-between",
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ minWidth: 0, flex: "1 1 160px" }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.text, letterSpacing: "-0.01em" }}>{stock.ticker}</div>
+                        <div
+                          style={{
+                            marginTop: 2,
+                            color: COLORS.muted,
+                            fontSize: 12.5,
+                            lineHeight: "16px",
+                          }}
+                        >
+                          {stock.name}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 11,
+                            color: COLORS.mutedSoft,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
+                          {stock.sector.replace(/_/g, " ")}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          textAlign: "right",
+                          flexShrink: 0,
+                          fontVariantNumeric: "tabular-nums",
+                          minWidth: 0,
+                        }}
+                      >
+                        {stock.hasLiveQuote ? (
+                          <>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: COLORS.text }}>{formatPKRWithSymbol(stock.price)}</div>
+                            <div
+                              style={{
+                                marginTop: 2,
+                                fontSize: 13,
+                                fontWeight: 700,
+                                color: up ? COLORS.gain : COLORS.loss,
+                              }}
+                            >
+                              {up ? "+" : ""}
+                              {stock.changePercent.toFixed(2)}%
+                            </div>
+                            <div style={{ marginTop: 4, color: COLORS.muted, fontSize: 12, fontWeight: 500 }}>
+                              Vol {formatCompactPKR(stock.volume)}
+                            </div>
+                          </>
+                        ) : (
+                          <div
+                            style={{
+                              maxWidth: 200,
+                              marginLeft: "auto",
+                              fontSize: 12.5,
+                              fontStyle: "italic",
+                              color: COLORS.muted,
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            No live quote yet
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          {showCapLine ? (
+            <p
+              style={{
+                margin: "10px 0 0",
+                fontSize: 12,
+                color: COLORS.muted,
+                lineHeight: 1.4,
+              }}
+            >
+              Showing {SEARCH_RESULTS_MAX} of {total} matches
+            </p>
+          ) : null}
+        </>
+      )}
+    </section>
+  );
+}
+
 function TrendingSection({
   stocks,
   onOpen,
@@ -514,6 +756,14 @@ export function SimulatedPsxExperience() {
     const leaders = (market.sectorLeaders ?? []).slice(0, 2).map((s) => s.sector.replace("_", " "));
     return leaders.length > 0 ? leaders.join(" / ") : "N/A";
   }, [market.sectorLeaders]);
+
+  const isSearching = q.trim().length > 0 || sector !== "All";
+
+  const openStock = (ticker: string) => {
+    startRouteProgress();
+    router.push(`/stock/${ticker}`);
+  };
+
   return (
     <div style={{ background: COLORS.bg }}>
       <div className="perch-shell perch-shell-wide perch-psx-shell">
@@ -554,28 +804,11 @@ export function SimulatedPsxExperience() {
           </div>
         ) : (
           <>
-            <TrendingSection
-              stocks={trendingNow}
-              onOpen={(ticker) => {
-                startRouteProgress();
-                router.push(`/stock/${ticker}`);
-              }}
-            />
-            {filtered.length === 0 ? (
-              <div
-                style={{
-                  marginTop: 14,
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: 12,
-                  background: "#FFFFFF",
-                  padding: 12,
-                  color: COLORS.muted,
-                  fontSize: 13,
-                }}
-              >
-                No matching ticker in current universe.
-              </div>
-            ) : null}
+            {isSearching ? (
+              <SearchResultsSection stocks={filtered} query={q} onOpen={openStock} />
+            ) : (
+              <TrendingSection stocks={trendingNow} onOpen={openStock} />
+            )}
           </>
         )}
       </div>
