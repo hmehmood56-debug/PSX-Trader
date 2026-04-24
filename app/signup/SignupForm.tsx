@@ -52,7 +52,10 @@ export function SignupForm() {
     setBusy(true);
     try {
       const supabase = createClient();
-      const callbackUrl = new URL("/auth/callback", window.location.origin);
+      const origin =
+        process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+
+      const callbackUrl = new URL("/auth/callback", origin);
       callbackUrl.searchParams.set("next", postSignupPath);
       callbackUrl.searchParams.set("mode", "signup");
       callbackUrl.searchParams.set("source", "google");
