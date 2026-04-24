@@ -122,6 +122,27 @@ export default function LandingPage() {
           </div>
         </section>
         <footer className="home-landing-footer">
+          <nav
+            aria-label="Legal"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "6px 14px",
+              marginBottom: 10,
+            }}
+          >
+            <Link href="/privacy" className="home-signin-link">
+              Privacy Policy
+            </Link>
+            <span style={{ color: "#d6d3cd", fontSize: 12, userSelect: "none" }} aria-hidden>
+              ·
+            </span>
+            <Link href="/terms" className="home-signin-link">
+              Terms of Service
+            </Link>
+          </nav>
           <p>© 2026 Perch Capital. All rights reserved.</p>
           <p>
             Contact:{" "}
