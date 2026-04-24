@@ -24,9 +24,9 @@ const COLORS = {
 function DashboardSignupWall() {
   const previewBars = [34, 46, 40, 54, 50, 60, 56, 64, 58, 70, 66, 74];
   const fauxHoldings = [
-    { ticker: "HBL", label: "Habib Bank" },
-    { ticker: "OGDC", label: "Oil & Gas Dev." },
-    { ticker: "UBL", label: "United Bank" },
+    { ticker: "HBL", label: "Habib Bank", value: "Rs •••", day: "—" },
+    { ticker: "OGDC", label: "Oil & Gas Dev.", value: "Rs •••", day: "—" },
+    { ticker: "UBL", label: "United Bank", value: "Rs •••", day: "—" },
   ];
   const labelStyle = {
     fontSize: "0.6875rem",
@@ -81,7 +81,7 @@ function DashboardSignupWall() {
                   lineHeight: 1.18,
                 }}
               >
-                Save your portfolio.
+                Save your <span style={{ color: COLORS.orange }}>portfolio</span>.
                 <br />
                 Pick up where you left off.
               </h1>
@@ -182,7 +182,8 @@ function DashboardSignupWall() {
                 style={{
                   position: "absolute",
                   inset: 0,
-                  background: `radial-gradient(95% 70% at 100% 0%, rgba(196, 80, 0, 0.085), transparent 52%)`,
+                  background:
+                    "radial-gradient(95% 70% at 100% 0%, rgba(196, 80, 0, 0.08), transparent 56%), linear-gradient(160deg, rgba(196, 80, 0, 0.03), transparent 34%)",
                   pointerEvents: "none",
                 }}
               />
@@ -219,7 +220,7 @@ function DashboardSignupWall() {
                     }}
                   >
                     {previewBars.map((h, i) => {
-                      const isTail = i >= previewBars.length - 4;
+                      const isLast = i === previewBars.length - 1;
                       return (
                         <div
                           key={i}
@@ -229,10 +230,10 @@ function DashboardSignupWall() {
                             maxWidth: 8,
                             height: `${h}%`,
                             borderRadius: 3,
-                            background: isTail
+                            background: isLast
                               ? `linear-gradient(180deg, ${COLORS.orange} 0%, #a84300 100%)`
                               : `linear-gradient(180deg, #D9D9D9 0%, ${COLORS.border} 100%)`,
-                            opacity: isTail ? 0.92 : 0.78,
+                            opacity: isLast ? 0.92 : 0.78,
                           }}
                         />
                       );
@@ -284,7 +285,7 @@ function DashboardSignupWall() {
                         }}
                       >
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: 650, color: COLORS.text, letterSpacing: "-0.01em" }}>{row.ticker}</div>
+                          <div style={{ fontWeight: 650, color: COLORS.orange, letterSpacing: "-0.01em" }}>{row.ticker}</div>
                           <div style={{ fontSize: "0.7rem", color: COLORS.muted, marginTop: 2, lineHeight: 1.3 }}>
                             {row.label}
                           </div>
@@ -302,7 +303,7 @@ function DashboardSignupWall() {
                             fontVariantNumeric: "tabular-nums",
                           }}
                         >
-                          —
+                          {row.day}
                         </span>
                       </div>
                     ))}
