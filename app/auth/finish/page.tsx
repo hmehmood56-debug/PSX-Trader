@@ -13,7 +13,7 @@ import { logAnalyticsEvent } from "@/lib/analytics/client";
 import { normalizeUsername } from "@/lib/perchAuthEmail";
 import { clearGuestPortfolioStorage, getGuestPortfolioBundle } from "@/lib/portfolioStore";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 function buildUsername(email: string | null | undefined, userId: string): string {
   const prefix = email?.split("@")[0] ?? "";
@@ -53,11 +53,6 @@ function AuthFinishClient() {
 
   const mode = searchParams.get("mode") === "signup" ? "signup" : "signin";
   const source = searchParams.get("source") ?? "google";
-  const nextPath = useMemo(() => {
-    const next = searchParams.get("next");
-    if (!next || !next.startsWith("/") || next.startsWith("//")) return "/dashboard";
-    return next;
-  }, [searchParams]);
   const onboardingCompleted = searchParams.get("onboardingCompleted") === "true";
 
   useEffect(() => {
@@ -100,10 +95,10 @@ function AuthFinishClient() {
         username,
       });
 
-      router.replace(nextPath);
+      router.push("/dashboard");
       router.refresh();
     })();
-  }, [authLoading, user, refreshPortfolio, router, nextPath, mode, source, onboardingCompleted]);
+  }, [authLoading, user, refreshPortfolio, router, mode, source, onboardingCompleted]);
 
   return (
     <div className={styles.finishPage}>
