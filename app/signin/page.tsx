@@ -32,6 +32,32 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  async function onGoogleAuth() {
+    setError(null);
+    setBusy(true);
+    try {
+      const supabase = createClient();
+      const callbackUrl = new URL("/auth/callback", window.location.origin);
+      callbackUrl.searchParams.set("next", "/dashboard");
+      callbackUrl.searchParams.set("mode", "signin");
+      callbackUrl.searchParams.set("source", "google");
+      callbackUrl.searchParams.set("onboardingCompleted", "false");
+      void logAnalyticsEvent("google_auth_started", {
+        route: "/signin",
+        mode: "signin",
+      });
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: callbackUrl.toString() },
+      });
+      if (oauthError) {
+        setError(friendlyAuthError(oauthError.message));
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -100,7 +126,14 @@ export default function SignInPage() {
         </>
       }
     >
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className={styles.authForm}>
+        <button type="button" onClick={onGoogleAuth} disabled={busy} className={styles.oauthButton}>
+          <span aria-hidden className={styles.googleMark}>
+            G
+          </span>
+          Continue with Google
+        </button>
+        <p className={styles.authDivider}>or use username and password</p>
         <div className={styles.inputGroup}>
           <label htmlFor="signin-username" className={styles.label}>
             Username
