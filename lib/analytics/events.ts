@@ -5,6 +5,7 @@ export type AnalyticsEventName =
   | "first_trade_completed"
   | "signup_completed"
   | "login_completed"
+  | "google_auth_started"
   | "session_started"
   | "return_visit"
   | "dashboard_viewed"
