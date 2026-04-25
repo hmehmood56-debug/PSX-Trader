@@ -2,26 +2,58 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
 import styles from "./Navbar.module.css";
+import { PerchWordmark } from "./PerchWordmark";
 
-const links = [
+const desktopLinks = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/markets", label: "Markets" },
-  { href: "/intelligence", label: "Intelligence" },
+];
+
+const mobileLinks = [
+  { href: "/", label: "Home" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/markets", label: "Markets" },
   { href: "/account", label: "Account" },
 ];
 
+function accountLabel(user: { email?: string | null; user_metadata?: Record<string, unknown> }): string {
+  const u = user.user_metadata?.username;
+  if (typeof u === "string" && u.trim()) return u.trim();
+  const e = user.email?.split("@")[0];
+  return e && e.trim() ? e.trim() : "My Account";
+}
+
 export function Navbar() {
   const pathname = usePathname();
+  const { user, loading: authLoading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
+  const signedInLabel = user ? accountLabel(user) : "";
+  /** One of three mutually exclusive UI modes. Never mix guest and signed-in controls in the same render. */
+  const authMode = authLoading ? "loading" : user ? "signedIn" : "guest";
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   useEffect(() => {
     closeMenu();
+    setMoreOpen(false);
   }, [pathname, closeMenu]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (!moreMenuRef.current?.contains(event.target as Node)) {
+        setMoreOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [moreOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -50,15 +82,12 @@ export function Navbar() {
     <header className={`${styles.header} ${menuOpen ? styles.mobileOpen : ""}`}>
       <div className={styles.inner}>
         <Link href="/" className={styles.brand} onClick={closeMenu}>
-          <div className={styles.brandText}>
-            <span className={styles.perchWordmark}>Perch</span>
-            <span className={styles.brandCapital}>Capital</span>
-          </div>
-          <span className={styles.badge}>PSX Market</span>
+          <PerchWordmark className={styles.brandWordmark} tone="navbar" />
+          {authMode === "guest" ? <span className={styles.previewPill}>Preview</span> : null}
         </Link>
 
         <nav className={styles.desktopNav} aria-label="Primary">
-          {links.map((l) => {
+          {desktopLinks.map((l) => {
             const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
             return (
               <Link
@@ -72,14 +101,107 @@ export function Navbar() {
           })}
         </nav>
 
-        <div className={styles.desktopCtas}>
-          <Link href="/markets" className={styles.ctaSecondary}>
-            Explore Markets
-          </Link>
-          <Link href="/start" className={styles.ctaPrimary}>
-            Start Here
-          </Link>
-        </div>
+        {authMode === "loading" ? (
+          <div className={styles.desktopCtas}>
+            <span className={styles.authLoadingSlot} aria-hidden />
+            <div className={styles.moreMenuWrap} ref={moreMenuRef}>
+              <button
+                type="button"
+                className={styles.moreButton}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((open) => !open)}
+              >
+                More ▾
+              </button>
+              {moreOpen ? (
+                <div className={styles.moreMenu} role="menu">
+                  <Link href="/account" className={styles.moreMenuItem} role="menuitem" onClick={() => setMoreOpen(false)}>
+                    Account
+                  </Link>
+                  <a
+                    href="mailto:hello@joinperch.me?subject=Perch%20Inquiry"
+                    className={styles.moreMenuItem}
+                    role="menuitem"
+                    onClick={() => setMoreOpen(false)}
+                  >
+                    Contact
+                  </a>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : authMode === "signedIn" ? (
+          <div className={styles.desktopCtas}>
+            <span className={styles.userLabel} title={user?.email ?? undefined}>
+              {signedInLabel}
+            </span>
+            <div className={styles.moreMenuWrap} ref={moreMenuRef}>
+              <button
+                type="button"
+                className={styles.moreButton}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((open) => !open)}
+              >
+                More ▾
+              </button>
+              {moreOpen ? (
+                <div className={styles.moreMenu} role="menu">
+                  <Link href="/account" className={styles.moreMenuItem} role="menuitem" onClick={() => setMoreOpen(false)}>
+                    Account
+                  </Link>
+                  <a
+                    href="mailto:hello@joinperch.me?subject=Perch%20Inquiry"
+                    className={styles.moreMenuItem}
+                    role="menuitem"
+                    onClick={() => setMoreOpen(false)}
+                  >
+                    Contact
+                  </a>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : (
+          <div className={styles.desktopCtas}>
+            <Link href="/signin" className={styles.ctaSignIn}>
+              Sign in
+            </Link>
+            <Link href="/signup" className={styles.ctaCreateAccount}>
+              Create account
+            </Link>
+            <Link href="/start" className={styles.ctaPrimary}>
+              Start Here <span aria-hidden>→</span>
+            </Link>
+            <div className={styles.moreMenuWrap} ref={moreMenuRef}>
+              <button
+                type="button"
+                className={styles.moreButton}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((open) => !open)}
+              >
+                More ▾
+              </button>
+              {moreOpen ? (
+                <div className={styles.moreMenu} role="menu">
+                  <Link href="/account" className={styles.moreMenuItem} role="menuitem" onClick={() => setMoreOpen(false)}>
+                    Account
+                  </Link>
+                  <a
+                    href="mailto:hello@joinperch.me?subject=Perch%20Inquiry"
+                    className={styles.moreMenuItem}
+                    role="menuitem"
+                    onClick={() => setMoreOpen(false)}
+                  >
+                    Contact
+                  </a>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        )}
 
         <button
           type="button"
@@ -118,7 +240,7 @@ export function Navbar() {
           </button>
         </div>
         <nav className={styles.mobileNav} aria-label="Mobile primary">
-          {links.map((l) => {
+          {mobileLinks.map((l) => {
             const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
             return (
               <Link
@@ -132,14 +254,30 @@ export function Navbar() {
             );
           })}
         </nav>
-        <div className={styles.mobileCtas}>
-          <Link href="/markets" className={styles.mobileCtaSecondary} onClick={closeMenu}>
-            Explore Markets
-          </Link>
-          <Link href="/start" className={styles.mobileCtaPrimary} onClick={closeMenu}>
-            Start Here
-          </Link>
-        </div>
+        {authMode === "signedIn" ? (
+          <div className={styles.mobileUserRow}>
+            <span className={styles.mobileUserLabel} title={user?.email ?? undefined}>
+              {signedInLabel}
+            </span>
+          </div>
+        ) : null}
+        {authMode === "loading" ? (
+          <div className={styles.mobileCtas}>
+            <div className={styles.mobileAuthLoadingSlot} aria-hidden />
+          </div>
+        ) : authMode === "signedIn" ? null : (
+          <div className={styles.mobileCtas}>
+            <Link href="/signin" className={styles.mobileCtaSecondary} onClick={closeMenu}>
+              Sign in
+            </Link>
+            <Link href="/signup" className={styles.mobileCtaSecondary} onClick={closeMenu}>
+              Create account
+            </Link>
+            <Link href="/start" className={styles.mobileCtaPrimary} onClick={closeMenu}>
+              Start Here
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );

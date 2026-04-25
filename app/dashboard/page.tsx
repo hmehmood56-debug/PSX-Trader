@@ -3,14 +3,12 @@
 import Link from "next/link";
 import { useLivePrices } from "@/lib/priceSimulator";
 import { getStockByTicker } from "@/lib/mockData";
-import {
-  getTransactionHistory,
-  type Transaction,
-} from "@/lib/portfolioStore";
-import { formatPKRWithSymbol } from "@/lib/format";
-import { usePortfolioState } from "@/hooks/usePortfolioState";
-import { useMemo, useState, useEffect, type CSSProperties } from "react";
+import { usePortfolio } from "@/hooks/usePortfolioState";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useMemo, useState, useEffect } from "react";
 import { PortfolioSections } from "@/components/dashboard/PortfolioSections";
+import { PerchWordmark } from "@/components/PerchWordmark";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
 
 const COLORS = {
   orange: "#C45000",
@@ -23,47 +21,314 @@ const COLORS = {
   loss: "#C0392B",
 } as const;
 
-function signedPkr(n: number): string {
-  const sign = n >= 0 ? "+" : "";
-  return `${sign}${formatPKRWithSymbol(n, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
-function cardStyle(): CSSProperties {
-  return {
-    background: COLORS.bg,
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 12,
-    padding: 24,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-  };
-}
-
-function labelStyle(): CSSProperties {
-  return {
-    fontSize: 11,
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    color: COLORS.muted,
+function DashboardSignupWall() {
+  const previewBars = [34, 46, 40, 54, 50, 60, 56, 64, 58, 70, 66, 74];
+  const fauxHoldings = [
+    { ticker: "HBL", label: "Habib Bank", value: "Rs •••", day: "—" },
+    { ticker: "OGDC", label: "Oil & Gas Dev.", value: "Rs •••", day: "—" },
+    { ticker: "UBL", label: "United Bank", value: "Rs •••", day: "—" },
+  ];
+  const labelStyle = {
+    fontSize: "0.6875rem",
+    letterSpacing: "0.07em",
+    textTransform: "uppercase" as const,
     fontWeight: 600,
+    color: COLORS.muted,
   };
+
+  return (
+    <div style={{ background: COLORS.bg, minHeight: "100vh" }}>
+      <div className="perch-shell perch-shell-wide perch-psx-shell">
+        <div className="perch-dashboard-brand-line">
+          <PerchWordmark compact />
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gap: "clamp(1rem, 2.5vw, 1.35rem)",
+            alignItems: "stretch",
+            gridTemplateColumns: "minmax(0, 1fr)",
+            marginTop: "clamp(0.75rem, 2vw, 1.25rem)",
+            marginBottom: "2rem",
+          }}
+        >
+          <style>{`
+            @media (min-width: 900px) {
+              .dashboard-wall-grid {
+                grid-template-columns: minmax(0, 1fr) minmax(300px, 400px) !important;
+                gap: clamp(1.25rem, 2.5vw, 1.75rem) !important;
+                align-items: start;
+              }
+            }
+          `}</style>
+          <div
+            className="dashboard-wall-grid"
+            style={{
+              display: "grid",
+              gap: "clamp(1.35rem, 3vw, 1.85rem)",
+              gridTemplateColumns: "minmax(0, 1fr)",
+            }}
+          >
+            <div style={{ maxWidth: 540 }}>
+              <h1
+                style={{
+                  margin: 0,
+                  fontSize: "clamp(1.65rem, 3vw, 2.125rem)",
+                  fontWeight: 700,
+                  letterSpacing: "-0.03em",
+                  color: COLORS.text,
+                  lineHeight: 1.18,
+                }}
+              >
+                Save your <span style={{ color: COLORS.orange }}>portfolio</span>.
+                <br />
+                Pick up where you left off.
+              </h1>
+              <p
+                style={{
+                  margin: "1.1rem 0 0",
+                  fontSize: "1rem",
+                  lineHeight: 1.58,
+                  color: COLORS.muted,
+                  maxWidth: 42 * 16,
+                }}
+              >
+                Create an account to keep your practice trades, track your performance, and get notified when real trading
+                access opens.
+              </p>
+              <p
+                style={{
+                  margin: "1.15rem 0 0",
+                  fontSize: "1.0625rem",
+                  lineHeight: 1.5,
+                  fontWeight: 600,
+                  letterSpacing: "-0.01em",
+                  color: COLORS.text,
+                  maxWidth: 42 * 16,
+                }}
+              >
+                Track your trades, watch your performance, and get priority access to real trading.
+              </p>
+
+              <div
+                style={{
+                  marginTop: "1.85rem",
+                  paddingTop: "1.15rem",
+                  borderTop: `1px solid ${COLORS.border}`,
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "0.8125rem",
+                    lineHeight: 1.45,
+                    color: COLORS.muted,
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  Your progress isn&apos;t saved yet.
+                </p>
+                <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.7rem" }}>
+                  <Link
+                    href="/signup?from=dashboard"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.35rem",
+                      width: "fit-content",
+                      maxWidth: "100%",
+                      padding: "0.8rem 1.35rem",
+                      borderRadius: 10,
+                      background: COLORS.orange,
+                      color: "#fff",
+                      fontWeight: 600,
+                      fontSize: "0.9375rem",
+                      textDecoration: "none",
+                      boxShadow: "0 1px 0 rgba(0,0,0,0.08)",
+                    }}
+                  >
+                    Create account to save your progress →
+                  </Link>
+                  <Link
+                    href="/signin?from=dashboard"
+                    style={{
+                      fontSize: "0.9375rem",
+                      color: COLORS.muted,
+                      textDecoration: "none",
+                      width: "fit-content",
+                    }}
+                  >
+                    Already have an account? <span style={{ color: COLORS.text, textDecoration: "underline" }}>Sign in</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <div
+              aria-hidden
+              style={{
+                position: "relative",
+                borderRadius: 16,
+                border: `1px solid ${COLORS.border}`,
+                background: `linear-gradient(152deg, ${COLORS.bgSecondary} 0%, ${COLORS.bg} 48%, #FDFCFB 100%)`,
+                padding: "1.35rem 1.35rem 1.3rem",
+                boxShadow: "0 16px 48px rgba(0,0,0,0.055), 0 1px 0 rgba(255,255,255,0.9) inset",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "radial-gradient(95% 70% at 100% 0%, rgba(196, 80, 0, 0.08), transparent 56%), linear-gradient(160deg, rgba(196, 80, 0, 0.03), transparent 34%)",
+                  pointerEvents: "none",
+                }}
+              />
+              <div style={{ position: "relative", display: "grid", gap: "1.35rem" }}>
+                <div>
+                  <div style={labelStyle}>Portfolio Value</div>
+                  <div
+                    style={{
+                      marginTop: "0.35rem",
+                      fontSize: "clamp(1.5rem, 2.4vw, 1.85rem)",
+                      fontWeight: 700,
+                      letterSpacing: "-0.03em",
+                      color: COLORS.text,
+                      userSelect: "none",
+                      opacity: 0.88,
+                    }}
+                  >
+                    Rs <span style={{ color: COLORS.muted, opacity: 0.92 }}>••••••</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ ...labelStyle, marginBottom: "0.5rem" }}>Performance</div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-end",
+                      gap: 4,
+                      height: 72,
+                      padding: "0.35rem 0.15rem 0",
+                      borderRadius: 10,
+                      background: `linear-gradient(180deg, rgba(247,247,247,0.9) 0%, ${COLORS.bg} 100%)`,
+                      border: `1px solid ${COLORS.border}`,
+                    }}
+                  >
+                    {previewBars.map((h, i) => {
+                      const isLast = i === previewBars.length - 1;
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            flex: 1,
+                            minWidth: 3,
+                            maxWidth: 8,
+                            height: `${h}%`,
+                            borderRadius: 3,
+                            background: isLast
+                              ? `linear-gradient(180deg, ${COLORS.orange} 0%, #a84300 100%)`
+                              : `linear-gradient(180deg, #D9D9D9 0%, ${COLORS.border} 100%)`,
+                            opacity: isLast ? 0.92 : 0.78,
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ ...labelStyle, marginBottom: "0.55rem" }}>Holdings</div>
+                  <div
+                    style={{
+                      borderRadius: 10,
+                      border: `1px solid ${COLORS.border}`,
+                      overflow: "hidden",
+                      background: COLORS.bg,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr auto auto",
+                        gap: "0.5rem",
+                        padding: "0.45rem 0.65rem",
+                        fontSize: "0.625rem",
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        fontWeight: 600,
+                        color: COLORS.muted,
+                        background: COLORS.bgSecondary,
+                        borderBottom: `1px solid ${COLORS.border}`,
+                      }}
+                    >
+                      <span>Name</span>
+                      <span style={{ textAlign: "right" }}>Value</span>
+                      <span style={{ textAlign: "right" }}>Day</span>
+                    </div>
+                    {fauxHoldings.map((row, idx) => (
+                      <div
+                        key={row.ticker}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr auto auto",
+                          gap: "0.5rem",
+                          alignItems: "center",
+                          padding: "0.65rem 0.65rem",
+                          fontSize: "0.8125rem",
+                          borderTop: idx === 0 ? "none" : `1px solid ${COLORS.border}`,
+                          background: idx % 2 === 0 ? "rgba(247,247,247,0.35)" : COLORS.bg,
+                        }}
+                      >
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 650, color: COLORS.orange, letterSpacing: "-0.01em" }}>{row.ticker}</div>
+                          <div style={{ fontSize: "0.7rem", color: COLORS.muted, marginTop: 2, lineHeight: 1.3 }}>
+                            {row.label}
+                          </div>
+                        </div>
+                        <span style={{ color: COLORS.muted, fontWeight: 500, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                          {row.value}
+                        </span>
+                        <span
+                          style={{
+                            color: COLORS.muted,
+                            fontWeight: 500,
+                            textAlign: "right",
+                            fontSize: "0.75rem",
+                            opacity: 0.85,
+                            fontVariantNumeric: "tabular-nums",
+                          }}
+                        >
+                          {row.day}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer className="perch-dashboard-footer">© 2026 Perch Capital. All rights reserved.</footer>
+      </div>
+    </div>
+  );
 }
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
-  const portfolio = usePortfolioState();
-  const { getQuote, getStocksWithLive } = useLivePrices();
-  const [txs, setTxs] = useState<Transaction[]>([]);
+  const { portfolio, transactions: txs, portfolioReady } = usePortfolio();
+  const { user, loading: authLoading } = useAuth();
+  const { getQuote } = useLivePrices();
 
   useEffect(() => setMounted(true), []);
-
   useEffect(() => {
-    setTxs(getTransactionHistory());
-    const onUp = () => setTxs(getTransactionHistory());
-    window.addEventListener("psx-portfolio-updated", onUp);
-    return () => window.removeEventListener("psx-portfolio-updated", onUp);
+    void logAnalyticsEvent("dashboard_viewed", { route: "/dashboard" });
   }, []);
 
   const holdingsValue = useMemo(() => {
@@ -87,20 +352,10 @@ export default function DashboardPage() {
     return pnl;
   }, [portfolio.holdings, getQuote]);
 
-  const totalReturnPct = ((portfolioValue - 1_000_000) / 1_000_000) * 100;
-
-  const stocks = getStocksWithLive();
-  const gainers = [...stocks]
-    .sort((a, b) => b.changePercent - a.changePercent)
-    .slice(0, 3);
-  const losers = [...stocks]
-    .sort((a, b) => a.changePercent - b.changePercent)
-    .slice(0, 3);
-
   const rows = useMemo(() => {
     return portfolio.holdings.map((h) => {
       const q = getQuote(h.ticker);
-      const px = q?.price ?? getStockByTicker(h.ticker)?.price ?? 0;
+      const px = q?.price ?? h.avgBuyPrice;
       const value = h.shares * px;
       const cost = h.shares * h.avgBuyPrice;
       const pnl = value - cost;
@@ -113,232 +368,75 @@ export default function DashboardPage() {
   const unrealizedPnl = rows.reduce((sum, r) => sum + r.pnl, 0);
 
   const performancePoints = useMemo(() => {
-    if (txs.length === 0) {
-      return [
-        { label: "Start", pnl: 0 },
-        { label: "Now", pnl: unrealizedPnl },
-      ];
-    }
+    const nowIso = new Date().toISOString();
+    const currentMarks = new Map<string, number>();
+    for (const row of rows) currentMarks.set(row.ticker, row.px);
 
-    const ascending = [...txs].sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    const sortedTxs = [...txs].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
+    const netBuyCost = sortedTxs.reduce((sum, tx) => {
+      return tx.type === "BUY" ? sum + tx.total : sum - tx.total;
+    }, 0);
+    const estimatedStartingCash = Math.max(0, portfolio.cash + netBuyCost);
 
-    const book: Record<string, { shares: number; avg: number }> = {};
-    let realized = 0;
-    const points: { label: string; pnl: number }[] = [{ label: "Start", pnl: 0 }];
+    let runningCash = estimatedStartingCash;
+    const holdings = new Map<string, number>();
+    const points: { date: string; value: number }[] = [];
 
-    for (const tx of ascending) {
-      const key = tx.ticker;
-      const pos = book[key] ?? { shares: 0, avg: 0 };
+    for (const tx of sortedTxs) {
+      const priorShares = holdings.get(tx.ticker) ?? 0;
       if (tx.type === "BUY") {
-        const totalShares = pos.shares + tx.shares;
-        const nextAvg =
-          totalShares === 0
-            ? 0
-            : (pos.avg * pos.shares + tx.price * tx.shares) / totalShares;
-        book[key] = { shares: totalShares, avg: nextAvg };
+        holdings.set(tx.ticker, priorShares + tx.shares);
+        runningCash -= tx.total;
       } else {
-        const sold = Math.min(tx.shares, pos.shares);
-        realized += (tx.price - pos.avg) * sold;
-        const nextShares = Math.max(0, pos.shares - sold);
-        book[key] = { shares: nextShares, avg: nextShares === 0 ? 0 : pos.avg };
+        const soldShares = Math.min(priorShares, tx.shares);
+        holdings.set(tx.ticker, Math.max(0, priorShares - soldShares));
+        runningCash += tx.total;
       }
-
+      const markedHoldingsValue = Array.from(holdings.entries()).reduce((sum, [ticker, shares]) => {
+        if (shares <= 0) return sum;
+        return sum + shares * (currentMarks.get(ticker) ?? tx.price);
+      }, 0);
       points.push({
-        label: new Date(tx.timestamp).toLocaleDateString("en-PK", {
-          month: "short",
-          day: "numeric",
-        }),
-        pnl: realized,
+        date: tx.timestamp,
+        value: Math.max(0, runningCash + markedHoldingsValue),
       });
     }
 
-    const len = points.length;
-    const smoothed = points.map((p, idx) => ({
-      label: p.label,
-      pnl: p.pnl + unrealizedPnl * (idx / Math.max(1, len - 1)),
-    }));
-    smoothed[smoothed.length - 1] = {
-      label: "Now",
-      pnl: realized + unrealizedPnl,
-    };
-    return smoothed;
-  }, [txs, unrealizedPnl]);
+    points.push({ date: nowIso, value: Math.max(0, portfolioValue) });
+    if (points.length === 1) {
+      const backfill = new Date();
+      backfill.setDate(backfill.getDate() - 7);
+      return [
+        { date: backfill.toISOString(), value: Math.max(0, portfolioValue) },
+        points[0],
+      ];
+    }
+    return points;
+  }, [txs, rows, portfolio.cash, portfolioValue]);
 
-  if (!mounted) return null;
+  if (!mounted || !portfolioReady || authLoading) return null;
+
+  if (!user) return <DashboardSignupWall />;
 
   return (
     <div style={{ background: COLORS.bg }}>
       <div className="perch-shell perch-shell-wide perch-psx-shell">
-        <div className="perch-dashboard-stats">
-          <StatCard
-            label="Portfolio Value"
-            value={formatPKRWithSymbol(portfolioValue)}
-          />
-          <StatCard
-            label="Cash Available"
-            value={formatPKRWithSymbol(portfolio.cash)}
-          />
-          <StatCard
-            label="Today's P&L"
-            value={signedPkr(todayPnL)}
-            valueColor={todayPnL >= 0 ? COLORS.gain : COLORS.loss}
-          />
-          <StatCard
-            label="Total Return"
-            value={`${totalReturnPct >= 0 ? "+" : ""}${totalReturnPct.toFixed(
-              2
-            )}%`}
-            valueColor={totalReturnPct >= 0 ? COLORS.gain : COLORS.loss}
-          />
+        <div className="perch-dashboard-brand-line">
+          <PerchWordmark compact />
         </div>
-
-        <div className="perch-dashboard-two-col">
-          <div style={cardStyle()}>
-            <div style={labelStyle()}>Top Gainers</div>
-            <div style={{ marginTop: 12 }}>
-              {gainers.map((s, idx) => (
-                <div
-                  key={s.ticker}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    padding: "12px 0",
-                    borderTop: idx === 0 ? "none" : `1px solid ${COLORS.border}`,
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <Link
-                      href={`/stock/${s.ticker}`}
-                      style={{
-                        color: COLORS.orange,
-                        fontWeight: 700,
-                        textDecoration: "none",
-                      }}
-                    >
-                      {s.ticker}
-                    </Link>
-                    <div
-                      style={{
-                        color: COLORS.muted,
-                        fontSize: 13,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        maxWidth: "min(360px, 100%)",
-                      }}
-                    >
-                      {s.name}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      color: COLORS.gain,
-                      fontVariantNumeric: "tabular-nums",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    +{s.changePercent.toFixed(2)}%
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={cardStyle()}>
-            <div style={labelStyle()}>Top Losers</div>
-            <div style={{ marginTop: 12 }}>
-              {losers.map((s, idx) => (
-                <div
-                  key={s.ticker}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    padding: "12px 0",
-                    borderTop: idx === 0 ? "none" : `1px solid ${COLORS.border}`,
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <Link
-                      href={`/stock/${s.ticker}`}
-                      style={{
-                        color: COLORS.orange,
-                        fontWeight: 700,
-                        textDecoration: "none",
-                      }}
-                    >
-                      {s.ticker}
-                    </Link>
-                    <div
-                      style={{
-                        color: COLORS.muted,
-                        fontSize: 13,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        maxWidth: "min(360px, 100%)",
-                      }}
-                    >
-                      {s.name}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      color: COLORS.loss,
-                      fontVariantNumeric: "tabular-nums",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {s.changePercent.toFixed(2)}%
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
         <PortfolioSections
           rows={rows}
           txs={txs}
           cash={portfolio.cash}
-          holdingsValue={holdingsValue}
+          portfolioValue={portfolioValue}
+          todayPnL={todayPnL}
+          unrealizedPnl={unrealizedPnl}
           performancePoints={performancePoints}
+          isGuest={!user}
         />
-      </div>
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  valueColor?: string;
-}) {
-  return (
-    <div style={cardStyle()}>
-      <div style={labelStyle()}>{label}</div>
-      <div
-        style={{
-          marginTop: 10,
-          fontSize: 28,
-          fontWeight: 700,
-          color: valueColor ?? COLORS.text,
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {value}
+        <footer className="perch-dashboard-footer">© 2026 Perch Capital. All rights reserved.</footer>
       </div>
     </div>
   );

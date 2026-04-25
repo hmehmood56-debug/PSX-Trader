@@ -2,11 +2,12 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/Providers";
+import { RouteTransition } from "@/components/RouteTransition";
 
 export const metadata: Metadata = {
   title: "Perch | Perch Capital",
   description:
-    "Perch by Perch Capital helps investors practice with Pakistan Stock Exchange market simulations.",
+    "Perch by Perch Capital helps investors paper trade Pakistan equities with live PSX market data.",
 };
 
 export const viewport: Viewport = {
@@ -38,7 +39,9 @@ export default function RootLayout({
       >
         <Providers>
           <Navbar />
-          <main className="perch-main">{children}</main>
+          <main className="perch-main">
+            <RouteTransition>{children}</RouteTransition>
+          </main>
         </Providers>
       </body>
     </html>

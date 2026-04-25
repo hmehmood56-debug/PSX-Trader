@@ -5,15 +5,19 @@ import { useCallback, useEffect, useState } from "react";
 import type { LiveMarketAsset } from "@/lib/liveMarkets";
 
 const palette = {
-  orange: "#C45000",
-  bg: "#FFFFFF",
-  border: "#E8E8E8",
-  text: "#1A1A1A",
-  muted: "#6B6B6B",
+  orange: "#FF7A1A",
+  bg: "#F5F7FF",
+  border: "#DDE3F2",
+  text: "#0E1425",
+  muted: "#54607A",
+  card: "#FFFFFF",
+  green: "#00A06E",
+  red: "#D14343",
 } as const;
 
 type LiveMarketsResponse = {
   data: LiveMarketAsset[];
+  featuredIds?: string[];
   updatedAt: string;
   error?: string;
 };
@@ -22,25 +26,18 @@ function formatUsd(value: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: value >= 1000 ? 0 : 2,
+    maximumFractionDigits: value >= 1000 ? 0 : value >= 1 ? 3 : 6,
   }).format(value);
 }
 
-function formatMarketCap(value: number | null) {
-  if (!value) return "N/A";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    notation: "compact",
-    maximumFractionDigits: 2,
-  }).format(value);
+function formatUsdNullable(value: number | null) {
+  if (value === null || Number.isNaN(value)) return "N/A";
+  return formatUsd(value);
 }
 
 function formatVolume(value: number | null) {
   if (!value) return "N/A";
   return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
     notation: "compact",
     maximumFractionDigits: 2,
   }).format(value);
@@ -57,6 +54,7 @@ export function LiveCryptoExperience() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [featuredIds, setFeaturedIds] = useState<string[]>([]);
 
   const loadCrypto = useCallback(async () => {
     try {
@@ -68,6 +66,7 @@ export function LiveCryptoExperience() {
       }
 
       setCrypto(payload.data);
+      setFeaturedIds(payload.featuredIds ?? []);
       setUpdatedAt(payload.updatedAt);
       setError(null);
     } catch (err) {
@@ -83,7 +82,7 @@ export function LiveCryptoExperience() {
     void loadCrypto();
     const id = window.setInterval(() => {
       void loadCrypto();
-    }, 30_000);
+    }, 5_000);
     return () => window.clearInterval(id);
   }, [loadCrypto]);
 
@@ -92,11 +91,15 @@ export function LiveCryptoExperience() {
     if (!q) return true;
     return coin.name.toLowerCase().includes(q) || coin.symbol.toLowerCase().includes(q);
   });
+  const featuredSet = new Set(featuredIds);
+  const featuredCoins = crypto.filter((coin) => featuredSet.has(coin.id));
+  const gridCoins = q ? filtered : featuredCoins.length > 0 ? featuredCoins : filtered;
 
-  const topMovers = [...crypto]
+  const topMovers = [...(featuredCoins.length > 0 ? featuredCoins : crypto)]
     .filter((coin) => coin.change24h !== null)
     .sort((a, b) => Math.abs(b.change24h ?? 0) - Math.abs(a.change24h ?? 0))
     .slice(0, 5);
+  const moversTape = [...topMovers, ...topMovers];
 
   return (
     <div style={{ background: palette.bg }}>
@@ -107,9 +110,11 @@ export function LiveCryptoExperience() {
         <section
           style={{
             border: `1px solid ${palette.border}`,
-            borderRadius: 20,
-            background: "#FFFFFF",
-            padding: "clamp(20px, 4vw, 28px) clamp(18px, 4vw, 26px)",
+            borderRadius: 24,
+            background:
+              "radial-gradient(circle at top right, rgba(255,122,26,0.14), rgba(255,255,255,0.96) 35%), linear-gradient(145deg, #FFFFFF 10%, #F7FAFF 90%)",
+            boxShadow: "0 18px 40px rgba(19, 29, 59, 0.08)",
+            padding: "clamp(20px, 4vw, 34px) clamp(18px, 4vw, 30px)",
           }}
         >
           <p
@@ -118,27 +123,28 @@ export function LiveCryptoExperience() {
               fontSize: 12,
               color: palette.orange,
               fontWeight: 700,
-              letterSpacing: "0.08em",
+              letterSpacing: "0.12em",
               textTransform: "uppercase",
             }}
           >
-            Live Crypto
+            Real-Time Markets
           </p>
           <h1
             style={{
               margin: "10px 0 0",
               color: palette.text,
-              fontSize: "clamp(26px, 6vw, 40px)",
-              lineHeight: 1.12,
+              fontSize: "clamp(28px, 6vw, 44px)",
+              lineHeight: 1.08,
+              letterSpacing: "-0.03em",
             }}
           >
-            Live crypto markets
+            Crypto markets at a glance
           </h1>
-          <p style={{ marginTop: 12, color: palette.muted, fontSize: 15, lineHeight: 1.65, maxWidth: 760 }}>
-            Browse major digital assets with live pricing, 24h movement, market cap, and volume.
-            Data refreshes automatically every 30 seconds through the Perch live feed.
+          <p style={{ marginTop: 14, color: palette.muted, fontSize: 15, lineHeight: 1.65, maxWidth: 760 }}>
+            Live digital asset prices, major movers, and market activity in one premium trading surface.
+            Updated in real time every few seconds.
           </p>
-          <p style={{ marginTop: 8, marginBottom: 0, color: palette.muted, fontSize: 13 }}>
+          <p style={{ marginTop: 10, marginBottom: 0, color: "#4A5670", fontSize: 13, fontWeight: 550 }}>
             {updatedAt
               ? `Last updated ${new Date(updatedAt).toLocaleTimeString("en-US")}`
               : "Awaiting first live update..."}
@@ -153,11 +159,12 @@ export function LiveCryptoExperience() {
                 width: "100%",
                 maxWidth: 520,
                 minHeight: 48,
-                borderRadius: 12,
-                border: `1px solid ${palette.border}`,
+                borderRadius: 14,
+                border: `1px solid #CBD6EE`,
                 padding: "0 16px",
                 fontSize: 16,
                 outline: "none",
+                background: "rgba(255,255,255,0.88)",
               }}
             />
           </div>
@@ -170,33 +177,56 @@ export function LiveCryptoExperience() {
               marginTop: 14,
               border: `1px solid ${palette.border}`,
               borderRadius: 14,
-              padding: "12px 14px",
+              overflow: "hidden",
               background: "#FFFFFF",
+              boxShadow: "0 8px 22px rgba(17, 28, 54, 0.06)",
             }}
           >
-            {topMovers.map((coin) => (
-              <Link
-                key={coin.id}
-                href={`/markets/crypto/${coin.id}`}
-                style={{
-                  textDecoration: "none",
-                  border: `1px solid ${palette.border}`,
-                  borderRadius: 999,
-                  padding: "10px 14px",
-                  display: "inline-flex",
-                  gap: 8,
-                  color: palette.text,
-                  fontSize: 13,
-                  whiteSpace: "nowrap",
-                  WebkitTapHighlightColor: "transparent",
-                }}
-              >
-                <strong>{coin.symbol}</strong>
-                <span style={{ color: coin.change24h !== null && coin.change24h >= 0 ? "#007A4C" : "#C0392B" }}>
-                  {formatChange(coin.change24h)}
-                </span>
-              </Link>
-            ))}
+            <p style={{ margin: 0, padding: "10px 14px", color: palette.muted, fontSize: 12, fontWeight: 600 }}>
+              Major market movers
+            </p>
+            <div
+              className="perch-ticker-row"
+              style={{
+                borderTop: `1px solid ${palette.border}`,
+                whiteSpace: "nowrap",
+              }}
+            >
+              <div className="perch-ticker-track">
+                {moversTape.map((coin, idx) => (
+                  <Link
+                    key={`${coin.id}-${idx}`}
+                    href={`/markets/crypto/${coin.id}`}
+                    style={{
+                      minHeight: 48,
+                      padding: "0 14px",
+                      textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                      borderRight: `1px solid ${palette.border}`,
+                      color: palette.text,
+                      fontSize: 13,
+                      WebkitTapHighlightColor: "transparent",
+                    }}
+                  >
+                    <span style={{ color: palette.orange, fontWeight: 700 }}>{coin.symbol}</span>
+                    <span style={{ color: palette.text, fontVariantNumeric: "tabular-nums" }}>
+                      {formatUsd(coin.price)}
+                    </span>
+                    <span
+                      style={{
+                        color: coin.change24h !== null && coin.change24h >= 0 ? palette.green : palette.red,
+                        fontWeight: 700,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {formatChange(coin.change24h)}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </section>
         )}
 
@@ -206,17 +236,18 @@ export function LiveCryptoExperience() {
                 <article
                   key={symbol}
                   style={{
-                    border: `1px solid ${palette.border}`,
-                    borderRadius: 14,
-                    background: "#FFFFFF",
+                    border: `1px solid #DAE2F3`,
+                    borderRadius: 16,
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F7FAFF 100%)",
                     padding: 20,
+                    boxShadow: "0 10px 24px rgba(21, 33, 62, 0.07)",
                   }}
                 >
                   <h2 style={{ margin: 0, color: palette.text, fontSize: 22, fontWeight: 700 }}>{symbol}</h2>
                   <p style={{ marginTop: 10, color: palette.muted, fontSize: 14 }}>Loading live price...</p>
                 </article>
               ))
-            : filtered.map((coin) => {
+            : gridCoins.map((coin) => {
                 const up = (coin.change24h ?? 0) >= 0;
                 return (
                   <Link
@@ -224,18 +255,18 @@ export function LiveCryptoExperience() {
                     href={`/markets/crypto/${coin.id}`}
                     style={{
                       textDecoration: "none",
-                      border: `1px solid ${palette.border}`,
-                      borderRadius: 14,
-                      background: "#FFFFFF",
+                      border: `1px solid #D8E0F0`,
+                      borderRadius: 16,
+                      background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFF 100%)",
                       padding: "clamp(16px, 4vw, 20px)",
                       color: palette.text,
-                      boxShadow: "0 8px 22px rgba(23,23,23,0.05)",
+                      boxShadow: "0 12px 28px rgba(17, 28, 54, 0.08)",
                       display: "block",
                       WebkitTapHighlightColor: "transparent",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <p style={{ margin: 0, fontSize: 12, color: palette.muted, fontWeight: 700 }}>{coin.symbol}</p>
+                      <p style={{ margin: 0, fontSize: 12, color: "#445171", fontWeight: 700 }}>{coin.symbol}</p>
                       <p style={{ margin: 0, fontSize: 12, color: palette.muted }}>
                         {coin.rank ? `#${coin.rank}` : "Rank N/A"}
                       </p>
@@ -264,7 +295,7 @@ export function LiveCryptoExperience() {
                     <p
                       style={{
                         marginTop: 8,
-                        color: coin.change24h === null ? palette.muted : up ? "#007A4C" : "#C0392B",
+                        color: coin.change24h === null ? palette.muted : up ? palette.green : palette.red,
                         fontSize: 14,
                         fontWeight: 650,
                       }}
@@ -272,23 +303,29 @@ export function LiveCryptoExperience() {
                       24h: {formatChange(coin.change24h)}
                     </p>
                     <p style={{ marginTop: 8, color: palette.muted, fontSize: 13 }}>
-                      Market cap: {formatMarketCap(coin.marketCap)}
+                      24h High: {formatUsdNullable(coin.high24h)}
+                    </p>
+                    <p style={{ marginTop: 6, color: palette.muted, fontSize: 13 }}>
+                      24h Low: {formatUsdNullable(coin.low24h)}
                     </p>
                     <p style={{ marginTop: 6, color: palette.muted, fontSize: 13 }}>
                       Volume (24h): {formatVolume(coin.volume24h)}
+                    </p>
+                    <p style={{ marginTop: 6, color: palette.muted, fontSize: 13 }}>
+                      Quote Volume (24h): {formatVolume(coin.quoteVolume24h)}
                     </p>
                   </Link>
                 );
               })}
         </section>
 
-        {!loading && filtered.length === 0 && (
+        {!loading && gridCoins.length === 0 && (
           <section
             style={{
               marginTop: 14,
               border: `1px solid ${palette.border}`,
               borderRadius: 12,
-              background: "#FFFFFF",
+              background: palette.card,
               padding: "14px 16px",
               color: palette.muted,
               fontSize: 14,
@@ -304,13 +341,13 @@ export function LiveCryptoExperience() {
               marginTop: 14,
               border: `1px solid ${palette.border}`,
               borderRadius: 12,
-              background: "#FFF8F6",
+              background: "#FFF5F2",
               padding: "12px 14px",
               color: "#A3452F",
               fontSize: 13,
             }}
           >
-            Live crypto data is temporarily unavailable. We will keep trying every 30 seconds.
+            Live crypto data is temporarily unavailable. We will keep trying every 5 seconds.
           </section>
         )}
       </div>

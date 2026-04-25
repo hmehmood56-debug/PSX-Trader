@@ -6,11 +6,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:reconcile": "sh scripts/apply-perch-schema.sh",
+    "generate:psx-metadata": "node scripts/generate-psx-symbol-metadata.mjs",
+    "generate:psx-sectors": "node scripts/generate-psx-sector-map.mjs",
+    "generate:psx-company": "node scripts/generate-psx-company-metadata.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.0",
     "@vercel/analytics": "^2.0.1",
+    "lightweight-charts": "^4.2.3",
+    "lucide-react": "^1.8.0",
     "next": "14.2.18",
+    "posthog-js": "^1.369.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.4"

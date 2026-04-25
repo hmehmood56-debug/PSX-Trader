@@ -1,0 +1,65 @@
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.textBlock {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.perch {
+  color: #c45000;
+  font-size: clamp(21px, 4.2vw, 25px);
+  line-height: 1;
+  letter-spacing: -0.024em;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.capital {
+  color: #626262;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.compact .perch {
+  font-size: clamp(16px, 3.8vw, 19px);
+}
+
+.compact .capital {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.ink .perch {
+  color: #1f1b17;
+  font-weight: 700;
+}
+
+.ink .capital {
+  color: rgba(31, 27, 23, 0.62);
+}
+
+.navbar .perch {
+  color: #c45000;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.navbar .capital {
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 500;
+}
+
+@media (max-width: 399px) {
+  .capital {
+    display: none;
+  }
+}

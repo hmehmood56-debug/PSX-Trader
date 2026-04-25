@@ -1,5 +1,5 @@
 import { SimulatedPsxExperience } from "@/components/markets/SimulatedPsxExperience";
 
-export default function SimulatedPsxPage() {
+export default function PsxPaperTradingPage() {
   return <SimulatedPsxExperience />;
 }

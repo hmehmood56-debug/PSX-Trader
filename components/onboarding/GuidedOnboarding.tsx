@@ -2,21 +2,22 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getStockByTicker } from "@/lib/mockData";
 import { formatPKRWithSymbol } from "@/lib/format";
 import {
-  ONBOARDING_GOALS,
   PRACTICE_AMOUNTS,
   STARTER_BLURBS,
   STARTER_TICKERS,
-  type GoalId,
   type StarterTicker,
 } from "@/lib/onboardingConstants";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
+import { startRouteProgress } from "@/lib/routeProgress";
+import { logAnalyticsEvent } from "@/lib/analytics/client";
+import { StockLogo } from "@/components/common/StockLogo";
 import styles from "./GuidedOnboarding.module.css";
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 5;
 
 export function GuidedOnboarding() {
   const router = useRouter();
@@ -27,14 +28,8 @@ export function GuidedOnboarding() {
   const tradeInvestedParam = Number(searchParams.get("invested"));
 
   const [step, setStep] = useState(tradeComplete ? TOTAL_STEPS - 1 : 0);
-  const [goalId, setGoalId] = useState<GoalId | null>(null);
   const [amount, setAmount] = useState<number | null>(null);
-  const [ticker, setTicker] = useState<StarterTicker | null>(null);
-
-  const goalLabel = useMemo(() => {
-    const g = ONBOARDING_GOALS.find((x) => x.id === goalId);
-    return g?.title ?? "-";
-  }, [goalId]);
+  const [ticker, setTicker] = useState<StarterTicker | null>("HBL");
 
   const stock = ticker ? getStockByTicker(ticker) : undefined;
   const successTicker = tradeTickerParam ?? ticker;
@@ -44,6 +39,22 @@ export function GuidedOnboarding() {
     Number.isFinite(tradeInvestedParam) && tradeInvestedParam > 0 ? tradeInvestedParam : amount;
 
   const progressPct = ((step + 1) / TOTAL_STEPS) * 100;
+  const completionLoggedRef = useRef(false);
+
+  useEffect(() => {
+    void logAnalyticsEvent("onboarding_started", { route: "/start" });
+  }, []);
+
+  useEffect(() => {
+    if (!tradeComplete || completionLoggedRef.current) return;
+    completionLoggedRef.current = true;
+    void logAnalyticsEvent("onboarding_completed", {
+      route: "/start",
+      ticker: successTicker ?? ticker ?? undefined,
+      quantity: successShares ?? undefined,
+      invested_amount: successInvested ?? undefined,
+    });
+  }, [tradeComplete, successTicker, ticker, successShares, successInvested]);
 
   function next() {
     setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
@@ -51,14 +62,17 @@ export function GuidedOnboarding() {
 
   function goEnterApp() {
     if (!ticker) return;
+    startRouteProgress();
     router.push(`/stock/${ticker}?onboarding=1`);
   }
 
-  function goToDashboard() {
-    router.push("/dashboard");
+  function goToSignupAfterOnboarding() {
+    startRouteProgress();
+    router.push("/signup?from=onboarding");
   }
 
   function goToMarkets() {
+    startRouteProgress();
     router.push("/markets/psx");
   }
 
@@ -70,88 +84,134 @@ export function GuidedOnboarding() {
             &larr; Home
           </Link>
           <span className={styles.stepLabel}>
-            Step {step + 1} of {TOTAL_STEPS}
+            <span className={styles.stepCurrent}>{step + 1}</span>
+            <span className={styles.stepDivider}> / </span>
+            <span className={styles.stepTotal}>{TOTAL_STEPS}</span>
           </span>
         </div>
 
-        <div className={styles.progressTrack} aria-hidden>
-          <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+        <div className={styles.progressBlock}>
+          <div className={styles.progressTrack} aria-hidden>
+            <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+          </div>
         </div>
 
         <div className={styles.body}>
           {step === 0 && (
-            <>
-              <h1 className={styles.title}>Welcome to Perch</h1>
+            <section className={styles.stepSurface}>
+              <div className={styles.stepSurfaceHeader}>
+                <span className={styles.stepEyebrow}>
+                  <span className={styles.brandWord}>PERCH</span> Guided onboarding
+                </span>
+              </div>
+              <div className={styles.titleWrap}>
+                <span className={styles.titleRail} aria-hidden />
+                <h1 className={styles.title}>
+                  Your first <span className={styles.brandWordInline}>PSX</span> trade in under a minute
+                </h1>
+              </div>
               <p className={styles.subtitle}>
-                We will walk you through a simple practice setup. There is no quiz and no jargon - just a clear path to
-                your first pretend trade on the Pakistan Stock Exchange (PSX) using virtual money.
+                Set up quickly and step into a real market experience using virtual capital
               </p>
+              <p className={styles.flowLineMobile}>
+                Start <span className={styles.flowArrow}>→</span> Choose capital <span className={styles.flowArrow}>→</span>{" "}
+                Pick a stock <span className={styles.flowArrow}>→</span> Make your first trade{" "}
+                <span className={styles.flowArrow}>→</span>{" "}
+                <span className={styles.flowAnchor}>Create account to save progress</span>
+              </p>
+              <div className={styles.flowLineDesktop}>
+                <span className={styles.flowStep}>Start</span>
+                <span className={styles.flowStep}>Choose capital</span>
+                <span className={styles.flowStep}>Pick a stock</span>
+                <span className={styles.flowStep}>Make your first trade</span>
+                <span className={`${styles.flowStep} ${styles.flowAnchor}`}>Create account to save progress</span>
+              </div>
               <div className={styles.actions}>
                 <button type="button" className={styles.primaryBtn} onClick={next}>
-                  Continue
+                  Start your first trade →
                 </button>
               </div>
-            </>
+              <p className={styles.waitlistHint}>
+                Prefer live trading later?{" "}
+                <Link href="/waitlist" className={styles.waitlistLink}>
+                  Join the waitlist
+                </Link>
+              </p>
+            </section>
           )}
 
           {step === 1 && (
-            <>
-              <h1 className={styles.title}>What brings you here?</h1>
-              <p className={styles.subtitle}>Pick the option that fits best. You can change your mind anytime.</p>
-              <div className={styles.cardGrid} role="list">
-                {ONBOARDING_GOALS.map((g) => (
-                  <button
-                    key={g.id}
-                    type="button"
-                    role="listitem"
-                    className={`${styles.optionCard} ${goalId === g.id ? styles.optionCardSelected : ""}`}
-                    onClick={() => setGoalId(g.id)}
-                  >
-                    <div className={styles.optionTitle}>{g.title}</div>
-                    <div className={styles.optionDesc}>{g.description}</div>
-                  </button>
-                ))}
+            <section className={styles.stepSurface}>
+              <div className={styles.stepSurfaceHeader}>
+                <span className={styles.stepEyebrow}>
+                  <span className={styles.brandWord}>PERCH</span> Guided onboarding
+                </span>
               </div>
-              <div className={styles.actions}>
-                <button type="button" className={styles.primaryBtn} disabled={!goalId} onClick={next}>
-                  Continue
-                </button>
+              <div className={styles.titleWrap}>
+                <span className={styles.titleRail} aria-hidden />
+                <h1 className={styles.title}>Choose your starting capital</h1>
               </div>
-            </>
-          )}
-
-          {step === 2 && (
-            <>
-              <h1 className={styles.title}>How much do you want to practice with?</h1>
               <p className={styles.subtitle}>
-                This is only for planning your practice - it is not a real transfer. Your virtual account already has
-                practice funds; this helps us frame your first trade.
+                This is your virtual balance for practice trading. You can change it anytime.
               </p>
-              <div className={styles.amountRow}>
+              <div className={styles.amountGrid}>
                 {PRACTICE_AMOUNTS.map((n) => (
                   <button
                     key={n}
                     type="button"
-                    className={`${styles.amountChip} ${amount === n ? styles.amountChipSelected : ""}`}
+                    className={`${styles.amountCard} ${amount === n ? styles.amountCardSelected : ""}`}
                     onClick={() => setAmount(n)}
                   >
-                    {formatPKRWithSymbol(n, { maximumFractionDigits: 0 })}
+                    <span className={styles.amountValue}>
+                      <span className={styles.amountCurrency}>Rs</span>{" "}
+                      {formatPKRWithSymbol(n, { maximumFractionDigits: 0 }).replace(/^Rs\.?\s*/i, "")}
+                    </span>
+                    <span className={styles.amountMeta}>A comfortable amount to learn live price movement</span>
                   </button>
                 ))}
               </div>
+              {amount != null && (
+                <div className={styles.selectionPreview}>
+                  <div className={styles.selectionPreviewRow}>
+                    <span className={styles.selectionPreviewLabel}>Selected capital</span>
+                    <span className={styles.selectionPreviewValue}>
+                      {formatPKRWithSymbol(amount, { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                  <div className={styles.selectionPreviewRow}>
+                    <span className={styles.selectionPreviewLabel}>Real transfer</span>
+                    <span className={styles.selectionPreviewValue}>None</span>
+                  </div>
+                  <div className={styles.selectionPreviewRow}>
+                    <span className={styles.selectionPreviewLabel}>Purpose</span>
+                    <span className={styles.selectionPreviewValue}>Practice only</span>
+                  </div>
+                </div>
+              )}
               <div className={styles.actions}>
                 <button type="button" className={styles.primaryBtn} disabled={amount == null} onClick={next}>
-                  Continue
+                  Proceed to pick a stock →
                 </button>
               </div>
-            </>
+            </section>
           )}
 
-          {step === 3 && (
-            <>
-              <h1 className={styles.title}>Pick a starter stock</h1>
+          {step === 2 && (
+            <section className={styles.stepSurface}>
+              <div className={styles.stepSurfaceHeader}>
+                <span className={styles.stepEyebrow}>
+                  <span className={styles.brandWord}>PERCH</span> Guided onboarding
+                </span>
+              </div>
+              <div className={styles.titleWrap}>
+                <span className={styles.titleRail} aria-hidden />
+                <h1 className={styles.title}>Pick a starter stock</h1>
+              </div>
               <p className={styles.subtitle}>
                 Choose one name to follow first. These are common PSX names; tap the one you want to start with.
+              </p>
+              <p className={styles.stockMicroContext}>
+                Start with a well-known name to get familiar with the market
               </p>
               <div className={styles.cardGrid}>
                 {STARTER_TICKERS.map((sym) => {
@@ -164,81 +224,87 @@ export function GuidedOnboarding() {
                       className={`${styles.optionCard} ${ticker === sym ? styles.optionCardSelected : ""}`}
                       onClick={() => setTicker(sym)}
                     >
-                      <div className={styles.optionTitle}>
-                        {sym} - {s.name}
+                      <div className={styles.optionLogoWrap}>
+                        <StockLogo ticker={sym} size={44} />
                       </div>
-                      <div className={styles.optionDesc}>{STARTER_BLURBS[sym]}</div>
+                      <div className={styles.optionRail} aria-hidden />
+                      <div className={styles.optionMain}>
+                        <div className={styles.optionTickerText}>{sym}</div>
+                        <div className={styles.optionCompany}>{s.name}</div>
+                        <div className={styles.optionSector}>{s.sector}</div>
+                        <div className={styles.optionDesc}>{STARTER_BLURBS[sym]}</div>
+                      </div>
                     </button>
                   );
                 })}
               </div>
               <div className={styles.actions}>
                 <button type="button" className={styles.primaryBtn} disabled={!ticker} onClick={next}>
-                  Continue
+                  Review and trade →
                 </button>
               </div>
-            </>
+            </section>
           )}
 
-          {step === 4 && stock && amount != null && goalId && (
-            <>
-              <h1 className={styles.title}>Your practice summary</h1>
-              <p className={styles.subtitle}>
-                Here is what you chose. Everything stays virtual until you place an order on the next screens.
-              </p>
-              <div className={styles.previewBox}>
-                <div className={styles.previewRow}>
-                  <span className={styles.previewLabel}>Your focus</span>
-                  <span className={styles.previewValue}>{goalLabel}</span>
-                </div>
-                <div className={styles.previewRow}>
-                  <span className={styles.previewLabel}>Practice budget you picked</span>
-                  <span className={styles.previewValue}>
-                    {formatPKRWithSymbol(amount, { maximumFractionDigits: 0 })}
-                  </span>
-                </div>
-                <div className={styles.previewRow}>
-                  <span className={styles.previewLabel}>Starter stock</span>
-                  <span className={styles.previewValue}>
-                    {ticker} - {stock.name}
-                  </span>
-                </div>
+          {step === 3 && ticker && stock && (
+            <section className={styles.stepSurface}>
+              <div className={styles.stepSurfaceHeader}>
+                <span className={styles.stepEyebrow}>
+                  <span className={styles.brandWord}>PERCH</span> Guided onboarding
+                </span>
               </div>
-              <div className={styles.actions}>
-                <button type="button" className={styles.primaryBtn} onClick={next}>
-                  Continue
-                </button>
+              <div className={styles.titleWrap}>
+                <span className={styles.titleRail} aria-hidden />
+                <h1 className={styles.title}>You are set</h1>
               </div>
-            </>
-          )}
-
-          {step === 5 && ticker && stock && (
-            <>
-              <h1 className={styles.title}>You are set</h1>
               <p className={styles.subtitle}>
                 Next, open {stock.name} ({ticker}). There you can enter how many shares to buy and complete your first
                 practice purchase with virtual cash - the same steps you would use when you go live, without real money at
                 risk.
               </p>
-              <p className={styles.finalHint}>
-                Tip: start with a small number of shares so the amounts feel easy to follow.
-              </p>
+              <div className={styles.launchSummary}>
+                <div className={styles.launchSummaryHeader}>Trade setup summary</div>
+                <div className={styles.launchSummaryGrid}>
+                  <div className={styles.launchSummaryRow}>
+                    <span className={styles.launchSummaryLabel}>Starter stock</span>
+                    <span className={styles.launchSummaryValue}>{ticker}</span>
+                  </div>
+                  <div className={styles.launchSummaryRow}>
+                    <span className={styles.launchSummaryLabel}>Company</span>
+                    <span className={styles.launchSummaryValue}>{stock.name}</span>
+                  </div>
+                  <div className={styles.launchSummaryRow}>
+                    <span className={styles.launchSummaryLabel}>Practice capital</span>
+                    <span className={styles.launchSummaryValue}>
+                      {amount != null ? formatPKRWithSymbol(amount, { maximumFractionDigits: 0 }) : "Not selected"}
+                    </span>
+                  </div>
+                  <div className={styles.launchSummaryRow}>
+                    <span className={styles.launchSummaryLabel}>Next step</span>
+                    <span className={styles.launchSummaryValue}>Enter shares on the stock page</span>
+                  </div>
+                </div>
+                <p className={styles.launchHint}>
+                  Tip: start with a small number of shares so the amounts feel easy to follow.
+                </p>
+              </div>
               <div className={styles.actions}>
                 <button type="button" className={styles.primaryBtn} onClick={goEnterApp}>
                   Open {ticker} to trade
                 </button>
               </div>
-            </>
+            </section>
           )}
 
-          {step === 6 && tradeComplete && (
+          {step === 4 && tradeComplete && (
             <TradeSuccessScreen
               variant="firstTrade"
               ticker={successTicker}
               companyName={successStock?.name}
               investedAmount={successInvested}
               shares={successShares}
-              onPrimary={goToDashboard}
+              primaryCta="Create account to save progress"
+              onPrimary={goToSignupAfterOnboarding}
               onSecondary={goToMarkets}
             />
           )}
