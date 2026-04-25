@@ -3,6 +3,7 @@
  * otherwise same-origin `/api/psx-terminal/*` routes on Vercel.
  */
 const FALLBACK_PREFIX = "/api/psx-terminal";
+export type PsxStatsType = "REG" | "breadth" | "sectors";
 
 function workerBase(): string | null {
   const base = (process.env.NEXT_PUBLIC_MARKET_API_BASE ?? "").trim().replace(/\/$/, "");
@@ -41,4 +42,11 @@ export function getPsxChartUrl(ticker: string, range: string): string {
   const base = workerBase();
   if (base) return `${base}/chart?ticker=${t}&range=${r}`;
   return `${FALLBACK_PREFIX}/chart/${t}?range=${r}`;
+}
+
+export function getPsxStatsUrl(type: PsxStatsType): string {
+  const t = encodeURIComponent(type);
+  const base = workerBase();
+  if (base) return `${base}/stats?type=${t}`;
+  return `${FALLBACK_PREFIX}/stats/${t}`;
 }
