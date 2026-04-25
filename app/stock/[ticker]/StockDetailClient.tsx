@@ -8,6 +8,7 @@ import { useLivePrices, type LiveQuote } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { getPsxChartUrl } from "@/lib/marketSnapshotUrl";
 import { getDisplaySectorForTicker } from "@/lib/psxSymbolMetadata";
+import { getPsxCompanyMetadata } from "@/lib/psxCompanyMetadata";
 import { usePortfolio } from "@/hooks/usePortfolioState";
 import { StockLogo } from "@/components/common/StockLogo";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
@@ -146,6 +147,10 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [range, setRange] = useState<StockDetailChartRange>("1D");
+  const [isOverviewMounted, setIsOverviewMounted] = useState(false);
+  const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
+  const [canExpandOverview, setCanExpandOverview] = useState(false);
+  const overviewTextRef = useRef<HTMLParagraphElement | null>(null);
 
   const quoteFromDetail = useMemo(
     () => (detailStats?.tick ? liveQuoteFromDetailTick(detailStats.tick) : null),
@@ -289,6 +294,9 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   const marketCapDisplay =
     base.marketCap > 0 ? formatCompactPKR(base.marketCap) : NOT_AVAILABLE;
   const displaySector = getDisplaySectorForTicker(base.ticker, base.sector);
+  const companyMeta = getPsxCompanyMetadata(ticker) as
+    | (ReturnType<typeof getPsxCompanyMetadata> & { businessDescription?: string })
+    | undefined;
   const baseMeta = base as Stock & {
     description?: string;
     founded?: string | number;
@@ -297,9 +305,55 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     employees?: string | number;
     website?: string;
   };
-  const overviewText =
+  const overviewFallbackText =
     (typeof baseMeta.description === "string" && baseMeta.description.trim()) ||
     `${base.name} operates in the ${displaySector} sector on PSX.`;
+  const overviewText =
+    (typeof companyMeta?.businessDescription === "string" && companyMeta.businessDescription.trim()) ||
+    (typeof companyMeta?.description === "string" && companyMeta.description.trim()) ||
+    overviewFallbackText;
+  const leadershipItems = useMemo(() => {
+    if (!Array.isArray(companyMeta?.keyPeople) || companyMeta.keyPeople.length === 0) return [];
+    const normalized = companyMeta.keyPeople
+      .map((person) => ({
+        name: typeof person?.name === "string" ? person.name.trim() : "",
+        position: typeof person?.position === "string" ? person.position.trim() : "",
+      }))
+      .filter((person) => person.name.length > 0);
+
+    const rolePriority = [
+      { match: /(^|\b)ceo(\b|$)|chief executive officer/i, label: "CEO" },
+      { match: /chair/i, label: "Chairperson" },
+      { match: /secretary/i, label: "Secretary" },
+    ] as const;
+
+    const picked: Array<{ role: string; name: string }> = [];
+    const used = new Set<number>();
+
+    for (const role of rolePriority) {
+      const idx = normalized.findIndex((person, i) => !used.has(i) && role.match.test(person.position));
+      if (idx >= 0) {
+        used.add(idx);
+        picked.push({ role: role.label, name: normalized[idx].name });
+      }
+    }
+
+    for (let i = 0; i < normalized.length && picked.length < 3; i += 1) {
+      if (used.has(i)) continue;
+      picked.push({ role: normalized[i].position || "Leadership", name: normalized[i].name });
+    }
+
+    return picked.slice(0, 3);
+  }, [companyMeta?.keyPeople]);
+
+  useEffect(() => {
+    if (!overviewTextRef.current || isOverviewExpanded) {
+      setCanExpandOverview(false);
+      return;
+    }
+    const node = overviewTextRef.current;
+    setCanExpandOverview(node.scrollHeight > node.clientHeight + 1);
+  }, [overviewText, isOverviewExpanded]);
   const foundedText =
     baseMeta.founded != null && `${baseMeta.founded}`.trim().length > 0 ? `${baseMeta.founded}` : null;
   const hqText =
@@ -396,6 +450,13 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     const route = `/stock/${ticker}`;
     void logAnalyticsEvent("stock_detail_viewed", { route, ticker });
     void logAnalyticsEvent("trade_ticket_opened", { route, ticker });
+  }, [ticker]);
+
+  useEffect(() => {
+    setIsOverviewMounted(false);
+    setIsOverviewExpanded(false);
+    const timer = window.setTimeout(() => setIsOverviewMounted(true), 16);
+    return () => window.clearTimeout(timer);
   }, [ticker]);
 
   async function onConfirm() {
@@ -779,7 +840,94 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                 <FileText className="w-3.5 h-3.5 opacity-80" style={{ color: "#C45000" }} />
                 <span>Overview</span>
               </h2>
-              <p className="perch-stock-overview-text">{overviewText}</p>
+              <div
+                style={{
+                  marginTop: 6,
+                  height: 2,
+                  maxWidth: 240,
+                  width: isOverviewMounted ? "100%" : 0,
+                  borderRadius: 999,
+                  background: "linear-gradient(90deg, rgba(196,80,0,0.96) 0%, rgba(196,80,0,0.16) 100%)",
+                  transition: "width 240ms ease",
+                }}
+              />
+              <p
+                ref={overviewTextRef}
+                className="perch-stock-overview-text"
+                style={{
+                  marginTop: 10,
+                  maxWidth: 860,
+                  lineHeight: 1.72,
+                  opacity: isOverviewMounted ? 1 : 0,
+                  transform: isOverviewMounted ? "translateY(0)" : "translateY(4px)",
+                  transition: "opacity 220ms ease 50ms, transform 220ms ease 50ms",
+                  ...(isOverviewExpanded
+                    ? {}
+                    : {
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }),
+                }}
+              >
+                {overviewText}
+              </p>
+              {canExpandOverview ? (
+                <button
+                  type="button"
+                  onClick={() => setIsOverviewExpanded((current) => !current)}
+                  style={{
+                    marginTop: 6,
+                    padding: 0,
+                    border: "none",
+                    background: "transparent",
+                    color: COLORS.orange,
+                    fontSize: 12.5,
+                    fontWeight: 650,
+                    letterSpacing: "0.01em",
+                    cursor: "pointer",
+                  }}
+                >
+                  {isOverviewExpanded ? "Read less" : "Read more"}
+                </button>
+              ) : null}
+              {leadershipItems.length > 0 ? (
+                <p
+                  className="perch-stock-overview-text"
+                  style={{
+                    marginTop: 8,
+                    color: COLORS.muted,
+                    fontSize: 13,
+                    lineHeight: 1.45,
+                    opacity: isOverviewMounted ? 1 : 0,
+                    transform: isOverviewMounted ? "translateY(0)" : "translateY(4px)",
+                    transition: "opacity 220ms ease 100ms, transform 220ms ease 100ms",
+                  }}
+                >
+                  {leadershipItems.map((item, idx) => (
+                    <span key={`${item.role}-${item.name}-${idx}`}>
+                      <span
+                        style={{
+                          color: COLORS.orange,
+                          fontSize: 11,
+                          fontWeight: 650,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {item.role}
+                      </span>{" "}
+                      <span style={{ color: COLORS.text, fontWeight: 500 }}>{item.name}</span>
+                      {idx < leadershipItems.length - 1 ? (
+                        <span style={{ color: COLORS.mutedSoft, margin: "0 8px" }} aria-hidden="true">
+                          ·
+                        </span>
+                      ) : null}
+                    </span>
+                  ))}
+                </p>
+              ) : null}
               <div className="perch-stock-meta-row">
                 {foundedText ? <span className="perch-stock-meta-item">Founded {foundedText}</span> : null}
                 {hqText ? <span className="perch-stock-meta-item">HQ {hqText}</span> : null}
