@@ -47,6 +47,6 @@ export function getPsxChartUrl(ticker: string, range: string): string {
 export function getPsxStatsUrl(type: PsxStatsType): string {
   const t = encodeURIComponent(type);
   const base = workerBase();
-  if (base) return `${base}/stats?type=${t}`;
+  if (base) return `${base}/stats/${t}`;
   return `${FALLBACK_PREFIX}/stats/${t}`;
 }
