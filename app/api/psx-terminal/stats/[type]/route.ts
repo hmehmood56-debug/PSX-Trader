@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import { PSX_TERMINAL_BASE_URL } from "@/lib/psxTerminalApi";
 
-type AllowedStatsType = "REG" | "breadth" | "sectors";
+type AllowedStatsType = "REG" | "SECTORS" | "BREADTH";
 
-const ALLOWED_TYPES = new Set<AllowedStatsType>(["REG", "breadth", "sectors"]);
+const ALLOWED_TYPES = new Set<AllowedStatsType>(["REG", "SECTORS", "BREADTH"]);
 
-export async function GET(_request: Request, context: { params: Promise<{ type: string }> }) {
-  const { type } = await context.params;
-  if (!ALLOWED_TYPES.has(type as AllowedStatsType)) {
+export async function GET(_request: Request, context: { params: { type: string } }) {
+  const { type } = context.params;
+  const normalizedType = type.trim().toUpperCase();
+
+  if (!ALLOWED_TYPES.has(normalizedType as AllowedStatsType)) {
     return NextResponse.json(
       {
         success: false,
@@ -18,7 +20,7 @@ export async function GET(_request: Request, context: { params: Promise<{ type: 
     );
   }
 
-  const endpoint = `${PSX_TERMINAL_BASE_URL}/api/stats/${encodeURIComponent(type)}`;
+  const endpoint = `${PSX_TERMINAL_BASE_URL}/api/stats/${encodeURIComponent(normalizedType)}`;
   try {
     const response = await fetch(endpoint, { cache: "no-store" });
     if (!response.ok) {
