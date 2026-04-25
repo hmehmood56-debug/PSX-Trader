@@ -15,7 +15,6 @@ import { StockLogo } from "@/components/common/StockLogo";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
 import { startRouteProgress } from "@/lib/routeProgress";
 import { logAnalyticsEvent } from "@/lib/analytics/client";
-import { BarChart3, FileText } from "lucide-react";
 import {
   StockPriceLwcChart,
   type StockDetailChartRange,
@@ -61,6 +60,8 @@ const CHART_RANGES: readonly StockDetailChartRange[] = [
   "1Y",
   "ALL",
 ] as const;
+const STOCK_DETAIL_TABS = ["overview", "performance", "fundamentals"] as const;
+type StockDetailTab = (typeof STOCK_DETAIL_TABS)[number];
 
 const NOT_AVAILABLE = "Not available";
 const KLINE_RANGE_TO_TIMEFRAME: Record<StockDetailChartRange, string> = {
@@ -218,15 +219,20 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [range, setRange] = useState<StockDetailChartRange>("1D");
-  const [activeTab, setActiveTab] = useState<"overview" | "fundamentals">("overview");
+  const [activeTab, setActiveTab] = useState<StockDetailTab>("overview");
   const [fundamentals, setFundamentals] = useState<any | null>(null);
   const [fundamentalsLoading, setFundamentalsLoading] = useState(false);
-  const [displayedTab, setDisplayedTab] = useState<"overview" | "fundamentals">("overview");
+  const [displayedTab, setDisplayedTab] = useState<StockDetailTab>("overview");
   const [isTabContentVisible, setIsTabContentVisible] = useState(true);
+  const [isTabRailPinned, setIsTabRailPinned] = useState(false);
   const [isOverviewMounted, setIsOverviewMounted] = useState(false);
   const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
   const [canExpandOverview, setCanExpandOverview] = useState(false);
+  const [activePerformanceMetric, setActivePerformanceMetric] = useState<
+    "rangeReturn" | "distanceFromHigh" | "distanceFromLow" | "avgVolume" | "volatility"
+  >("rangeReturn");
   const overviewTextRef = useRef<HTMLParagraphElement | null>(null);
+  const tabShellRef = useRef<HTMLElement | null>(null);
 
   const quoteFromDetail = useMemo(
     () => (detailStats?.tick ? liveQuoteFromDetailTick(detailStats.tick) : null),
@@ -282,10 +288,6 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
         const points = rawRows.map(toChartPointFromKlineRow).filter(Boolean) as StockChartPoint[];
         const sortedRows = sortChartPointsAsc(points);
         const rangeRows = applyRangeCutoff(sortedRows, range);
-        console.log("range:", range);
-        console.log("timeframe:", timeframe);
-        console.log("raw klines:", rawRows.length);
-        console.log("parsed rows:", points.length);
         if (cancelled) return;
         setChartSeries(rangeRows);
         setChartLoadState(rangeRows.length >= 2 ? "ready" : "empty");
@@ -312,14 +314,12 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
         const res = await fetch(
           `${BASE_URL}/fundamentals?ticker=${encodeURIComponent(ticker)}`
         );
-        console.log("[fundamentals response]", await res.clone().json());
         if (!res.ok) {
           if (!cancelled) setFundamentals(null);
           return;
         }
         const json = (await res.json()) as { data?: { financialStats?: Record<string, unknown> } | Record<string, unknown> };
         const payload = json.data;
-        console.log("[fundamentals payload]", payload);
         if (!cancelled) {
           setFundamentals(
             payload?.financialStats ??
@@ -642,6 +642,144 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     return Math.min(100, Math.max(0, ratio));
   };
   const dayRangePosition = getRangePosition(dayRangeLow, dayRangeHigh, currentRangePrice);
+  const activeTabIndex = STOCK_DETAIL_TABS.indexOf(activeTab);
+  const performanceMetrics = useMemo(() => {
+    const prices = chartData
+      .map((point) => point.price)
+      .filter((val): val is number => Number.isFinite(val) && val > 0);
+    if (prices.length < 2) {
+      return {
+        rangeReturn: null,
+        distanceFromHigh: null,
+        distanceFromLow: null,
+        avgVolume: null,
+        volatility: null,
+      };
+    }
+    const firstPrice = prices[0];
+    const lastPrice = prices[prices.length - 1];
+    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...prices);
+    const volumes = chartData
+      .map((point) => point.volume)
+      .filter((val): val is number => Number.isFinite(val) && val >= 0);
+    const avgVolume = volumes.length > 0 ? volumes.reduce((sum, val) => sum + val, 0) / volumes.length : null;
+    const absPctChanges: number[] = [];
+    for (let i = 1; i < prices.length; i += 1) {
+      const prev = prices[i - 1];
+      const curr = prices[i];
+      if (!Number.isFinite(prev) || !Number.isFinite(curr) || prev === 0) continue;
+      absPctChanges.push(Math.abs((curr - prev) / prev));
+    }
+    const volatility =
+      absPctChanges.length > 0
+        ? (absPctChanges.reduce((sum, val) => sum + val, 0) / absPctChanges.length) * 100
+        : null;
+    return {
+      rangeReturn: ((lastPrice - firstPrice) / firstPrice) * 100,
+      distanceFromHigh: ((lastPrice - maxPrice) / maxPrice) * 100,
+      distanceFromLow: ((lastPrice - minPrice) / minPrice) * 100,
+      avgVolume,
+      volatility,
+    };
+  }, [chartData]);
+
+  const performanceLabels = useMemo(() => {
+    const volatility = performanceMetrics.volatility;
+    const rangeReturn = performanceMetrics.rangeReturn;
+    const distanceFromHigh = performanceMetrics.distanceFromHigh;
+    const distanceFromLow = performanceMetrics.distanceFromLow;
+    const avgVolume = performanceMetrics.avgVolume;
+
+    const volatilityBand =
+      volatility == null
+        ? "Not available"
+        : volatility < 1
+          ? "Low"
+          : volatility < 2.5
+            ? "Normal"
+            : volatility < 5
+              ? "High"
+              : "Very high";
+    const volatilityHelper =
+      volatilityBand === "Low"
+        ? "Small, steady moves"
+        : volatilityBand === "Normal"
+          ? "Measured price movement"
+          : volatilityBand === "High"
+            ? "Choppy movement"
+            : volatilityBand === "Very high"
+              ? "Very choppy movement"
+              : "Insufficient movement data";
+    const rangeReturnBand =
+      rangeReturn == null
+        ? "Not available"
+        : rangeReturn > 3
+          ? "Up strongly"
+          : rangeReturn >= 0
+            ? "Up slightly"
+            : rangeReturn >= -3
+              ? "Down slightly"
+              : "Down";
+    const distanceFromHighBand =
+      distanceFromHigh == null
+        ? "Not available"
+        : distanceFromHigh > -2
+          ? "Near peak"
+          : distanceFromHigh >= -5
+            ? "Slight pullback"
+            : "Pulled back";
+    const distanceFromLowBand =
+      distanceFromLow == null
+        ? "Not available"
+        : distanceFromLow < 2
+          ? "Near lows"
+          : distanceFromLow <= 5
+            ? "Recovering"
+            : "Well above lows";
+    const volumeBand = avgVolume == null ? "Not available" : "Normal";
+
+    return {
+      volatilityBand,
+      volatilityHelper,
+      rangeReturnBand,
+      distanceFromHighBand,
+      distanceFromLowBand,
+      volumeBand,
+    };
+  }, [performanceMetrics]);
+
+  const performanceInsight = useMemo(() => {
+    const rangeReturn = performanceMetrics.rangeReturn;
+    const volatility = performanceMetrics.volatility;
+    if (rangeReturn == null) return "Not enough range data yet to form a performance read.";
+
+    const direction = rangeReturn > 0.2 ? "up" : rangeReturn < -0.2 ? "down" : "flat";
+    const movementTone = volatility != null && volatility >= 2.5 ? "choppy" : "steady";
+
+    const directionClause =
+      direction === "up"
+        ? rangeReturn > 3
+          ? "Price is up strongly over this range"
+          : "Price is up slightly over this range"
+        : direction === "down"
+          ? rangeReturn < -3
+            ? "Price is down over this range"
+            : "Price is down slightly over this range"
+          : "Price stayed mostly flat over this range";
+    const movementClause = `movement has been ${movementTone}`;
+    return `${directionClause}, and ${movementClause}.`;
+  }, [performanceMetrics]);
+
+  const performanceAvgVolumeDisplay = formatNumber(performanceMetrics.avgVolume);
+  const activeVolatilityBand = useMemo(() => {
+    const volatility = performanceMetrics.volatility;
+    if (volatility == null) return null;
+    if (volatility < 1) return "0-1";
+    if (volatility < 2.5) return "1-2.5";
+    if (volatility < 5) return "2.5-5";
+    return "5+";
+  }, [performanceMetrics.volatility]);
 
   const holding = useMemo(
     () => portfolio.holdings.find((h) => h.ticker === ticker),
@@ -670,9 +808,23 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     const swapTimer = window.setTimeout(() => {
       setDisplayedTab(activeTab);
       window.setTimeout(() => setIsTabContentVisible(true), 16);
-    }, 210);
+    }, 260);
     return () => window.clearTimeout(swapTimer);
   }, [activeTab, displayedTab]);
+
+  useEffect(() => {
+    const syncPinnedState = () => {
+      const top = tabShellRef.current?.getBoundingClientRect().top;
+      setIsTabRailPinned(typeof top === "number" && top <= 11);
+    };
+    syncPinnedState();
+    window.addEventListener("scroll", syncPinnedState, { passive: true });
+    window.addEventListener("resize", syncPinnedState);
+    return () => {
+      window.removeEventListener("scroll", syncPinnedState);
+      window.removeEventListener("resize", syncPinnedState);
+    };
+  }, []);
 
   async function onConfirm() {
     setMessage(null);
@@ -729,6 +881,43 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   }
 
   const up = hasDisplayDelta ? displayChange >= 0 : hasQuote && change >= 0;
+  const formatSignedPercent = (value: number | null | undefined): string => {
+    if (value == null || !Number.isFinite(value)) return NOT_AVAILABLE;
+    return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
+  };
+  const buildOverviewStat = (label: string, value: string | null, emphasize?: boolean) =>
+    value && value !== NOT_AVAILABLE ? { label, value, emphasize: !!emphasize } : null;
+  const overviewInstrumentPanelItems = [
+    buildOverviewStat("Last", hasQuote && price != null ? formatPKRWithSymbol(price) : null, true),
+    buildOverviewStat(
+      "High/Low",
+      formattedHigh !== "-" && formattedLow !== "-" ? `${formattedHigh} / ${formattedLow}` : null
+    ),
+    buildOverviewStat("Volume", formattedVolume !== "-" ? formattedVolume : null),
+    buildOverviewStat("Open", formattedOpen !== "-" ? formattedOpen : null),
+    buildOverviewStat("Prev close", formattedPrevClose !== "-" ? formattedPrevClose : null),
+    buildOverviewStat("Turnover", formattedTurnover !== "-" ? formattedTurnover : null),
+    buildOverviewStat("Avg vol", formattedAvgVol !== "-" ? formattedAvgVol : null),
+    buildOverviewStat("Mkt cap", formattedMktCap !== "-" ? formattedMktCap : null),
+    buildOverviewStat("Range", formattedRange || null),
+  ].filter(Boolean) as Array<{ label: string; value: string; emphasize: boolean }>;
+  const valuationLabels = new Set(["P/E Ratio", "Market Cap"]);
+  const yieldLabels = new Set(["Dividend Yield", "Change %", "1Y Change"]);
+  const marketFlowLabels = new Set(["Free Float", "30D Avg Volume"]);
+  const fundamentalsGroups = [
+    {
+      heading: "Valuation",
+      items: fundamentalsRows.filter((item) => valuationLabels.has(item.label)),
+    },
+    {
+      heading: "Returns",
+      items: fundamentalsRows.filter((item) => yieldLabels.has(item.label)),
+    },
+    {
+      heading: "Market flow",
+      items: fundamentalsRows.filter((item) => marketFlowLabels.has(item.label)),
+    },
+  ].filter((group) => group.items.length > 0);
   if (standardSuccess) {
     return (
       <div style={{ background: COLORS.bg }}>
@@ -888,8 +1077,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               <div
                 className="perch-stock-price-row"
                 style={{
-                  padding: "10px 18px 4px",
-                  borderBottom: `1px solid ${COLORS.border}`,
+                  padding: "10px 18px 10px",
                 }}
               >
                 <div>
@@ -945,157 +1133,32 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   </div>
                 </div>
               </div>
+            </section>
 
-              <div
-                style={{
-                  padding: "4px 18px 0",
-                }}
-              >
-                <div className="perch-stock-range-row">
-                  {CHART_RANGES.map((item) => {
-                    const active = item === range;
-                    return (
-                      <button
-                        key={item}
-                        type="button"
-                        onClick={() => setRange(item)}
-                        className={`perch-range-btn${active ? " perch-range-btn-active" : ""}`}
-                        style={{
-                          minHeight: 32,
-                          padding: "0 12px",
-                          borderRadius: 999,
-                          border: active ? `1px solid #AF4300` : `1px solid ${COLORS.border}`,
-                          background: active ? "#C45000" : "transparent",
-                          color: active ? "#FFFFFF" : COLORS.muted,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          letterSpacing: "0.04em",
-                          cursor: "pointer",
-                          WebkitTapHighlightColor: "transparent",
-                          transition: "all 170ms ease",
-                        }}
-                        aria-pressed={active}
-                      >
-                        {item}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div
-                className="perch-stock-chart-box"
-                style={{
-                  width: "100%",
-                  marginTop: 0,
-                  paddingLeft: 4,
-                  paddingRight: 2,
-                  paddingBottom: 2,
-                  position: "relative",
-                  opacity: chartLoadState === "loading" ? 0.5 : 1,
-                  transition: "opacity 180ms ease",
-                }}
-              >
-                <StockPriceLwcChart
-                  data={chartData}
-                  range={range}
-                  lineColor={CHART_LINE}
-                  lineColorFaint={CHART_FILL_TOP}
+            <section
+              ref={tabShellRef}
+              className={`${styles.premiumTabsShell}${isTabRailPinned ? ` ${styles.premiumTabsShellPinned}` : ""}`}
+              style={{ marginTop: 12 }}
+            >
+              <div className={styles.premiumTabsRail} role="tablist" aria-label="Stock detail sections">
+                <div className={styles.premiumTabsTrack} aria-hidden="true" />
+                <div
+                  className={styles.premiumTabsIndicator}
+                  style={{ transform: `translateX(${activeTabIndex * 100}%)` }}
+                  aria-hidden="true"
                 />
-                {chartLoadState === "empty" ? (
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      pointerEvents: "none",
-                      background: "linear-gradient(180deg, rgba(253,252,252,0.7) 0%, rgba(250,250,249,0.85) 100%)",
-                    }}
+                {STOCK_DETAIL_TABS.map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab}
+                    className={`${styles.premiumTabButton}${activeTab === tab ? ` ${styles.premiumTabButtonActive}` : ""}`}
+                    onClick={() => setActiveTab(tab)}
                   >
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: COLORS.muted,
-                        letterSpacing: "0.03em",
-                      }}
-                    >
-                      Not enough chart data for this range
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-            </section>
-            <section className="perch-stock-key-stats-section" style={{ marginTop: 10 }}>
-              <h2 className="perch-stock-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <BarChart3 className="w-3.5 h-3.5 opacity-80" style={{ color: "#C45000" }} />
-                <span>Key Stats</span>
-              </h2>
-
-              <div className="perch-stock-key-stats-grid">
-                <div className="perch-stock-key-stat-item">
-                  <span className="perch-stock-key-stat-label">Open</span>
-                  <span className="perch-stock-key-stat-value">{formattedOpen}</span>
-                </div>
-                <div className="perch-stock-key-stat-item">
-                  <span className="perch-stock-key-stat-label">Prev close</span>
-                  <span className="perch-stock-key-stat-value">{formattedPrevClose}</span>
-                </div>
-                <div className="perch-stock-key-stat-item">
-                  <span className="perch-stock-key-stat-label">High</span>
-                  <span className="perch-stock-key-stat-value">{formattedHigh}</span>
-                </div>
-                <div className="perch-stock-key-stat-item">
-                  <span className="perch-stock-key-stat-label">Low</span>
-                  <span className="perch-stock-key-stat-value">{formattedLow}</span>
-                </div>
-                <div className="perch-stock-key-stat-item">
-                  <span className="perch-stock-key-stat-label">Volume</span>
-                  <span className="perch-stock-key-stat-value">{formattedVolume}</span>
-                </div>
-                <div className="perch-stock-key-stat-item">
-                  <span className="perch-stock-key-stat-label">Turnover</span>
-                  <span className="perch-stock-key-stat-value">{formattedTurnover}</span>
-                </div>
-                <div className="perch-stock-key-stat-item">
-                  <span className="perch-stock-key-stat-label">Avg vol</span>
-                  <span className="perch-stock-key-stat-value">{formattedAvgVol}</span>
-                </div>
-                <div className="perch-stock-key-stat-item">
-                  <span className="perch-stock-key-stat-label">Mkt cap</span>
-                  <span className="perch-stock-key-stat-value">{formattedMktCap}</span>
-                </div>
-                {formattedRange ? (
-                  <div className="perch-stock-key-stat-item">
-                    <span className="perch-stock-key-stat-label">Range</span>
-                    <span className="perch-stock-key-stat-value">{formattedRange}</span>
-                  </div>
-                ) : null}
-              </div>
-            </section>
-
-            <section className="perch-stock-overview-section" style={{ marginTop: 10 }}>
-              <div className={styles.tabRail} role="tablist" aria-label="Stock detail sections">
-                <div className={styles.tabRailLine} aria-hidden="true" />
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === "overview"}
-                  className={`${styles.tabButton}${activeTab === "overview" ? ` ${styles.tabButtonActive}` : ""}`}
-                  onClick={() => setActiveTab("overview")}
-                >
-                  Overview
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === "fundamentals"}
-                  className={`${styles.tabButton}${activeTab === "fundamentals" ? ` ${styles.tabButtonActive}` : ""}`}
-                  onClick={() => setActiveTab("fundamentals")}
-                >
-                  Fundamentals
-                </button>
+                    {tab === "overview" ? "Overview" : tab === "performance" ? "Performance" : "Fundamentals"}
+                  </button>
+                ))}
               </div>
 
               <div
@@ -1103,21 +1166,98 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
               >
                 {displayedTab === "overview" ? (
                   <>
-                    <h2 className="perch-stock-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <FileText className="w-3.5 h-3.5 opacity-80" style={{ color: "#C45000" }} />
-                      <span>Overview</span>
-                    </h2>
                     <div
                       style={{
-                        marginTop: 6,
-                        height: 2,
-                        maxWidth: 240,
-                        width: isOverviewMounted ? "100%" : 0,
-                        borderRadius: 999,
-                        background: "linear-gradient(90deg, rgba(196,80,0,0.96) 0%, rgba(196,80,0,0.16) 100%)",
-                        transition: "width 240ms ease",
+                        padding: "4px 0 0",
                       }}
-                    />
+                    >
+                      <div className="perch-stock-range-row">
+                        {CHART_RANGES.map((item) => {
+                          const active = item === range;
+                          return (
+                            <button
+                              key={item}
+                              type="button"
+                              onClick={() => setRange(item)}
+                              className={`perch-range-btn${active ? " perch-range-btn-active" : ""}`}
+                              style={{
+                                minHeight: 32,
+                                padding: "0 12px",
+                                borderRadius: 999,
+                                border: active ? `1px solid #AF4300` : `1px solid ${COLORS.border}`,
+                                background: active ? "#C45000" : "transparent",
+                                color: active ? "#FFFFFF" : COLORS.muted,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                letterSpacing: "0.04em",
+                                cursor: "pointer",
+                                WebkitTapHighlightColor: "transparent",
+                                transition: "all 170ms ease",
+                              }}
+                              aria-pressed={active}
+                            >
+                              {item}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div
+                      className="perch-stock-chart-box"
+                      style={{
+                        width: "100%",
+                        marginTop: 2,
+                        paddingLeft: 4,
+                        paddingRight: 2,
+                        paddingBottom: 0,
+                        position: "relative",
+                        opacity: chartLoadState === "loading" ? 0.5 : 1,
+                        transition: "opacity 180ms ease",
+                      }}
+                    >
+                      <StockPriceLwcChart
+                        data={chartData}
+                        range={range}
+                        lineColor={CHART_LINE}
+                        lineColorFaint={CHART_FILL_TOP}
+                      />
+                      {chartLoadState === "empty" ? (
+                        <div
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            pointerEvents: "none",
+                            background: "linear-gradient(180deg, rgba(253,252,252,0.7) 0%, rgba(250,250,249,0.85) 100%)",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: COLORS.muted,
+                              letterSpacing: "0.03em",
+                            }}
+                          >
+                            Not enough chart data for this range
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className={styles.overviewSummaryStrip} aria-label="Session summary">
+                      {overviewInstrumentPanelItems.map((item) => (
+                        <div
+                          key={item.label}
+                          className={`${styles.overviewSummaryItem}${item.emphasize ? ` ${styles.overviewSummaryItemPrimary}` : ""}`}
+                        >
+                          <span className={styles.overviewSummaryLabel}>{item.label}</span>
+                          <span className={styles.overviewSummaryValue}>{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <h3 className={`${styles.contentSubheading} ${styles.overviewSnapshotHeading}`}>Company snapshot</h3>
                     <p
                       ref={overviewTextRef}
                       className="perch-stock-overview-text"
@@ -1202,12 +1342,124 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                       {websiteText ? <span className="perch-stock-meta-item">Website {websiteText}</span> : null}
                     </div>
                   </>
+                ) : displayedTab === "performance" ? (
+                  <>
+                    <section className={styles.performanceInsightStrip}>
+                      <p className={styles.performanceInsightText}>
+                        {performanceInsight}
+                      </p>
+                      <span className={styles.performanceInsightAccent} aria-hidden="true" />
+                      <div className={styles.performanceMetricSlots}>
+                        <button
+                          type="button"
+                          onClick={() => setActivePerformanceMetric("rangeReturn")}
+                          className={`${styles.performanceMetricItem}${activePerformanceMetric === "rangeReturn" ? ` ${styles.performanceMetricPrimary}` : ""}`}
+                          aria-pressed={activePerformanceMetric === "rangeReturn"}
+                        >
+                          <span className={styles.performanceMetricLabel}>Range return</span>
+                          <span className={styles.performanceMetricValue}>{formatSignedPercent(performanceMetrics.rangeReturn)}</span>
+                          <span className={styles.performanceMetricHint}>{performanceLabels.rangeReturnBand}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActivePerformanceMetric("distanceFromHigh")}
+                          className={`${styles.performanceMetricItem}${activePerformanceMetric === "distanceFromHigh" ? ` ${styles.performanceMetricPrimary}` : ""}`}
+                          aria-pressed={activePerformanceMetric === "distanceFromHigh"}
+                        >
+                          <span className={styles.performanceMetricLabel}>Distance from high</span>
+                          <span className={styles.performanceMetricValue}>{formatSignedPercent(performanceMetrics.distanceFromHigh)}</span>
+                          <span className={styles.performanceMetricHint}>{performanceLabels.distanceFromHighBand}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActivePerformanceMetric("distanceFromLow")}
+                          className={`${styles.performanceMetricItem}${activePerformanceMetric === "distanceFromLow" ? ` ${styles.performanceMetricPrimary}` : ""}`}
+                          aria-pressed={activePerformanceMetric === "distanceFromLow"}
+                        >
+                          <span className={styles.performanceMetricLabel}>Distance from low</span>
+                          <span className={styles.performanceMetricValue}>{formatSignedPercent(performanceMetrics.distanceFromLow)}</span>
+                          <span className={styles.performanceMetricHint}>{performanceLabels.distanceFromLowBand}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActivePerformanceMetric("avgVolume")}
+                          className={`${styles.performanceMetricItem}${activePerformanceMetric === "avgVolume" ? ` ${styles.performanceMetricPrimary}` : ""}`}
+                          aria-pressed={activePerformanceMetric === "avgVolume"}
+                        >
+                          <span className={styles.performanceMetricLabel}>Average volume</span>
+                          <span className={styles.performanceMetricValue}>{performanceAvgVolumeDisplay}</span>
+                          <span className={styles.performanceMetricHint}>{performanceLabels.volumeBand}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActivePerformanceMetric("volatility")}
+                          className={`${styles.performanceMetricItem}${activePerformanceMetric === "volatility" ? ` ${styles.performanceMetricPrimary}` : ""}`}
+                          aria-pressed={activePerformanceMetric === "volatility"}
+                        >
+                          <span className={styles.performanceMetricLabel}>Volatility</span>
+                          <span className={styles.performanceMetricValue}>{formatSignedPercent(performanceMetrics.volatility)}</span>
+                          <span className={styles.performanceMetricHint}>{performanceLabels.volatilityBand}</span>
+                          <span className={styles.performanceMetricHelper}>{performanceLabels.volatilityHelper}</span>
+                        </button>
+                      </div>
+                      <div className={styles.performanceGuide} aria-label="How to read performance metrics">
+                        <div className={styles.performanceGuideHeading}>How to read</div>
+                        <div className={styles.performanceGuideList}>
+                          <div className={styles.performanceGuideRow}>
+                            <span className={styles.performanceGuideLabel}>Volatility</span>
+                            <span className={styles.performanceGuideText}>Shows how much price moves</span>
+                          </div>
+                          <div className={styles.performanceGuideRow}>
+                            <span className={styles.performanceGuideLabel}>Range Return</span>
+                            <span className={styles.performanceGuideText}>Overall gain or loss</span>
+                          </div>
+                          <div className={styles.performanceGuideRow}>
+                            <span className={styles.performanceGuideLabel}>Distance from High</span>
+                            <span className={styles.performanceGuideText}>How far from recent peak</span>
+                          </div>
+                          <div className={styles.performanceGuideRow}>
+                            <span className={styles.performanceGuideLabel}>Distance from Low</span>
+                            <span className={styles.performanceGuideText}>How much it recovered</span>
+                          </div>
+                        </div>
+                        <div className={styles.performanceSpectrum} aria-label="Volatility range guide">
+                          <span
+                            className={`${styles.performanceSpectrumBand} ${styles.performanceSpectrumBandLow}${activeVolatilityBand === "0-1" ? ` ${styles.performanceSpectrumBandActive}` : ""}`}
+                          >
+                            0-1%
+                          </span>
+                          <span
+                            className={`${styles.performanceSpectrumBand} ${styles.performanceSpectrumBandNormal}${activeVolatilityBand === "1-2.5" ? ` ${styles.performanceSpectrumBandActive}` : ""}`}
+                          >
+                            1-2.5%
+                          </span>
+                          <span
+                            className={`${styles.performanceSpectrumBand} ${styles.performanceSpectrumBandHigh}${activeVolatilityBand === "2.5-5" ? ` ${styles.performanceSpectrumBandActive}` : ""}`}
+                          >
+                            2.5-5%
+                          </span>
+                          <span
+                            className={`${styles.performanceSpectrumBand} ${styles.performanceSpectrumBandVeryHigh}${activeVolatilityBand === "5+" ? ` ${styles.performanceSpectrumBandActive}` : ""}`}
+                          >
+                            5%+
+                          </span>
+                        </div>
+                      </div>
+                    </section>
+                    <section className={styles.performanceVisualPlaceholder}>
+                      <div className={`${styles.performanceVisualBody} ${styles.performanceVisualBodyLite}`}>
+                        <StockPriceLwcChart
+                          data={chartData}
+                          range={range}
+                          lineColor={CHART_LINE}
+                          lineColorFaint={CHART_FILL_TOP}
+                        />
+                      </div>
+                    </section>
+                  </>
                 ) : (
                   <>
-                    <h2 className="perch-stock-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <BarChart3 className="w-3.5 h-3.5 opacity-80" style={{ color: "#C45000" }} />
-                      <span>Fundamentals</span>
-                    </h2>
+                    <h3 className={styles.contentSubheading}>Key metrics</h3>
                     {fundamentalsLoading ? (
                       <p
                         className="perch-stock-overview-text"
@@ -1217,14 +1469,49 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                       </p>
                     ) : null}
                     {!fundamentalsLoading && fundamentalsRows.length > 0 ? (
-                      <div className={styles.fundamentalsGrid}>
-                        {fundamentalsRows.map((item) => (
-                          <div key={item.label} className={styles.fundamentalsItem}>
-                            <span className={styles.fundamentalsLabel}>{item.label}</span>
-                            <span className={styles.fundamentalsValue}>{item.value}</span>
-                          </div>
+                      <div className={styles.fundamentalsStack}>
+                        {fundamentalsGroups.map((group) => (
+                          <section key={group.heading} className={styles.fundamentalsGroup}>
+                            <div className={styles.fundamentalsGroupHeading}>{group.heading}</div>
+                            <div className={styles.fundamentalsGrid}>
+                              {group.items.map((item) => (
+                                <div key={item.label} className={styles.fundamentalsItem}>
+                                  <span className={styles.fundamentalsLabel}>{item.label}</span>
+                                  <span className={styles.fundamentalsValue}>{item.value}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </section>
                         ))}
+                        {fundamentalsRows.length > fundamentalsGroups.reduce((sum, group) => sum + group.items.length, 0) ? (
+                          <section className={styles.fundamentalsGroup}>
+                            <div className={styles.fundamentalsGroupHeading}>Additional</div>
+                            <div className={styles.fundamentalsGrid}>
+                              {fundamentalsRows
+                                .filter(
+                                  (item) =>
+                                    !valuationLabels.has(item.label) &&
+                                    !yieldLabels.has(item.label) &&
+                                    !marketFlowLabels.has(item.label)
+                                )
+                                .map((item) => (
+                                  <div key={item.label} className={styles.fundamentalsItem}>
+                                    <span className={styles.fundamentalsLabel}>{item.label}</span>
+                                    <span className={styles.fundamentalsValue}>{item.value}</span>
+                                  </div>
+                                ))}
+                            </div>
+                          </section>
+                        ) : null}
                       </div>
+                    ) : null}
+                    {!fundamentalsLoading && fundamentalsRows.length === 0 ? (
+                      <p
+                        className="perch-stock-overview-text"
+                        style={{ marginTop: 8, color: COLORS.muted, fontSize: 13, lineHeight: 1.45 }}
+                      >
+                        Fundamentals are currently unavailable.
+                      </p>
                     ) : null}
                   </>
                 )}
