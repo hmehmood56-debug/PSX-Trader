@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import styles from "./StockDetailClient.module.css";
 import type { Stock } from "@/lib/mockData";
 import { useLivePrices, type LiveQuote } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
@@ -147,6 +148,11 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [range, setRange] = useState<StockDetailChartRange>("1D");
+  const [activeTab, setActiveTab] = useState<"overview" | "fundamentals">("overview");
+  const [fundamentals, setFundamentals] = useState<any | null>(null);
+  const [fundamentalsLoading, setFundamentalsLoading] = useState(false);
+  const [displayedTab, setDisplayedTab] = useState<"overview" | "fundamentals">("overview");
+  const [isTabContentVisible, setIsTabContentVisible] = useState(true);
   const [isOverviewMounted, setIsOverviewMounted] = useState(false);
   const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
   const [canExpandOverview, setCanExpandOverview] = useState(false);
@@ -218,6 +224,44 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
       cancelled = true;
     };
   }, [ticker, range]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const BASE_URL = "https://soft-resonance-1d40.hmehmood56.workers.dev";
+
+    const loadFundamentals = async () => {
+      setFundamentalsLoading(true);
+      try {
+        const res = await fetch(
+          `${BASE_URL}/fundamentals?ticker=${encodeURIComponent(ticker)}`
+        );
+        console.log("[fundamentals response]", await res.clone().json());
+        if (!res.ok) {
+          if (!cancelled) setFundamentals(null);
+          return;
+        }
+        const json = (await res.json()) as { data?: { financialStats?: Record<string, unknown> } | Record<string, unknown> };
+        const payload = json.data;
+        console.log("[fundamentals payload]", payload);
+        if (!cancelled) {
+          setFundamentals(
+            payload?.financialStats ??
+            payload ??
+            null
+          );
+        }
+      } catch {
+        if (!cancelled) setFundamentals(null);
+      } finally {
+        if (!cancelled) setFundamentalsLoading(false);
+      }
+    };
+    void loadFundamentals();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ticker]);
 
   const shares = Math.max(0, Math.floor(Number(sharesInput) || 0));
   const executionEstimate = estimateExecution(ticker, mode, shares);
@@ -368,6 +412,69 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     typeof baseMeta.website === "string" && baseMeta.website.trim()
       ? baseMeta.website
       : null;
+  const data = fundamentals;
+  const parseFiniteNumber = (val: unknown): number | null => {
+    if (typeof val === "number" && Number.isFinite(val)) return val;
+    if (typeof val === "string") {
+      const parsed = Number(val.replace(/,/g, "").trim());
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+  };
+  const formatCompactValue = (num: number): string => {
+    const abs = Math.abs(num);
+    if (abs >= 1_000_000_000_000) return `${(num / 1_000_000_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}T`;
+    if (abs >= 1_000_000_000) return `${(num / 1_000_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}B`;
+    if (abs >= 1_000_000) return `${(num / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}M`;
+    if (abs >= 1_000) return `${(num / 1_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}K`;
+    return num.toLocaleString("en-US", { maximumFractionDigits: 2 });
+  };
+  const formatPercent = (val: unknown, multiplyIfUnderOne: boolean): string | null => {
+    const n = parseFiniteNumber(val);
+    if (n == null) return null;
+    const normalized = multiplyIfUnderOne && Math.abs(n) < 1 ? n * 100 : n;
+    return `${normalized.toLocaleString("en-US", { maximumFractionDigits: 2 })}%`;
+  };
+  const fundamentalsRows = [
+    {
+      label: "P/E Ratio",
+      value: parseFiniteNumber(data?.peRatio) != null
+        ? parseFiniteNumber(data?.peRatio)?.toLocaleString("en-US", { maximumFractionDigits: 2 }) ?? null
+        : null,
+    },
+    {
+      label: "Dividend Yield",
+      value: formatPercent(data?.dividendYield, true),
+    },
+    {
+      label: "Market Cap",
+      value: parseFiniteNumber(data?.marketCap) != null
+        ? `Rs. ${formatCompactValue(parseFiniteNumber(data?.marketCap) ?? 0)}`
+        : null,
+    },
+    {
+      label: "Change %",
+      value: formatPercent(data?.changePercent, true),
+    },
+    {
+      label: "1Y Change",
+      value: formatPercent(data?.yearChange, true),
+    },
+    {
+      label: "Free Float",
+      value: typeof data?.freeFloat === "string" && data.freeFloat.trim().length > 0
+        ? data.freeFloat.trim()
+        : parseFiniteNumber(data?.freeFloat) != null
+          ? formatCompactValue(parseFiniteNumber(data?.freeFloat) ?? 0)
+          : null,
+    },
+    {
+      label: "30D Avg Volume",
+      value: parseFiniteNumber(data?.volume30Avg) != null
+        ? formatCompactValue(parseFiniteNumber(data?.volume30Avg) ?? 0)
+        : null,
+    },
+  ].filter((item) => item.value != null && item.value !== "");
   const stock = {
     open: typeof dayOpen === "number" && Number.isFinite(dayOpen) ? dayOpen : null,
     prevClose: prevClose,
@@ -458,6 +565,19 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     const timer = window.setTimeout(() => setIsOverviewMounted(true), 16);
     return () => window.clearTimeout(timer);
   }, [ticker]);
+
+  useEffect(() => {
+    if (activeTab === displayedTab) {
+      setIsTabContentVisible(true);
+      return;
+    }
+    setIsTabContentVisible(false);
+    const swapTimer = window.setTimeout(() => {
+      setDisplayedTab(activeTab);
+      window.setTimeout(() => setIsTabContentVisible(true), 16);
+    }, 210);
+    return () => window.clearTimeout(swapTimer);
+  }, [activeTab, displayedTab]);
 
   async function onConfirm() {
     setMessage(null);
@@ -836,103 +956,158 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
             </section>
 
             <section className="perch-stock-overview-section" style={{ marginTop: 10 }}>
-              <h2 className="perch-stock-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <FileText className="w-3.5 h-3.5 opacity-80" style={{ color: "#C45000" }} />
-                <span>Overview</span>
-              </h2>
-              <div
-                style={{
-                  marginTop: 6,
-                  height: 2,
-                  maxWidth: 240,
-                  width: isOverviewMounted ? "100%" : 0,
-                  borderRadius: 999,
-                  background: "linear-gradient(90deg, rgba(196,80,0,0.96) 0%, rgba(196,80,0,0.16) 100%)",
-                  transition: "width 240ms ease",
-                }}
-              />
-              <p
-                ref={overviewTextRef}
-                className="perch-stock-overview-text"
-                style={{
-                  marginTop: 10,
-                  maxWidth: 860,
-                  lineHeight: 1.72,
-                  opacity: isOverviewMounted ? 1 : 0,
-                  transform: isOverviewMounted ? "translateY(0)" : "translateY(4px)",
-                  transition: "opacity 220ms ease 50ms, transform 220ms ease 50ms",
-                  ...(isOverviewExpanded
-                    ? {}
-                    : {
-                        display: "-webkit-box",
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }),
-                }}
-              >
-                {overviewText}
-              </p>
-              {canExpandOverview ? (
+              <div className={styles.tabRail} role="tablist" aria-label="Stock detail sections">
+                <div className={styles.tabRailLine} aria-hidden="true" />
                 <button
                   type="button"
-                  onClick={() => setIsOverviewExpanded((current) => !current)}
-                  style={{
-                    marginTop: 6,
-                    padding: 0,
-                    border: "none",
-                    background: "transparent",
-                    color: COLORS.orange,
-                    fontSize: 12.5,
-                    fontWeight: 650,
-                    letterSpacing: "0.01em",
-                    cursor: "pointer",
-                  }}
+                  role="tab"
+                  aria-selected={activeTab === "overview"}
+                  className={`${styles.tabButton}${activeTab === "overview" ? ` ${styles.tabButtonActive}` : ""}`}
+                  onClick={() => setActiveTab("overview")}
                 >
-                  {isOverviewExpanded ? "Read less" : "Read more"}
+                  Overview
                 </button>
-              ) : null}
-              {leadershipItems.length > 0 ? (
-                <p
-                  className="perch-stock-overview-text"
-                  style={{
-                    marginTop: 8,
-                    color: COLORS.muted,
-                    fontSize: 13,
-                    lineHeight: 1.45,
-                    opacity: isOverviewMounted ? 1 : 0,
-                    transform: isOverviewMounted ? "translateY(0)" : "translateY(4px)",
-                    transition: "opacity 220ms ease 100ms, transform 220ms ease 100ms",
-                  }}
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === "fundamentals"}
+                  className={`${styles.tabButton}${activeTab === "fundamentals" ? ` ${styles.tabButtonActive}` : ""}`}
+                  onClick={() => setActiveTab("fundamentals")}
                 >
-                  {leadershipItems.map((item, idx) => (
-                    <span key={`${item.role}-${item.name}-${idx}`}>
-                      <span
+                  Fundamentals
+                </button>
+              </div>
+
+              <div
+                className={`${styles.tabContent}${isTabContentVisible ? ` ${styles.tabContentVisible}` : ` ${styles.tabContentHidden}`}`}
+              >
+                {displayedTab === "overview" ? (
+                  <>
+                    <h2 className="perch-stock-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <FileText className="w-3.5 h-3.5 opacity-80" style={{ color: "#C45000" }} />
+                      <span>Overview</span>
+                    </h2>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        height: 2,
+                        maxWidth: 240,
+                        width: isOverviewMounted ? "100%" : 0,
+                        borderRadius: 999,
+                        background: "linear-gradient(90deg, rgba(196,80,0,0.96) 0%, rgba(196,80,0,0.16) 100%)",
+                        transition: "width 240ms ease",
+                      }}
+                    />
+                    <p
+                      ref={overviewTextRef}
+                      className="perch-stock-overview-text"
+                      style={{
+                        marginTop: 10,
+                        maxWidth: 860,
+                        lineHeight: 1.72,
+                        opacity: isOverviewMounted ? 1 : 0,
+                        transform: isOverviewMounted ? "translateY(0)" : "translateY(4px)",
+                        transition: "opacity 220ms ease 50ms, transform 220ms ease 50ms",
+                        ...(isOverviewExpanded
+                          ? {}
+                          : {
+                              display: "-webkit-box",
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }),
+                      }}
+                    >
+                      {overviewText}
+                    </p>
+                    {canExpandOverview ? (
+                      <button
+                        type="button"
+                        onClick={() => setIsOverviewExpanded((current) => !current)}
                         style={{
+                          marginTop: 6,
+                          padding: 0,
+                          border: "none",
+                          background: "transparent",
                           color: COLORS.orange,
-                          fontSize: 11,
+                          fontSize: 12.5,
                           fontWeight: 650,
-                          letterSpacing: "0.06em",
-                          textTransform: "uppercase",
+                          letterSpacing: "0.01em",
+                          cursor: "pointer",
                         }}
                       >
-                        {item.role}
-                      </span>{" "}
-                      <span style={{ color: COLORS.text, fontWeight: 500 }}>{item.name}</span>
-                      {idx < leadershipItems.length - 1 ? (
-                        <span style={{ color: COLORS.mutedSoft, margin: "0 8px" }} aria-hidden="true">
-                          ·
-                        </span>
-                      ) : null}
-                    </span>
-                  ))}
-                </p>
-              ) : null}
-              <div className="perch-stock-meta-row">
-                {foundedText ? <span className="perch-stock-meta-item">Founded {foundedText}</span> : null}
-                {hqText ? <span className="perch-stock-meta-item">HQ {hqText}</span> : null}
-                {employeesText ? <span className="perch-stock-meta-item">Employees {employeesText}</span> : null}
-                {websiteText ? <span className="perch-stock-meta-item">Website {websiteText}</span> : null}
+                        {isOverviewExpanded ? "Read less" : "Read more"}
+                      </button>
+                    ) : null}
+                    {leadershipItems.length > 0 ? (
+                      <p
+                        className="perch-stock-overview-text"
+                        style={{
+                          marginTop: 8,
+                          color: COLORS.muted,
+                          fontSize: 13,
+                          lineHeight: 1.45,
+                          opacity: isOverviewMounted ? 1 : 0,
+                          transform: isOverviewMounted ? "translateY(0)" : "translateY(4px)",
+                          transition: "opacity 220ms ease 100ms, transform 220ms ease 100ms",
+                        }}
+                      >
+                        {leadershipItems.map((item, idx) => (
+                          <span key={`${item.role}-${item.name}-${idx}`}>
+                            <span
+                              style={{
+                                color: COLORS.orange,
+                                fontSize: 11,
+                                fontWeight: 650,
+                                letterSpacing: "0.06em",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              {item.role}
+                            </span>{" "}
+                            <span style={{ color: COLORS.text, fontWeight: 500 }}>{item.name}</span>
+                            {idx < leadershipItems.length - 1 ? (
+                              <span style={{ color: COLORS.mutedSoft, margin: "0 8px" }} aria-hidden="true">
+                                ·
+                              </span>
+                            ) : null}
+                          </span>
+                        ))}
+                      </p>
+                    ) : null}
+                    <div className="perch-stock-meta-row">
+                      {foundedText ? <span className="perch-stock-meta-item">Founded {foundedText}</span> : null}
+                      {hqText ? <span className="perch-stock-meta-item">HQ {hqText}</span> : null}
+                      {employeesText ? <span className="perch-stock-meta-item">Employees {employeesText}</span> : null}
+                      {websiteText ? <span className="perch-stock-meta-item">Website {websiteText}</span> : null}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="perch-stock-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <BarChart3 className="w-3.5 h-3.5 opacity-80" style={{ color: "#C45000" }} />
+                      <span>Fundamentals</span>
+                    </h2>
+                    {fundamentalsLoading ? (
+                      <p
+                        className="perch-stock-overview-text"
+                        style={{ marginTop: 10, color: COLORS.muted, fontSize: 13, lineHeight: 1.45 }}
+                      >
+                        Loading fundamentals...
+                      </p>
+                    ) : null}
+                    {!fundamentalsLoading && fundamentalsRows.length > 0 ? (
+                      <div className={styles.fundamentalsGrid}>
+                        {fundamentalsRows.map((item) => (
+                          <div key={item.label} className={styles.fundamentalsItem}>
+                            <span className={styles.fundamentalsLabel}>{item.label}</span>
+                            <span className={styles.fundamentalsValue}>{item.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
+                )}
               </div>
             </section>
           </div>

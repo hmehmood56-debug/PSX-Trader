@@ -1,0 +1,104 @@
+.tabRail {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 14px;
+  padding-bottom: 7px;
+}
+
+.tabRailLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgba(26, 26, 26, 0.12);
+}
+
+.tabButton {
+  position: relative;
+  border: none;
+  background: transparent;
+  color: #6b6b6b;
+  opacity: 0.56;
+  padding: 0 0 10px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transform: translateY(0);
+  transition: opacity 200ms ease, transform 200ms ease, color 200ms ease;
+  z-index: 1;
+}
+
+.tabButton:hover {
+  opacity: 0.78;
+  transform: translateY(-1px);
+}
+
+.tabButtonActive {
+  opacity: 1;
+  color: #c45000;
+}
+
+.tabButtonActive::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(196, 80, 0, 0.92) 0%, rgba(196, 80, 0, 0.4) 100%);
+}
+
+.tabContent {
+  transition: opacity 230ms ease, transform 230ms ease;
+}
+
+.tabContentVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tabContentHidden {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.fundamentalsGrid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+
+.fundamentalsItem {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fundamentalsLabel {
+  font-size: 11px;
+  font-weight: 620;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+}
+
+.fundamentalsValue {
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 720;
+  color: #1a1a1a;
+}
+
+@media (max-width: 720px) {
+  .fundamentalsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
