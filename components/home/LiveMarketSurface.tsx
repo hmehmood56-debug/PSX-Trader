@@ -73,6 +73,8 @@ type ParsedLeader = {
   value?: number;
 };
 
+type HeatmapSource = "sectors" | "REG" | "fallback";
+
 function toNumber(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string") {
@@ -119,7 +121,7 @@ function parseLeader(entry: unknown): ParsedLeader | null {
   if (!symbol) return null;
   return {
     symbol,
-    changePercent: toNumber(row.changePercent ?? row.pct ?? row.percentChange ?? row.change_pct),
+    changePercent: normalizePercent(row.changePercent ?? row.pct ?? row.percentChange ?? row.change_pct) ?? undefined,
     volume: toNumber(row.volume ?? row.vol),
     value: toNumber(row.value ?? row.turnover),
   };
@@ -186,6 +188,47 @@ function parseSectorCells(raw: unknown): HeatmapCell[] {
   return parsed.slice(0, desiredCount).map(({ scoreValue, scoreVolume, ...cell }) => cell);
 }
 
+function buildRegHeatmapCells(regStats: ParsedRegStats | null): HeatmapCell[] {
+  if (!regStats) return [];
+
+  const seen = new Set<string>();
+  const rows: Array<HeatmapCell & { scoreValue: number; scoreVolume: number }> = [];
+
+  const pushLeader = (leader: ParsedLeader, source: "gainer" | "loser") => {
+    const symbol = leader.symbol.trim().toUpperCase();
+    if (!symbol || seen.has(symbol)) return;
+
+    const rawMove = normalizePercent(leader.changePercent);
+    if (rawMove === null) return;
+    const move = source === "loser" && rawMove > 0 ? -rawMove : rawMove;
+    const roundedMove = Math.round(move * 10) / 10;
+    if (roundedMove === 0) return;
+
+    rows.push({
+      sector: symbol,
+      move: roundedMove,
+      scoreValue: leader.value ?? -1,
+      scoreVolume: leader.volume ?? -1,
+      meta: {
+        totalValue: leader.value,
+        totalVolume: leader.volume,
+      },
+    });
+    seen.add(symbol);
+  };
+
+  regStats.topGainers.forEach((leader) => pushLeader(leader, "gainer"));
+  regStats.topLosers.forEach((leader) => pushLeader(leader, "loser"));
+
+  rows.sort((a, b) => {
+    if (b.scoreValue !== a.scoreValue) return b.scoreValue - a.scoreValue;
+    return b.scoreVolume - a.scoreVolume;
+  });
+
+  const desiredCount = Math.max(MIN_REAL_SECTOR_CELLS, Math.min(MAX_REAL_SECTOR_CELLS, rows.length));
+  return rows.slice(0, desiredCount).map(({ scoreValue, scoreVolume, ...cell }) => cell);
+}
+
 function formatRelativeAge(seconds: number): string {
   if (seconds <= 2) return "just now";
   if (seconds < 60) return `${seconds}s ago`;
@@ -204,6 +247,7 @@ function randomBetween(min: number, max: number): number {
 export function LiveMarketSurface({ initialCells }: LiveMarketSurfaceProps) {
   const [cells, setCells] = useState<HeatmapCell[]>(initialCells);
   const [dataMode, setDataMode] = useState<DataMode>("fallback");
+  const [heatmapSource, setHeatmapSource] = useState<HeatmapSource>("fallback");
   const [regStats, setRegStats] = useState<ParsedRegStats | null>(null);
   const [breadthStats, setBreadthStats] = useState<ParsedBreadthStats | null>(null);
   const [flashSector, setFlashSector] = useState<string | null>(null);
@@ -240,13 +284,20 @@ export function LiveMarketSurface({ initialCells }: LiveMarketSurfaceProps) {
           parseEnvelope(breadthRes),
         ]);
 
+        const sectorsStatus = sectorsRes.status === "fulfilled" ? sectorsRes.value.status : "fetch-failed";
+        const regStatus = regRes.status === "fulfilled" ? regRes.value.status : "fetch-failed";
+        console.log("[home-heatmap] sectors response status", sectorsStatus);
+        console.log("[home-heatmap] REG response status", regStatus);
         console.log("[home-heatmap] raw sectors response", sectorsPayload);
-        const realCells = sectorsPayload?.success === false ? [] : parseSectorCells(sectorsPayload?.data);
+        const sectorCells = sectorsPayload?.success === false ? [] : parseSectorCells(sectorsPayload?.data);
         console.log(
           "[home-heatmap] parsed sector moves",
-          realCells.map((cell) => ({ sector: cell.sector, move: cell.move }))
+          sectorCells.map((cell) => ({ sector: cell.sector, move: cell.move }))
         );
         const parsedReg = regPayload?.success === false ? null : parseRegStats(regPayload?.data);
+        const regHeatmapCells = buildRegHeatmapCells(parsedReg);
+        console.log("[home-heatmap] sector parsed count", sectorCells.length);
+        console.log("[home-heatmap] REG heatmap parsed count", regHeatmapCells.length);
         const parsedBreadth = breadthPayload?.success === false ? null : parseBreadthStats(breadthPayload?.data);
 
         if (cancelled) return;
@@ -254,18 +305,29 @@ export function LiveMarketSurface({ initialCells }: LiveMarketSurfaceProps) {
         setRegStats(parsedReg);
         setBreadthStats(parsedBreadth);
 
-        const hasMeaningfulSectorMove = realCells.some((cell) => cell.move !== 0);
-        if (realCells.length > 0 && hasMeaningfulSectorMove) {
-          setCells(realCells);
+        const hasMeaningfulSectorMove = sectorCells.some((cell) => cell.move !== 0);
+        if (sectorCells.length > 0 && hasMeaningfulSectorMove) {
+          setCells(sectorCells);
           setDataMode("real");
+          setHeatmapSource("sectors");
+          console.log("[home-heatmap] selected heatmap source", "sectors");
+        } else if (regHeatmapCells.length > 0) {
+          setCells(regHeatmapCells);
+          setDataMode("real");
+          setHeatmapSource("REG");
+          console.log("[home-heatmap] selected heatmap source", "REG");
         } else {
           setCells(initialCells);
           setDataMode("fallback");
+          setHeatmapSource("fallback");
+          console.log("[home-heatmap] selected heatmap source", "fallback");
         }
       } catch {
         if (cancelled) return;
         setCells(initialCells);
         setDataMode("fallback");
+        setHeatmapSource("fallback");
+        console.log("[home-heatmap] selected heatmap source", "fallback");
       }
     };
 
@@ -427,7 +489,12 @@ export function LiveMarketSurface({ initialCells }: LiveMarketSurfaceProps) {
   }, [breadthStats, cells, initialCells, regStats]);
 
   const orderedCells = useMemo(() => cells, [cells]);
-  const heatmapLabel = dataMode === "real" ? "Live PSX market data" : "Sector movement";
+  const heatmapLabel =
+    dataMode === "real"
+      ? heatmapSource === "REG"
+        ? "Live PSX market movers"
+        : "Live PSX market data"
+      : "Sector movement";
   const liveIndicatorLabel = "LIVE";
 
   return (
