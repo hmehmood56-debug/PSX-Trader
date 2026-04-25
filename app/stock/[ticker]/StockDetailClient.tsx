@@ -7,7 +7,7 @@ import styles from "./StockDetailClient.module.css";
 import type { Stock } from "@/lib/mockData";
 import { useLivePrices, type LiveQuote } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
-import { getPsxChartUrl } from "@/lib/marketSnapshotUrl";
+import { getPsxKlinesUrl } from "@/lib/marketSnapshotUrl";
 import { getDisplaySectorForTicker } from "@/lib/psxSymbolMetadata";
 import { getPsxCompanyMetadata } from "@/lib/psxCompanyMetadata";
 import { usePortfolio } from "@/hooks/usePortfolioState";
@@ -63,6 +63,14 @@ const CHART_RANGES: readonly StockDetailChartRange[] = [
 ] as const;
 
 const NOT_AVAILABLE = "Not available";
+const KLINE_RANGE_TO_TIMEFRAME: Record<StockDetailChartRange, string> = {
+  "1D": "5m",
+  "1W": "15m",
+  "1M": "4h",
+  "3M": "1d",
+  "1Y": "1d",
+  ALL: "1d",
+};
 
 type DetailStatsPayload = {
   ticker: string;
@@ -98,6 +106,68 @@ function formatMoneyOrNA(
 
 function sortChartPointsAsc(points: StockChartPoint[]): StockChartPoint[] {
   return [...points].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value.trim());
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function toChartPointFromKlineRow(row: unknown): StockChartPoint | null {
+  if (!row || typeof row !== "object") return null;
+  const candidate = row as {
+    time?: unknown;
+    close?: unknown;
+    volume?: unknown;
+  };
+  const ts = toFiniteNumber(candidate.time);
+  const close = toFiniteNumber(candidate.close);
+  const volume = toFiniteNumber(candidate.volume);
+  if (ts == null || close == null || volume == null) return null;
+  if (ts <= 0 || close <= 0) return null;
+  const unixSeconds = ts > 10_000_000_000 ? Math.floor(ts / 1000) : Math.floor(ts);
+  return {
+    date: new Date(unixSeconds * 1000).toISOString(),
+    price: close,
+    volume: Math.max(0, volume),
+  };
+}
+
+function applyRangeCutoff(points: StockChartPoint[], range: StockDetailChartRange): StockChartPoint[] {
+  if (range === "ALL") return points;
+  const windowMsByRange: Record<Exclude<StockDetailChartRange, "ALL">, number> = {
+    "1D": 2 * 24 * 60 * 60 * 1000,
+    "1W": 8 * 24 * 60 * 60 * 1000,
+    "1M": 35 * 24 * 60 * 60 * 1000,
+    "3M": 100 * 24 * 60 * 60 * 1000,
+    "1Y": 365 * 24 * 60 * 60 * 1000,
+  };
+  const windowMs = windowMsByRange[range];
+  const cutoff = Date.now() - windowMs;
+  const filtered = points.filter((point) => {
+    const ts = new Date(point.date).getTime();
+    return Number.isFinite(ts) && ts >= cutoff;
+  });
+  if (filtered.length >= 2) return filtered;
+  if (range === "1Y") return points;
+  return points.length >= 2 ? points : filtered;
+}
+
+function chartChangeFromSeries(points: StockChartPoint[]): { change: number; changePercent: number } | null {
+  if (points.length < 2) return null;
+  const first = points[0]?.price;
+  const last = points[points.length - 1]?.price;
+  if (!Number.isFinite(first) || !Number.isFinite(last) || first === 0) return null;
+  const rawChange = last - first;
+  const rawPct = (rawChange / first) * 100;
+  return {
+    change: Number(rawChange.toFixed(2)),
+    changePercent: Number(rawPct.toFixed(2)),
+  };
 }
 
 function liveQuoteFromDetailTick(t: NonNullable<DetailStatsPayload["tick"]>): LiveQuote | null {
@@ -194,10 +264,12 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
 
   useEffect(() => {
     let cancelled = false;
+    setChartSeries([]);
     setChartLoadState("loading");
     const loadChart = async () => {
       try {
-        const res = await fetch(getPsxChartUrl(ticker, range), { cache: "no-store" });
+        const timeframe = KLINE_RANGE_TO_TIMEFRAME[range] ?? "1d";
+        const res = await fetch(getPsxKlinesUrl(ticker, timeframe), { cache: "no-store" });
         if (!res.ok) {
           if (!cancelled) {
             setChartSeries([]);
@@ -205,13 +277,18 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
           }
           return;
         }
-        const json = (await res.json()) as { data?: StockChartPoint[] };
-        const rows = Array.isArray(json.data)
-          ? sortChartPointsAsc(json.data as StockChartPoint[])
-          : [];
+        const json = (await res.json()) as { data?: unknown[] };
+        const rawRows = Array.isArray(json.data) ? json.data : [];
+        const points = rawRows.map(toChartPointFromKlineRow).filter(Boolean) as StockChartPoint[];
+        const sortedRows = sortChartPointsAsc(points);
+        const rangeRows = applyRangeCutoff(sortedRows, range);
+        console.log("range:", range);
+        console.log("timeframe:", timeframe);
+        console.log("raw klines:", rawRows.length);
+        console.log("parsed rows:", points.length);
         if (cancelled) return;
-        setChartSeries(rows);
-        setChartLoadState(rows.length > 0 ? "ready" : "empty");
+        setChartSeries(rangeRows);
+        setChartLoadState(rangeRows.length >= 2 ? "ready" : "empty");
       } catch {
         if (!cancelled) {
           setChartSeries([]);
@@ -316,13 +393,31 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
         : null;
 
   const chartData = useMemo(() => {
-    if (chartSeries.length > 0) return chartSeries;
-    if (range === "1D" && history.length > 0) return sortChartPointsAsc(history);
-    if (price != null && Number.isFinite(price)) {
-      return [{ date: new Date().toISOString(), price, volume: volume ?? 0 }];
+    return chartSeries;
+  }, [chartSeries]);
+
+  const chartStats = useMemo(() => chartChangeFromSeries(chartData), [chartData]);
+  const [lastValidRangeDelta, setLastValidRangeDelta] = useState<{ change: number; changePercent: number } | null>(null);
+  const canUseRangeDelta = chartLoadState === "ready" && chartData.length >= 2;
+
+  useEffect(() => {
+    if (range === "1D") return;
+    if (!canUseRangeDelta || !chartStats) return;
+    setLastValidRangeDelta(chartStats);
+  }, [range, canUseRangeDelta, chartStats]);
+
+  const displayDelta = useMemo(() => {
+    if (range === "1D" && hasQuote) {
+      return { change, changePercent: changePct };
     }
-    return [];
-  }, [chartSeries, range, history, price, volume]);
+    if (canUseRangeDelta && chartStats) {
+      return chartStats;
+    }
+    return lastValidRangeDelta;
+  }, [range, hasQuote, change, changePct, canUseRangeDelta, chartStats, lastValidRangeDelta]);
+  const hasDisplayDelta = displayDelta != null;
+  const displayChange = hasDisplayDelta ? displayDelta.change : 0;
+  const displayChangePercent = hasDisplayDelta ? displayDelta.changePercent : 0;
 
   const rangeLow = detailStats?.derived.rangeLow;
   const rangeHigh = detailStats?.derived.rangeHigh;
@@ -633,7 +728,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
     });
   }
 
-  const up = hasQuote && change >= 0;
+  const up = hasDisplayDelta ? displayChange >= 0 : hasQuote && change >= 0;
   if (standardSuccess) {
     return (
       <div style={{ background: COLORS.bg }}>
@@ -818,7 +913,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                     >
                       {hasQuote && price != null ? formatPKRWithSymbol(price) : "Awaiting live price"}
                     </div>
-                    {hasQuote ? (
+                    {hasDisplayDelta ? (
                       <span
                         className="perch-fin-number"
                         style={{
@@ -828,8 +923,8 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                         }}
                       >
                         {up ? "+" : ""}
-                        {change.toFixed(2)} ({up ? "+" : ""}
-                        {changePct.toFixed(2)}%)
+                        {displayChange.toFixed(2)} ({up ? "+" : ""}
+                        {displayChangePercent.toFixed(2)}%)
                       </span>
                     ) : null}
                   </div>
@@ -895,6 +990,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   paddingLeft: 4,
                   paddingRight: 2,
                   paddingBottom: 2,
+                  position: "relative",
                   opacity: chartLoadState === "loading" ? 0.5 : 1,
                   transition: "opacity 180ms ease",
                 }}
@@ -905,6 +1001,30 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                   lineColor={CHART_LINE}
                   lineColorFaint={CHART_FILL_TOP}
                 />
+                {chartLoadState === "empty" ? (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      pointerEvents: "none",
+                      background: "linear-gradient(180deg, rgba(253,252,252,0.7) 0%, rgba(250,250,249,0.85) 100%)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: COLORS.muted,
+                        letterSpacing: "0.03em",
+                      }}
+                    >
+                      Not enough chart data for this range
+                    </span>
+                  </div>
+                ) : null}
               </div>
             </section>
             <section className="perch-stock-key-stats-section" style={{ marginTop: 10 }}>

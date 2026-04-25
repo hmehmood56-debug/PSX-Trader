@@ -8,7 +8,6 @@ import {
   type IChartApi,
   type ISeriesApi,
   type Time,
-  type UTCTimestamp,
 } from "lightweight-charts";
 
 export type StockDetailChartRange = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
@@ -27,13 +26,17 @@ function sortPointsAsc(points: StockChartPoint[]): StockChartPoint[] {
   return [...points].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
+function isIntradayRange(range: StockDetailChartRange): boolean {
+  return range === "1D" || range === "1W";
+}
+
 function toChartTime(iso: string, range: StockDetailChartRange): Time {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) {
-    return Math.floor(Date.now() / 1000) as UTCTimestamp;
+    return Math.floor(Date.now() / 1000) as Time;
   }
-  if (range === "1D") {
-    return Math.floor(d.getTime() / 1000) as UTCTimestamp;
+  if (isIntradayRange(range)) {
+    return Math.floor(d.getTime() / 1000) as Time;
   }
   const y = d.getUTCFullYear();
   const m = String(d.getUTCMonth() + 1).padStart(2, "0");
@@ -74,25 +77,7 @@ function collapseSeries(
     });
 
   let line = collapsed.map((c) => ({ time: c.time, value: c.price }));
-  if (line.length === 1) {
-    const one = line[0];
-    if (typeof one.time === "number") {
-      line = [
-        { time: (one.time - 60) as UTCTimestamp, value: one.value },
-        { time: one.time, value: one.value },
-      ];
-    } else if (typeof one.time === "string") {
-      const d = new Date(`${one.time}T12:00:00Z`);
-      d.setUTCDate(d.getUTCDate() - 1);
-      const y = d.getUTCFullYear();
-      const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-      const day = String(d.getUTCDate()).padStart(2, "0");
-      line = [
-        { time: `${y}-${m}-${day}`, value: one.value },
-        { time: one.time, value: one.value },
-      ];
-    }
-  }
+  if (line.length < 2) line = [];
   return { line, volume: vol };
 }
 
@@ -115,6 +100,7 @@ export function StockPriceLwcChart({
   minimalGrid = false,
   priceScaleMargins,
 }: Props) {
+  const intraday = isIntradayRange(range);
   const hostRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const areaRef = useRef<ISeriesApi<"Area", Time> | null>(null);
@@ -148,10 +134,10 @@ export function StockPriceLwcChart({
       },
       timeScale: {
         borderColor: SCALE_BORDER,
-        timeVisible: range === "1D",
-        secondsVisible: range === "1D",
+        timeVisible: intraday,
+        secondsVisible: false,
         rightOffset: 0,
-        barSpacing: range === "1D" ? 0.5 : 5,
+        barSpacing: intraday ? 1.4 : 5,
         rightBarStaysOnScroll: true,
         fixLeftEdge: true,
         fixRightEdge: true,
@@ -159,9 +145,16 @@ export function StockPriceLwcChart({
         minBarSpacing: 0.2,
         tickMarkFormatter: (t: Time) => {
           if (typeof t === "number") {
+            if (!intraday) {
+              return new Date(t * 1000).toLocaleDateString("en-PK", {
+                month: "short",
+                day: "numeric",
+              });
+            }
             return new Date(t * 1000).toLocaleTimeString("en-PK", {
               hour: "numeric",
               minute: "2-digit",
+              hour12: false,
             });
           }
           if (typeof t === "string") {
