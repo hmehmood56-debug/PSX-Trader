@@ -5,6 +5,7 @@ import { startRouteProgress } from "@/lib/routeProgress";
 import { useMemo, useState } from "react";
 import { useLivePrices, type ReplayStock } from "@/lib/priceSimulator";
 import { formatCompactPKR, formatPKRWithSymbol } from "@/lib/format";
+import { getDisplaySectorForTicker } from "@/lib/psxSymbolMetadata";
 import { BarChart3, Circle, Gauge, TrendingDown, TrendingUp } from "lucide-react";
 
 const COLORS = {
@@ -261,7 +262,7 @@ function SearchResultsSection({
   query,
   onOpen,
 }: {
-  stocks: ReplayStock[];
+  stocks: Array<ReplayStock & { displaySector: string }>;
   query: string;
   onOpen: (ticker: string) => void;
 }) {
@@ -428,7 +429,7 @@ function SearchResultsSection({
                             letterSpacing: "0.05em",
                           }}
                         >
-                          {stock.sector.replace(/_/g, " ")}
+                          {stock.displaySector.replace(/_/g, " ")}
                         </div>
                       </div>
                       <div
@@ -500,7 +501,7 @@ function TrendingSection({
   stocks,
   onOpen,
 }: {
-  stocks: ReplayStock[];
+  stocks: Array<ReplayStock & { displaySector: string }>;
   onOpen: (ticker: string) => void;
 }) {
   return (
@@ -692,10 +693,19 @@ export function SimulatedPsxExperience() {
   const router = useRouter();
   const { getStocksWithLive, getMarketSnapshot } = useLivePrices();
   const allStocks = getStocksWithLive();
-  const stocks = useMemo(() => allStocks.filter((stock) => stock.ticker.length > 0), [allStocks]);
+  const stocks = useMemo(
+    () =>
+      allStocks
+        .filter((stock) => stock.ticker.length > 0)
+        .map((stock) => ({
+          ...stock,
+          displaySector: getDisplaySectorForTicker(stock.ticker, stock.sector),
+        })),
+    [allStocks]
+  );
   const market = getMarketSnapshot();
   const sectors = useMemo(
-    () => ["All", ...Array.from(new Set(stocks.map((s) => s.sector))).sort((a, b) => a.localeCompare(b))],
+    () => ["All", ...Array.from(new Set(stocks.map((s) => s.displaySector))).sort((a, b) => a.localeCompare(b))],
     [stocks]
   );
 
@@ -704,7 +714,7 @@ export function SimulatedPsxExperience() {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return stocks.filter((s) => {
-      const secOk = sector === "All" || s.sector === sector;
+      const secOk = sector === "All" || s.displaySector === sector;
       const textOk =
         !term ||
         s.ticker.toLowerCase().includes(term) ||

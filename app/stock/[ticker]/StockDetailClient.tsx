@@ -7,6 +7,7 @@ import type { Stock } from "@/lib/mockData";
 import { useLivePrices, type LiveQuote } from "@/lib/priceSimulator";
 import { formatPKRWithSymbol, formatCompactPKR } from "@/lib/format";
 import { getPsxChartUrl } from "@/lib/marketSnapshotUrl";
+import { getDisplaySectorForTicker } from "@/lib/psxSymbolMetadata";
 import { usePortfolio } from "@/hooks/usePortfolioState";
 import { StockLogo } from "@/components/common/StockLogo";
 import { TradeSuccessScreen } from "@/components/trade/TradeSuccessScreen";
@@ -287,6 +288,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
 
   const marketCapDisplay =
     base.marketCap > 0 ? formatCompactPKR(base.marketCap) : NOT_AVAILABLE;
+  const displaySector = getDisplaySectorForTicker(base.ticker, base.sector);
   const baseMeta = base as Stock & {
     description?: string;
     founded?: string | number;
@@ -297,7 +299,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
   };
   const overviewText =
     (typeof baseMeta.description === "string" && baseMeta.description.trim()) ||
-    `${base.name} operates in the ${base.sector} sector on PSX.`;
+    `${base.name} operates in the ${displaySector} sector on PSX.`;
   const foundedText =
     baseMeta.founded != null && `${baseMeta.founded}`.trim().length > 0 ? `${baseMeta.founded}` : null;
   const hqText =
@@ -535,7 +537,7 @@ export function StockDetailClient({ stock: base }: { stock: Stock }) {
                     fontWeight: 700,
                   }}
                 >
-                  {base.sector}
+                  {displaySector}
                 </span>
               </div>
               <div

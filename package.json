@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:reconcile": "sh scripts/apply-perch-schema.sh"
+    "db:reconcile": "sh scripts/apply-perch-schema.sh",
+    "generate:psx-metadata": "node scripts/generate-psx-symbol-metadata.mjs",
+    "generate:psx-sectors": "node scripts/generate-psx-sector-map.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
