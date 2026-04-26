@@ -25,6 +25,9 @@ type HeatmapHierarchyRoot = {
 
 type HeatmapHierarchyDatum = HeatmapHierarchyRoot | LayoutHeatmapItem;
 
+const isLayoutHeatmapItem = (datum: HeatmapHierarchyDatum): datum is LayoutHeatmapItem =>
+  "layoutWeight" in datum;
+
 interface PerchHeatmapProps {
   items: HeatmapItem[];
   formatValue?: (value: number) => string;
@@ -181,20 +184,25 @@ export function PerchHeatmap({ items, formatValue = defaultFormatValue, classNam
         return datum.layoutWeight > 0 ? datum.layoutWeight : 0.000001;
       })
       .sort((a, b) => {
-        const aOther = a.data?.isOther === true;
-        const bOther = b.data?.isOther === true;
+        const aOther = isLayoutHeatmapItem(a.data) && a.data.isOther === true;
+        const bOther = isLayoutHeatmapItem(b.data) && b.data.isOther === true;
         if (aOther && !bOther) return 1;
         if (!aOther && bOther) return -1;
         return (b.value ?? 0) - (a.value ?? 0);
       });
 
-    treemap<HeatmapHierarchyDatum>()
+    const layoutRoot = treemap<HeatmapHierarchyDatum>()
       .size([width, height])
       .paddingInner(2)
       .paddingOuter(1)
       .round(true)(root);
 
-    const computedTiles = root.leaves().map((leaf) => {
+    const computedTiles = layoutRoot
+      .leaves()
+      .map((leaf) => {
+      if (!isLayoutHeatmapItem(leaf.data)) {
+        return null;
+      }
       const left = Math.round(leaf.x0);
       const top = Math.round(leaf.y0);
       const right = Math.round(leaf.x1);
@@ -217,7 +225,8 @@ export function PerchHeatmap({ items, formatValue = defaultFormatValue, classNam
         canShowValue,
         displayLabel: SHORT_LABELS[leaf.data.label] ?? leaf.data.label,
       };
-    });
+    })
+      .filter((tile): tile is NonNullable<typeof tile> => tile !== null);
 
     return computedTiles;
   }, [containerWidth, items, rowHeight]);
