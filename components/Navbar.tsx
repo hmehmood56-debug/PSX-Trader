@@ -36,6 +36,10 @@ export function Navbar() {
   const signedInLabel = user ? accountLabel(user) : "";
   /** One of three mutually exclusive UI modes. Never mix guest and signed-in controls in the same render. */
   const authMode = authLoading ? "loading" : user ? "signedIn" : "guest";
+  const activeDesktopIndex = desktopLinks.findIndex((l) =>
+    l.href === "/" ? pathname === "/" : pathname.startsWith(l.href),
+  );
+  const safeDesktopIndex = activeDesktopIndex >= 0 ? activeDesktopIndex : 0;
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
@@ -86,19 +90,31 @@ export function Navbar() {
           {authMode === "guest" ? <span className={styles.previewPill}>Preview</span> : null}
         </Link>
 
-        <nav className={styles.desktopNav} aria-label="Primary">
-          {desktopLinks.map((l) => {
-            const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`${styles.navLink} ${active ? styles.navLinkActive : ""}`}
-              >
-                {l.label}
-              </Link>
-            );
-          })}
+        <nav
+          className={styles.desktopNav}
+          aria-label="Primary"
+          style={
+            {
+              "--desktop-nav-active-index": safeDesktopIndex,
+            } as React.CSSProperties
+          }
+        >
+          <div className={styles.desktopNavRail}>
+            <span className={styles.desktopNavTrack} aria-hidden />
+            <span className={styles.desktopNavIndicator} aria-hidden />
+            {desktopLinks.map((l) => {
+              const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`${styles.navLink} ${active ? styles.navLinkActive : ""}`}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
         {authMode === "loading" ? (
