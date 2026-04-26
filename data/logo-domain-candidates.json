@@ -1,0 +1,2127 @@
+[
+  {
+    "ticker": "786",
+    "domain": "786investments.com",
+    "source": "https://dps.psx.com.pk/company/786"
+  },
+  {
+    "ticker": "AABS",
+    "domain": "aasml.com",
+    "source": "https://dps.psx.com.pk/company/AABS"
+  },
+  {
+    "ticker": "AASM",
+    "domain": "alabid.com",
+    "source": "https://dps.psx.com.pk/company/AASM"
+  },
+  {
+    "ticker": "ADAMS",
+    "domain": "adam.com.pk",
+    "source": "https://dps.psx.com.pk/company/ADAMS"
+  },
+  {
+    "ticker": "AGL",
+    "domain": "pafl.com.pk",
+    "source": "https://dps.psx.com.pk/company/AGL"
+  },
+  {
+    "ticker": "AGSML",
+    "domain": "asgsml.com",
+    "source": "https://dps.psx.com.pk/company/AGSML"
+  },
+  {
+    "ticker": "AHTM",
+    "domain": "ahtml.com.pk",
+    "source": "https://dps.psx.com.pk/company/AHTM"
+  },
+  {
+    "ticker": "AKDHL",
+    "domain": "akdhospitality.com",
+    "source": "https://dps.psx.com.pk/company/AKDHL"
+  },
+  {
+    "ticker": "AKGL",
+    "domain": "alkhairgadoon.com",
+    "source": "https://dps.psx.com.pk/company/AKGL"
+  },
+  {
+    "ticker": "ALNRS",
+    "domain": "alnoorsugar.co",
+    "source": "https://dps.psx.com.pk/company/ALNRS"
+  },
+  {
+    "ticker": "APOT",
+    "domain": "apollotextile.com",
+    "source": "https://dps.psx.com.pk/company/APOT"
+  },
+  {
+    "ticker": "ARCTM",
+    "domain": "arctictextile.com",
+    "source": "https://dps.psx.com.pk/company/ARCTM"
+  },
+  {
+    "ticker": "ARMG",
+    "domain": "calcorp.com.pk",
+    "source": "https://dps.psx.com.pk/company/ARMG"
+  },
+  {
+    "ticker": "ARPAK",
+    "domain": "premiergrouppk.com",
+    "source": "https://dps.psx.com.pk/company/ARPAK"
+  },
+  {
+    "ticker": "ARUJ",
+    "domain": "aruj.com",
+    "source": "https://dps.psx.com.pk/company/ARUJ"
+  },
+  {
+    "ticker": "ASC",
+    "domain": "ascfoods.com",
+    "source": "https://dps.psx.com.pk/company/ASC"
+  },
+  {
+    "ticker": "ASHT",
+    "domain": "ashfaqtextile.com",
+    "source": "https://dps.psx.com.pk/company/ASHT"
+  },
+  {
+    "ticker": "ASTL",
+    "domain": "amrelisteels.com",
+    "source": "https://dps.psx.com.pk/company/ASTL"
+  },
+  {
+    "ticker": "ASTM",
+    "domain": "asimtextile.com",
+    "source": "https://dps.psx.com.pk/company/ASTM"
+  },
+  {
+    "ticker": "ATBA",
+    "domain": "abl.atlas.pk",
+    "source": "https://dps.psx.com.pk/company/ATBA"
+  },
+  {
+    "ticker": "ATIL",
+    "domain": "ail.atlas.pk",
+    "source": "https://dps.psx.com.pk/company/ATIL"
+  },
+  {
+    "ticker": "AWTX",
+    "domain": "allawasaya.com",
+    "source": "https://dps.psx.com.pk/company/AWTX"
+  },
+  {
+    "ticker": "BAFS",
+    "domain": "bfsml.com",
+    "source": "https://dps.psx.com.pk/company/BAFS"
+  },
+  {
+    "ticker": "BAPL",
+    "domain": "bawanyair.com",
+    "source": "https://dps.psx.com.pk/company/BAPL"
+  },
+  {
+    "ticker": "BATA",
+    "domain": "bata.pk",
+    "source": "https://dps.psx.com.pk/company/BATA"
+  },
+  {
+    "ticker": "BBFL",
+    "domain": "bigbirdfoods.com",
+    "source": "https://dps.psx.com.pk/company/BBFL"
+  },
+  {
+    "ticker": "BCL",
+    "domain": "bolancastings.com",
+    "source": "https://dps.psx.com.pk/company/BCL"
+  },
+  {
+    "ticker": "BECO",
+    "domain": "becosteel.com",
+    "source": "https://dps.psx.com.pk/company/BECO"
+  },
+  {
+    "ticker": "BELA",
+    "domain": "belaautomotivesltd.com",
+    "source": "https://dps.psx.com.pk/company/BELA"
+  },
+  {
+    "ticker": "BERG",
+    "domain": "berger.com.pk",
+    "source": "https://dps.psx.com.pk/company/BERG"
+  },
+  {
+    "ticker": "BFAGRO",
+    "domain": "barkatfrisian.com",
+    "source": "https://dps.psx.com.pk/company/BFAGRO"
+  },
+  {
+    "ticker": "BFBIO",
+    "domain": "bfbio.com",
+    "source": "https://dps.psx.com.pk/company/BFBIO"
+  },
+  {
+    "ticker": "BFMOD",
+    "domain": "bfmodaraba.com.pk",
+    "source": "https://dps.psx.com.pk/company/BFMOD"
+  },
+  {
+    "ticker": "BGL",
+    "domain": "balochistanglass.com",
+    "source": "https://dps.psx.com.pk/company/BGL"
+  },
+  {
+    "ticker": "BHAT",
+    "domain": "umergroup.com",
+    "source": "https://dps.psx.com.pk/company/BHAT"
+  },
+  {
+    "ticker": "BIFO",
+    "domain": "biafo.com",
+    "source": "https://dps.psx.com.pk/company/BIFO"
+  },
+  {
+    "ticker": "BILF",
+    "domain": "bilalfibres.com",
+    "source": "https://dps.psx.com.pk/company/BILF"
+  },
+  {
+    "ticker": "BIPL",
+    "domain": "bankislami.com.pk",
+    "source": "https://dps.psx.com.pk/company/BIPL"
+  },
+  {
+    "ticker": "BLUEX",
+    "domain": "blue-ex.com",
+    "source": "https://dps.psx.com.pk/company/BLUEX"
+  },
+  {
+    "ticker": "BML",
+    "domain": "bankmakramah.com",
+    "source": "https://dps.psx.com.pk/company/BML"
+  },
+  {
+    "ticker": "BNL",
+    "domain": "bunnys.com.pk",
+    "source": "https://dps.psx.com.pk/company/BNL"
+  },
+  {
+    "ticker": "BNWM",
+    "domain": "bwm.com.pk",
+    "source": "https://dps.psx.com.pk/company/BNWM"
+  },
+  {
+    "ticker": "BOK",
+    "domain": "bok.com.pk",
+    "source": "https://dps.psx.com.pk/company/BOK"
+  },
+  {
+    "ticker": "BPL",
+    "domain": "burshane.com",
+    "source": "https://dps.psx.com.pk/company/BPL"
+  },
+  {
+    "ticker": "BRRG",
+    "domain": "firstdawood.com",
+    "source": "https://dps.psx.com.pk/company/BRRG"
+  },
+  {
+    "ticker": "BTL",
+    "domain": "umergroup.com",
+    "source": "https://dps.psx.com.pk/company/BTL"
+  },
+  {
+    "ticker": "BUXL",
+    "domain": "buxly.com",
+    "source": "https://dps.psx.com.pk/company/BUXL"
+  },
+  {
+    "ticker": "BWHL",
+    "domain": "bwheels.com",
+    "source": "https://dps.psx.com.pk/company/BWHL"
+  },
+  {
+    "ticker": "CASH",
+    "domain": "calcorp.com.pk",
+    "source": "https://dps.psx.com.pk/company/CASH"
+  },
+  {
+    "ticker": "CCM",
+    "domain": "crescentcotton.com",
+    "source": "https://dps.psx.com.pk/company/CCM"
+  },
+  {
+    "ticker": "CENI",
+    "domain": "cicl.com.pk",
+    "source": "https://dps.psx.com.pk/company/CENI"
+  },
+  {
+    "ticker": "CEPB",
+    "domain": "centurypaper.com.pk",
+    "source": "https://dps.psx.com.pk/company/CEPB"
+  },
+  {
+    "ticker": "CFL",
+    "domain": "crescentfibres.com",
+    "source": "https://dps.psx.com.pk/company/CFL"
+  },
+  {
+    "ticker": "CHAS",
+    "domain": "chashmasugarmills.com",
+    "source": "https://dps.psx.com.pk/company/CHAS"
+  },
+  {
+    "ticker": "CHBL",
+    "domain": "chenabgroup.com",
+    "source": "https://dps.psx.com.pk/company/CHBL"
+  },
+  {
+    "ticker": "CJPL",
+    "domain": "cresjute.com",
+    "source": "https://dps.psx.com.pk/company/CJPL"
+  },
+  {
+    "ticker": "CLOV",
+    "domain": "clover.com.pk",
+    "source": "https://dps.psx.com.pk/company/CLOV"
+  },
+  {
+    "ticker": "CLVL",
+    "domain": "cordobalv.com",
+    "source": "https://dps.psx.com.pk/company/CLVL"
+  },
+  {
+    "ticker": "CNERGY",
+    "domain": "cnergyico.com",
+    "source": "https://dps.psx.com.pk/company/CNERGY"
+  },
+  {
+    "ticker": "CPHL",
+    "domain": "citipharma.com.pk",
+    "source": "https://dps.psx.com.pk/company/CPHL"
+  },
+  {
+    "ticker": "CPPL",
+    "domain": "gfg.com.pk",
+    "source": "https://dps.psx.com.pk/company/CPPL"
+  },
+  {
+    "ticker": "CRTM",
+    "domain": "crescenttextile.com",
+    "source": "https://dps.psx.com.pk/company/CRTM"
+  },
+  {
+    "ticker": "CSAP",
+    "domain": "crescent.com.pk",
+    "source": "https://dps.psx.com.pk/company/CSAP"
+  },
+  {
+    "ticker": "CSIL",
+    "domain": "cstarinsurance.com",
+    "source": "https://dps.psx.com.pk/company/CSIL"
+  },
+  {
+    "ticker": "CTM",
+    "domain": "colonytextiles.com",
+    "source": "https://dps.psx.com.pk/company/CTM"
+  },
+  {
+    "ticker": "CWSM",
+    "domain": "chakwalspinningmills.com",
+    "source": "https://dps.psx.com.pk/company/CWSM"
+  },
+  {
+    "ticker": "CYAN",
+    "domain": "cyanlimited.com",
+    "source": "https://dps.psx.com.pk/company/CYAN"
+  },
+  {
+    "ticker": "DAAG",
+    "domain": "dataagrolimited.com",
+    "source": "https://dps.psx.com.pk/company/DAAG"
+  },
+  {
+    "ticker": "DADX",
+    "domain": "dadex.com",
+    "source": "https://dps.psx.com.pk/company/DADX"
+  },
+  {
+    "ticker": "DBCI",
+    "domain": "mhdadabhoy.com",
+    "source": "https://dps.psx.com.pk/company/DBCI"
+  },
+  {
+    "ticker": "DCL",
+    "domain": "yousufdewan.com",
+    "source": "https://dps.psx.com.pk/company/DCL"
+  },
+  {
+    "ticker": "DCR",
+    "domain": "arifhabibdolmenreit.com",
+    "source": "https://dps.psx.com.pk/company/DCR"
+  },
+  {
+    "ticker": "DEL",
+    "domain": "dawoodequities.com",
+    "source": "https://dps.psx.com.pk/company/DEL"
+  },
+  {
+    "ticker": "DFML",
+    "domain": "yousufdewan.com",
+    "source": "https://dps.psx.com.pk/company/DFML"
+  },
+  {
+    "ticker": "DFSM",
+    "domain": "yousufdewan.com",
+    "source": "https://dps.psx.com.pk/company/DFSM"
+  },
+  {
+    "ticker": "DHPL",
+    "domain": "dhpartners.com.pk",
+    "source": "https://dps.psx.com.pk/company/DHPL"
+  },
+  {
+    "ticker": "DIIL",
+    "domain": "dil.com.pk",
+    "source": "https://dps.psx.com.pk/company/DIIL"
+  },
+  {
+    "ticker": "DINT",
+    "domain": "dingroup.com",
+    "source": "https://dps.psx.com.pk/company/DINT"
+  },
+  {
+    "ticker": "DKTM",
+    "domain": "yousufdewan.com",
+    "source": "https://dps.psx.com.pk/company/DKTM"
+  },
+  {
+    "ticker": "DLL",
+    "domain": "dawoodlawrencepur.com",
+    "source": "https://dps.psx.com.pk/company/DLL"
+  },
+  {
+    "ticker": "DMC",
+    "domain": "dmtextile.com.pk",
+    "source": "https://dps.psx.com.pk/company/DMC"
+  },
+  {
+    "ticker": "DMTM",
+    "domain": "yousufdewan.com",
+    "source": "https://dps.psx.com.pk/company/DMTM"
+  },
+  {
+    "ticker": "DMTX",
+    "domain": "dmtextile.com.pk",
+    "source": "https://dps.psx.com.pk/company/DMTX"
+  },
+  {
+    "ticker": "DNCC",
+    "domain": "dandotcement.com",
+    "source": "https://dps.psx.com.pk/company/DNCC"
+  },
+  {
+    "ticker": "DOL",
+    "domain": "desconoxychem.com",
+    "source": "https://dps.psx.com.pk/company/DOL"
+  },
+  {
+    "ticker": "DSFL",
+    "domain": "yousufdewan.com",
+    "source": "https://dps.psx.com.pk/company/DSFL"
+  },
+  {
+    "ticker": "DSIL",
+    "domain": "dsil.com.pk",
+    "source": "https://dps.psx.com.pk/company/DSIL"
+  },
+  {
+    "ticker": "DSL",
+    "domain": "doststeels.com",
+    "source": "https://dps.psx.com.pk/company/DSL"
+  },
+  {
+    "ticker": "DWAE",
+    "domain": "yousufdewan.com",
+    "source": "https://dps.psx.com.pk/company/DWAE"
+  },
+  {
+    "ticker": "DWSM",
+    "domain": "yousufdewan.com",
+    "source": "https://dps.psx.com.pk/company/DWSM"
+  },
+  {
+    "ticker": "DWTM",
+    "domain": "yousufdewan.com",
+    "source": "https://dps.psx.com.pk/company/DWTM"
+  },
+  {
+    "ticker": "DYNO",
+    "domain": "dynea.com.pk",
+    "source": "https://dps.psx.com.pk/company/DYNO"
+  },
+  {
+    "ticker": "ECOP",
+    "domain": "ecopack.com.pk",
+    "source": "https://dps.psx.com.pk/company/ECOP"
+  },
+  {
+    "ticker": "EFUG",
+    "domain": "efuinsurance.com",
+    "source": "https://dps.psx.com.pk/company/EFUG"
+  },
+  {
+    "ticker": "EFUL",
+    "domain": "efulife.com",
+    "source": "https://dps.psx.com.pk/company/EFUL"
+  },
+  {
+    "ticker": "ELCM",
+    "domain": "elahicotton.com",
+    "source": "https://dps.psx.com.pk/company/ELCM"
+  },
+  {
+    "ticker": "ELSM",
+    "domain": "nagina.com",
+    "source": "https://dps.psx.com.pk/company/ELSM"
+  },
+  {
+    "ticker": "EMCO",
+    "domain": "emco.com.pk",
+    "source": "https://dps.psx.com.pk/company/EMCO"
+  },
+  {
+    "ticker": "EPCL",
+    "domain": "engropolymer.com",
+    "source": "https://dps.psx.com.pk/company/EPCL"
+  },
+  {
+    "ticker": "EPQL",
+    "domain": "engroenergy.com",
+    "source": "https://dps.psx.com.pk/company/EPQL"
+  },
+  {
+    "ticker": "ESBL",
+    "domain": "escortsbank.net",
+    "source": "https://dps.psx.com.pk/company/ESBL"
+  },
+  {
+    "ticker": "EWIC",
+    "domain": "eastwestinsurance.com.pk",
+    "source": "https://dps.psx.com.pk/company/EWIC"
+  },
+  {
+    "ticker": "EXIDE",
+    "domain": "exide.com.pk",
+    "source": "https://dps.psx.com.pk/company/EXIDE"
+  },
+  {
+    "ticker": "FANM",
+    "domain": "fanm.co",
+    "source": "https://dps.psx.com.pk/company/FANM"
+  },
+  {
+    "ticker": "FASM",
+    "domain": "umergroup.com",
+    "source": "https://dps.psx.com.pk/company/FASM"
+  },
+  {
+    "ticker": "FCEL",
+    "domain": "firstcapital.com.pk",
+    "source": "https://dps.psx.com.pk/company/FCEL"
+  },
+  {
+    "ticker": "FCEPL",
+    "domain": "frieslandcampina.com.pk",
+    "source": "https://dps.psx.com.pk/company/FCEPL"
+  },
+  {
+    "ticker": "FCIBL",
+    "domain": "fcibank.com.pk",
+    "source": "https://dps.psx.com.pk/company/FCIBL"
+  },
+  {
+    "ticker": "FCL",
+    "domain": "fast-cables.com",
+    "source": "https://dps.psx.com.pk/company/FCL"
+  },
+  {
+    "ticker": "FCSC",
+    "domain": "pacepakistan.com",
+    "source": "https://dps.psx.com.pk/company/FCSC"
+  },
+  {
+    "ticker": "FDPL",
+    "domain": "firstdawood.com",
+    "source": "https://dps.psx.com.pk/company/FDPL"
+  },
+  {
+    "ticker": "FECM",
+    "domain": "fecm.com.pk",
+    "source": "https://dps.psx.com.pk/company/FECM"
+  },
+  {
+    "ticker": "FECTC",
+    "domain": "fectogroup.com",
+    "source": "https://dps.psx.com.pk/company/FECTC"
+  },
+  {
+    "ticker": "FEM",
+    "domain": "firstequitymodaraba.com.pk",
+    "source": "https://dps.psx.com.pk/company/FEM"
+  },
+  {
+    "ticker": "FEROZ",
+    "domain": "ferozsons-labs.com",
+    "source": "https://dps.psx.com.pk/company/FEROZ"
+  },
+  {
+    "ticker": "FFL",
+    "domain": "faujifoods.com",
+    "source": "https://dps.psx.com.pk/company/FFL"
+  },
+  {
+    "ticker": "FFLM",
+    "domain": "fidelitymodaraba.com",
+    "source": "https://dps.psx.com.pk/company/FFLM"
+  },
+  {
+    "ticker": "FHAM",
+    "domain": "habibmodaraba.com",
+    "source": "https://dps.psx.com.pk/company/FHAM"
+  },
+  {
+    "ticker": "FIBLM",
+    "domain": "firstibl.com",
+    "source": "https://dps.psx.com.pk/company/FIBLM"
+  },
+  {
+    "ticker": "FIL",
+    "domain": "fatehindustries.com",
+    "source": "https://dps.psx.com.pk/company/FIL"
+  },
+  {
+    "ticker": "FIMM",
+    "domain": "firstimrooz.com",
+    "source": "https://dps.psx.com.pk/company/FIMM"
+  },
+  {
+    "ticker": "FLYNG",
+    "domain": "flyingcement.com",
+    "source": "https://dps.psx.com.pk/company/FLYNG"
+  },
+  {
+    "ticker": "FML",
+    "domain": "feroze1888.com",
+    "source": "https://dps.psx.com.pk/company/FML"
+  },
+  {
+    "ticker": "FNBM",
+    "domain": "nbmodaraba.com",
+    "source": "https://dps.psx.com.pk/company/FNBM"
+  },
+  {
+    "ticker": "FNEL",
+    "domain": "fnetrade.com",
+    "source": "https://dps.psx.com.pk/company/FNEL"
+  },
+  {
+    "ticker": "FPJM",
+    "domain": "punjabmodaraba.com.pk",
+    "source": "https://dps.psx.com.pk/company/FPJM"
+  },
+  {
+    "ticker": "FPRM",
+    "domain": "fpm.com.pk",
+    "source": "https://dps.psx.com.pk/company/FPRM"
+  },
+  {
+    "ticker": "FRCL",
+    "domain": "forte.com.pk",
+    "source": "https://dps.psx.com.pk/company/FRCL"
+  },
+  {
+    "ticker": "FRSM",
+    "domain": "faran.com.pk",
+    "source": "https://dps.psx.com.pk/company/FRSM"
+  },
+  {
+    "ticker": "FSWL",
+    "domain": "fatehsports.com",
+    "source": "https://dps.psx.com.pk/company/FSWL"
+  },
+  {
+    "ticker": "FTMM",
+    "domain": "ftmm.com.pk",
+    "source": "https://dps.psx.com.pk/company/FTMM"
+  },
+  {
+    "ticker": "FTSM",
+    "domain": "firsttristar.com",
+    "source": "https://dps.psx.com.pk/company/FTSM"
+  },
+  {
+    "ticker": "FZCM",
+    "domain": "fazalcloth.com",
+    "source": "https://dps.psx.com.pk/company/FZCM"
+  },
+  {
+    "ticker": "GADT",
+    "domain": "gadoontextile.com",
+    "source": "https://dps.psx.com.pk/company/GADT"
+  },
+  {
+    "ticker": "GAL",
+    "domain": "ghandharanissan.com.pk",
+    "source": "https://dps.psx.com.pk/company/GAL"
+  },
+  {
+    "ticker": "GAMON",
+    "domain": "gammonpakistan.com",
+    "source": "https://dps.psx.com.pk/company/GAMON"
+  },
+  {
+    "ticker": "GATI",
+    "domain": "gatron.com",
+    "source": "https://dps.psx.com.pk/company/GATI"
+  },
+  {
+    "ticker": "GATM",
+    "domain": "gulahmed.com",
+    "source": "https://dps.psx.com.pk/company/GATM"
+  },
+  {
+    "ticker": "GCIL",
+    "domain": "ghaniglobal.com",
+    "source": "https://dps.psx.com.pk/company/GCIL"
+  },
+  {
+    "ticker": "GDL",
+    "domain": "ghanidairies.com",
+    "source": "https://dps.psx.com.pk/company/GDL"
+  },
+  {
+    "ticker": "GEMBCEM",
+    "domain": "burjmodaraba.com",
+    "source": "https://dps.psx.com.pk/company/GEMBCEM"
+  },
+  {
+    "ticker": "GEMBLUEX",
+    "domain": "blue-ex.com",
+    "source": "https://dps.psx.com.pk/company/GEMBLUEX"
+  },
+  {
+    "ticker": "GEMMEL",
+    "domain": "mughalenergy.com.pk",
+    "source": "https://dps.psx.com.pk/company/GEMMEL"
+  },
+  {
+    "ticker": "GEMPACRA",
+    "domain": "pacra.com",
+    "source": "https://dps.psx.com.pk/company/GEMPACRA"
+  },
+  {
+    "ticker": "GEMSPNL",
+    "domain": "super.net.pk",
+    "source": "https://dps.psx.com.pk/company/GEMSPNL"
+  },
+  {
+    "ticker": "GFIL",
+    "domain": "ghazifabrics.com",
+    "source": "https://dps.psx.com.pk/company/GFIL"
+  },
+  {
+    "ticker": "GGGL",
+    "domain": "ghaniglobal.com",
+    "source": "https://dps.psx.com.pk/company/GGGL"
+  },
+  {
+    "ticker": "GGL",
+    "domain": "ghaniglobal.com",
+    "source": "https://dps.psx.com.pk/company/GGL"
+  },
+  {
+    "ticker": "GHGL",
+    "domain": "ghaniglass.com",
+    "source": "https://dps.psx.com.pk/company/GHGL"
+  },
+  {
+    "ticker": "GHNI",
+    "domain": "gil.com.pk",
+    "source": "https://dps.psx.com.pk/company/GHNI"
+  },
+  {
+    "ticker": "GLPL",
+    "domain": "gillettepakistan.com",
+    "source": "https://dps.psx.com.pk/company/GLPL"
+  },
+  {
+    "ticker": "GOC",
+    "domain": "gocpak.com",
+    "source": "https://dps.psx.com.pk/company/GOC"
+  },
+  {
+    "ticker": "GRR",
+    "domain": "arifhabibdolmenreit.com",
+    "source": "https://dps.psx.com.pk/company/GRR"
+  },
+  {
+    "ticker": "GRYL",
+    "domain": "graysleasing.com",
+    "source": "https://dps.psx.com.pk/company/GRYL"
+  },
+  {
+    "ticker": "GSPM",
+    "domain": "gulshan.com.pk",
+    "source": "https://dps.psx.com.pk/company/GSPM"
+  },
+  {
+    "ticker": "GTYR",
+    "domain": "gtr.com.pk",
+    "source": "https://dps.psx.com.pk/company/GTYR"
+  },
+  {
+    "ticker": "GUTM",
+    "domain": "gulistan.com.pk",
+    "source": "https://dps.psx.com.pk/company/GUTM"
+  },
+  {
+    "ticker": "GVGL",
+    "domain": "ghanivalueglass.com",
+    "source": "https://dps.psx.com.pk/company/GVGL"
+  },
+  {
+    "ticker": "GWLC",
+    "domain": "gharibwalcement.com",
+    "source": "https://dps.psx.com.pk/company/GWLC"
+  },
+  {
+    "ticker": "HABSM",
+    "domain": "habibsugar.com",
+    "source": "https://dps.psx.com.pk/company/HABSM"
+  },
+  {
+    "ticker": "HADC",
+    "domain": "hccl.com.pk",
+    "source": "https://dps.psx.com.pk/company/HADC"
+  },
+  {
+    "ticker": "HAEL",
+    "domain": "halaenterprises.com",
+    "source": "https://dps.psx.com.pk/company/HAEL"
+  },
+  {
+    "ticker": "HAFL",
+    "domain": "hafiztm.com",
+    "source": "https://dps.psx.com.pk/company/HAFL"
+  },
+  {
+    "ticker": "HASCOL",
+    "domain": "hascol.com",
+    "source": "https://dps.psx.com.pk/company/HASCOL"
+  },
+  {
+    "ticker": "HBLTETF",
+    "domain": "hblasset.com",
+    "source": "https://dps.psx.com.pk/company/HBLTETF"
+  },
+  {
+    "ticker": "HCAR",
+    "domain": "honda.com.pk",
+    "source": "https://dps.psx.com.pk/company/HCAR"
+  },
+  {
+    "ticker": "HGFA",
+    "domain": "hblasset.com",
+    "source": "https://dps.psx.com.pk/company/HGFA"
+  },
+  {
+    "ticker": "HICL",
+    "domain": "habibinsurance.net",
+    "source": "https://dps.psx.com.pk/company/HICL"
+  },
+  {
+    "ticker": "HIFA",
+    "domain": "hblasset.com",
+    "source": "https://dps.psx.com.pk/company/HIFA"
+  },
+  {
+    "ticker": "HINO",
+    "domain": "hinopak.com",
+    "source": "https://dps.psx.com.pk/company/HINO"
+  },
+  {
+    "ticker": "HINOON",
+    "domain": "highnoon-labs.com",
+    "source": "https://dps.psx.com.pk/company/HINOON"
+  },
+  {
+    "ticker": "HIRAT",
+    "domain": "hiratex.com.pk",
+    "source": "https://dps.psx.com.pk/company/HIRAT"
+  },
+  {
+    "ticker": "HMIM",
+    "domain": "hmiml.com",
+    "source": "https://dps.psx.com.pk/company/HMIM"
+  },
+  {
+    "ticker": "HPL",
+    "domain": "hoechst.com.pk",
+    "source": "https://dps.psx.com.pk/company/HPL"
+  },
+  {
+    "ticker": "HRPL",
+    "domain": "hrpl-financialstatement.com",
+    "source": "https://dps.psx.com.pk/company/HRPL"
+  },
+  {
+    "ticker": "HSPI",
+    "domain": "huffaz.com.pk",
+    "source": "https://dps.psx.com.pk/company/HSPI"
+  },
+  {
+    "ticker": "HTL",
+    "domain": "hitechlubricants.com",
+    "source": "https://dps.psx.com.pk/company/HTL"
+  },
+  {
+    "ticker": "HUMNL",
+    "domain": "humnetwork.tv",
+    "source": "https://dps.psx.com.pk/company/HUMNL"
+  },
+  {
+    "ticker": "HUSI",
+    "domain": "husein.com",
+    "source": "https://dps.psx.com.pk/company/HUSI"
+  },
+  {
+    "ticker": "HWQS",
+    "domain": "hwgc.com.pk",
+    "source": "https://dps.psx.com.pk/company/HWQS"
+  },
+  {
+    "ticker": "IBFL",
+    "domain": "igcpk.com",
+    "source": "https://dps.psx.com.pk/company/IBFL"
+  },
+  {
+    "ticker": "IBLHL",
+    "domain": "iblhc.com",
+    "source": "https://dps.psx.com.pk/company/IBLHL"
+  },
+  {
+    "ticker": "ICCI",
+    "domain": "icctextiles.com",
+    "source": "https://dps.psx.com.pk/company/ICCI"
+  },
+  {
+    "ticker": "ICIBL",
+    "domain": "icibl.com",
+    "source": "https://dps.psx.com.pk/company/ICIBL"
+  },
+  {
+    "ticker": "ICL",
+    "domain": "ittehadchemicals.com",
+    "source": "https://dps.psx.com.pk/company/ICL"
+  },
+  {
+    "ticker": "IDRT",
+    "domain": "idreestextile.com",
+    "source": "https://dps.psx.com.pk/company/IDRT"
+  },
+  {
+    "ticker": "IDSM",
+    "domain": "idealsm.com",
+    "source": "https://dps.psx.com.pk/company/IDSM"
+  },
+  {
+    "ticker": "IDYM",
+    "domain": "indus-group.com",
+    "source": "https://dps.psx.com.pk/company/IDYM"
+  },
+  {
+    "ticker": "IGIL",
+    "domain": "igilife.com.pk",
+    "source": "https://dps.psx.com.pk/company/IGIL"
+  },
+  {
+    "ticker": "IMAGE",
+    "domain": "imagepakistan.net",
+    "source": "https://dps.psx.com.pk/company/IMAGE"
+  },
+  {
+    "ticker": "IML",
+    "domain": "imperiallimited.co",
+    "source": "https://dps.psx.com.pk/company/IML"
+  },
+  {
+    "ticker": "IMS",
+    "domain": "imsecurities.com.pk",
+    "source": "https://dps.psx.com.pk/company/IMS"
+  },
+  {
+    "ticker": "INIL",
+    "domain": "iil.com.pk",
+    "source": "https://dps.psx.com.pk/company/INIL"
+  },
+  {
+    "ticker": "INKL",
+    "domain": "internationalknitwear.com",
+    "source": "https://dps.psx.com.pk/company/INKL"
+  },
+  {
+    "ticker": "IPAK",
+    "domain": "ipak.com.pk",
+    "source": "https://dps.psx.com.pk/company/IPAK"
+  },
+  {
+    "ticker": "IREIT",
+    "domain": "sinolinkreit.com",
+    "source": "https://dps.psx.com.pk/company/IREIT"
+  },
+  {
+    "ticker": "ISL",
+    "domain": "isl.com.pk",
+    "source": "https://dps.psx.com.pk/company/ISL"
+  },
+  {
+    "ticker": "ITANZ",
+    "domain": "itanzgroup.com",
+    "source": "https://dps.psx.com.pk/company/ITANZ"
+  },
+  {
+    "ticker": "ITTEFAQ",
+    "domain": "ittefaqsteel.com",
+    "source": "https://dps.psx.com.pk/company/ITTEFAQ"
+  },
+  {
+    "ticker": "JATM",
+    "domain": "jatml.com",
+    "source": "https://dps.psx.com.pk/company/JATM"
+  },
+  {
+    "ticker": "JDMT",
+    "domain": "jdm.com.pk",
+    "source": "https://dps.psx.com.pk/company/JDMT"
+  },
+  {
+    "ticker": "JDWS",
+    "domain": "jdw-group.com",
+    "source": "https://dps.psx.com.pk/company/JDWS"
+  },
+  {
+    "ticker": "JGICL",
+    "domain": "jubileegeneral.com.pk",
+    "source": "https://dps.psx.com.pk/company/JGICL"
+  },
+  {
+    "ticker": "JKSM",
+    "domain": "jkgroup.net",
+    "source": "https://dps.psx.com.pk/company/JKSM"
+  },
+  {
+    "ticker": "JLICL",
+    "domain": "jubileelife.com",
+    "source": "https://dps.psx.com.pk/company/JLICL"
+  },
+  {
+    "ticker": "JSBL",
+    "domain": "jsbl.com",
+    "source": "https://dps.psx.com.pk/company/JSBL"
+  },
+  {
+    "ticker": "JSCL",
+    "domain": "js.com",
+    "source": "https://dps.psx.com.pk/company/JSCL"
+  },
+  {
+    "ticker": "JSGBETF",
+    "domain": "jsgcl.com",
+    "source": "https://dps.psx.com.pk/company/JSGBETF"
+  },
+  {
+    "ticker": "JSGCL",
+    "domain": "jsgcl.com",
+    "source": "https://dps.psx.com.pk/company/JSGCL"
+  },
+  {
+    "ticker": "JSIL",
+    "domain": "jsil.com",
+    "source": "https://dps.psx.com.pk/company/JSIL"
+  },
+  {
+    "ticker": "JSMFETF",
+    "domain": "jsil.com",
+    "source": "https://dps.psx.com.pk/company/JSMFETF"
+  },
+  {
+    "ticker": "JSML",
+    "domain": "jsml.com.pk",
+    "source": "https://dps.psx.com.pk/company/JSML"
+  },
+  {
+    "ticker": "JUBS",
+    "domain": "jsw.com.pk",
+    "source": "https://dps.psx.com.pk/company/JUBS"
+  },
+  {
+    "ticker": "JVDC",
+    "domain": "jcl.com.pk",
+    "source": "https://dps.psx.com.pk/company/JVDC"
+  },
+  {
+    "ticker": "KAPCO",
+    "domain": "kapco.com.pk",
+    "source": "https://dps.psx.com.pk/company/KAPCO"
+  },
+  {
+    "ticker": "KCL",
+    "domain": "karamceramics.com",
+    "source": "https://dps.psx.com.pk/company/KCL"
+  },
+  {
+    "ticker": "KHTC",
+    "domain": "khybertobacco.com",
+    "source": "https://dps.psx.com.pk/company/KHTC"
+  },
+  {
+    "ticker": "KHYT",
+    "domain": "khybertextile.com",
+    "source": "https://dps.psx.com.pk/company/KHYT"
+  },
+  {
+    "ticker": "KML",
+    "domain": "kohinoormills.com",
+    "source": "https://dps.psx.com.pk/company/KML"
+  },
+  {
+    "ticker": "KOHC",
+    "domain": "kohatcement.com",
+    "source": "https://dps.psx.com.pk/company/KOHC"
+  },
+  {
+    "ticker": "KOHE",
+    "domain": "kel.com.pk",
+    "source": "https://dps.psx.com.pk/company/KOHE"
+  },
+  {
+    "ticker": "KOHP",
+    "domain": "kpcl.com.pk",
+    "source": "https://dps.psx.com.pk/company/KOHP"
+  },
+  {
+    "ticker": "KOHTM",
+    "domain": "kohattextile.com",
+    "source": "https://dps.psx.com.pk/company/KOHTM"
+  },
+  {
+    "ticker": "KOIL",
+    "domain": "kil.com.pk",
+    "source": "https://dps.psx.com.pk/company/KOIL"
+  },
+  {
+    "ticker": "KOSM",
+    "domain": "kohinoorspinningmills.com",
+    "source": "https://dps.psx.com.pk/company/KOSM"
+  },
+  {
+    "ticker": "KPUS",
+    "domain": "khairpursugar.com.pk",
+    "source": "https://dps.psx.com.pk/company/KPUS"
+  },
+  {
+    "ticker": "KSBP",
+    "domain": "ksb.com",
+    "source": "https://dps.psx.com.pk/company/KSBP"
+  },
+  {
+    "ticker": "KSTM",
+    "domain": "kstml.com.pk",
+    "source": "https://dps.psx.com.pk/company/KSTM"
+  },
+  {
+    "ticker": "KTML",
+    "domain": "kmlg.com",
+    "source": "https://dps.psx.com.pk/company/KTML"
+  },
+  {
+    "ticker": "LEUL",
+    "domain": "leatherupltd.com",
+    "source": "https://dps.psx.com.pk/company/LEUL"
+  },
+  {
+    "ticker": "LIVEN",
+    "domain": "liven-pharma.com",
+    "source": "https://dps.psx.com.pk/company/LIVEN"
+  },
+  {
+    "ticker": "LOADS",
+    "domain": "loads-group.pk",
+    "source": "https://dps.psx.com.pk/company/LOADS"
+  },
+  {
+    "ticker": "LOTCHEM",
+    "domain": "lotte-ppta.com",
+    "source": "https://dps.psx.com.pk/company/LOTCHEM"
+  },
+  {
+    "ticker": "LPGL",
+    "domain": "leinerpakgelatine.com",
+    "source": "https://dps.psx.com.pk/company/LPGL"
+  },
+  {
+    "ticker": "LPL",
+    "domain": "lalpir.com",
+    "source": "https://dps.psx.com.pk/company/LPL"
+  },
+  {
+    "ticker": "LSECL",
+    "domain": "lse.com.pk",
+    "source": "https://dps.psx.com.pk/company/LSECL"
+  },
+  {
+    "ticker": "LSEFSL",
+    "domain": "lse.com.pk",
+    "source": "https://dps.psx.com.pk/company/LSEFSL"
+  },
+  {
+    "ticker": "LSEVL",
+    "domain": "lse.com.pk",
+    "source": "https://dps.psx.com.pk/company/LSEVL"
+  },
+  {
+    "ticker": "MACFL",
+    "domain": "macpacfilms.com",
+    "source": "https://dps.psx.com.pk/company/MACFL"
+  },
+  {
+    "ticker": "MACTER",
+    "domain": "macter.com",
+    "source": "https://dps.psx.com.pk/company/MACTER"
+  },
+  {
+    "ticker": "MCBIM",
+    "domain": "mcbfunds.com",
+    "source": "https://dps.psx.com.pk/company/MCBIM"
+  },
+  {
+    "ticker": "MDTL",
+    "domain": "pacepakistan.com",
+    "source": "https://dps.psx.com.pk/company/MDTL"
+  },
+  {
+    "ticker": "MEHT",
+    "domain": "mahmoodtextile.com",
+    "source": "https://dps.psx.com.pk/company/MEHT"
+  },
+  {
+    "ticker": "MERIT",
+    "domain": "meritpack.com",
+    "source": "https://dps.psx.com.pk/company/MERIT"
+  },
+  {
+    "ticker": "MFFL",
+    "domain": "mitchells.com.pk",
+    "source": "https://dps.psx.com.pk/company/MFFL"
+  },
+  {
+    "ticker": "MFL",
+    "domain": "matcofoods.com",
+    "source": "https://dps.psx.com.pk/company/MFL"
+  },
+  {
+    "ticker": "MIIETF",
+    "domain": "mahaana.com",
+    "source": "https://dps.psx.com.pk/company/MIIETF"
+  },
+  {
+    "ticker": "MIRKS",
+    "domain": "gfg.com.pk",
+    "source": "https://dps.psx.com.pk/company/MIRKS"
+  },
+  {
+    "ticker": "MQTM",
+    "domain": "maqboolgroup.com",
+    "source": "https://dps.psx.com.pk/company/MQTM"
+  },
+  {
+    "ticker": "MRNS",
+    "domain": "mehransugar.com",
+    "source": "https://dps.psx.com.pk/company/MRNS"
+  },
+  {
+    "ticker": "MSOT",
+    "domain": "masoodtextile.com",
+    "source": "https://dps.psx.com.pk/company/MSOT"
+  },
+  {
+    "ticker": "MUBT",
+    "domain": "mtmpk.com",
+    "source": "https://dps.psx.com.pk/company/MUBT"
+  },
+  {
+    "ticker": "MUGHAL",
+    "domain": "mughalsteel.com",
+    "source": "https://dps.psx.com.pk/company/MUGHAL"
+  },
+  {
+    "ticker": "MUGHALC",
+    "domain": "mughalsteel.com",
+    "source": "https://dps.psx.com.pk/company/MUGHALC"
+  },
+  {
+    "ticker": "MUREB",
+    "domain": "murreebrewery.com",
+    "source": "https://dps.psx.com.pk/company/MUREB"
+  },
+  {
+    "ticker": "MWMP",
+    "domain": "mandviwallamauser.com",
+    "source": "https://dps.psx.com.pk/company/MWMP"
+  },
+  {
+    "ticker": "MZNPETF",
+    "domain": "almeezangroup.com",
+    "source": "https://dps.psx.com.pk/company/MZNPETF"
+  },
+  {
+    "ticker": "NAGC",
+    "domain": "nagina.com",
+    "source": "https://dps.psx.com.pk/company/NAGC"
+  },
+  {
+    "ticker": "NATM",
+    "domain": "nadeem.com.pk",
+    "source": "https://dps.psx.com.pk/company/NATM"
+  },
+  {
+    "ticker": "NBPGETF",
+    "domain": "nbpfunds.com",
+    "source": "https://dps.psx.com.pk/company/NBPGETF"
+  },
+  {
+    "ticker": "NCL",
+    "domain": "nishat.net",
+    "source": "https://dps.psx.com.pk/company/NCL"
+  },
+  {
+    "ticker": "NCML",
+    "domain": "nazircotton.com",
+    "source": "https://dps.psx.com.pk/company/NCML"
+  },
+  {
+    "ticker": "NCPL",
+    "domain": "ncpower.com.pk",
+    "source": "https://dps.psx.com.pk/company/NCPL"
+  },
+  {
+    "ticker": "NETSOL",
+    "domain": "netsolpk.com",
+    "source": "https://dps.psx.com.pk/company/NETSOL"
+  },
+  {
+    "ticker": "NEXT",
+    "domain": "nextcapital.com.pk",
+    "source": "https://dps.psx.com.pk/company/NEXT"
+  },
+  {
+    "ticker": "NICL",
+    "domain": "nimir.com.pk",
+    "source": "https://dps.psx.com.pk/company/NICL"
+  },
+  {
+    "ticker": "NITGETF",
+    "domain": "nit.com.pk",
+    "source": "https://dps.psx.com.pk/company/NITGETF"
+  },
+  {
+    "ticker": "NML",
+    "domain": "nishatmillsltd.com",
+    "source": "https://dps.psx.com.pk/company/NML"
+  },
+  {
+    "ticker": "NONS",
+    "domain": "noonsugar.com",
+    "source": "https://dps.psx.com.pk/company/NONS"
+  },
+  {
+    "ticker": "NPL",
+    "domain": "nishatpower.com",
+    "source": "https://dps.psx.com.pk/company/NPL"
+  },
+  {
+    "ticker": "NRL",
+    "domain": "nrlpak.com",
+    "source": "https://dps.psx.com.pk/company/NRL"
+  },
+  {
+    "ticker": "NRSL",
+    "domain": "nimir.com.pk",
+    "source": "https://dps.psx.com.pk/company/NRSL"
+  },
+  {
+    "ticker": "NSRM",
+    "domain": "nationalsilk.com",
+    "source": "https://dps.psx.com.pk/company/NSRM"
+  },
+  {
+    "ticker": "OBOY",
+    "domain": "obel.com.pk",
+    "source": "https://dps.psx.com.pk/company/OBOY"
+  },
+  {
+    "ticker": "OCTOPUS",
+    "domain": "octopusdtl.com",
+    "source": "https://dps.psx.com.pk/company/OCTOPUS"
+  },
+  {
+    "ticker": "OLPL",
+    "domain": "olpfinance.com",
+    "source": "https://dps.psx.com.pk/company/OLPL"
+  },
+  {
+    "ticker": "OML",
+    "domain": "olympiamills.com",
+    "source": "https://dps.psx.com.pk/company/OML"
+  },
+  {
+    "ticker": "ORM",
+    "domain": "orientmodaraba.com",
+    "source": "https://dps.psx.com.pk/company/ORM"
+  },
+  {
+    "ticker": "OTSU",
+    "domain": "otsuka.pk",
+    "source": "https://dps.psx.com.pk/company/OTSU"
+  },
+  {
+    "ticker": "PABC",
+    "domain": "pkbevcan.com",
+    "source": "https://dps.psx.com.pk/company/PABC"
+  },
+  {
+    "ticker": "PACE",
+    "domain": "pacepakistan.com",
+    "source": "https://dps.psx.com.pk/company/PACE"
+  },
+  {
+    "ticker": "PAEL",
+    "domain": "pel.com.pk",
+    "source": "https://dps.psx.com.pk/company/PAEL"
+  },
+  {
+    "ticker": "PAKD",
+    "domain": "pakdatacom.com.pk",
+    "source": "https://dps.psx.com.pk/company/PAKD"
+  },
+  {
+    "ticker": "PAKL",
+    "domain": "pakleather.com",
+    "source": "https://dps.psx.com.pk/company/PAKL"
+  },
+  {
+    "ticker": "PAKOXY",
+    "domain": "pakoxygen.com",
+    "source": "https://dps.psx.com.pk/company/PAKOXY"
+  },
+  {
+    "ticker": "PAKQATAR",
+    "domain": "pqftl.com.pk",
+    "source": "https://dps.psx.com.pk/company/PAKQATAR"
+  },
+  {
+    "ticker": "PAKRI",
+    "domain": "pakre.org.pk",
+    "source": "https://dps.psx.com.pk/company/PAKRI"
+  },
+  {
+    "ticker": "PASL",
+    "domain": "pervezahmed.net",
+    "source": "https://dps.psx.com.pk/company/PASL"
+  },
+  {
+    "ticker": "PASM",
+    "domain": "gulshan.com.pk",
+    "source": "https://dps.psx.com.pk/company/PASM"
+  },
+  {
+    "ticker": "PCAL",
+    "domain": "pakistancables.com",
+    "source": "https://dps.psx.com.pk/company/PCAL"
+  },
+  {
+    "ticker": "PECO",
+    "domain": "peco.com.pk",
+    "source": "https://dps.psx.com.pk/company/PECO"
+  },
+  {
+    "ticker": "PGLC",
+    "domain": "pakgulfleasing.com",
+    "source": "https://dps.psx.com.pk/company/PGLC"
+  },
+  {
+    "ticker": "PHDL",
+    "domain": "phdl.com.pk",
+    "source": "https://dps.psx.com.pk/company/PHDL"
+  },
+  {
+    "ticker": "PIAHCLB",
+    "domain": "piahcl.com.pk",
+    "source": "https://dps.psx.com.pk/company/PIAHCLB"
+  },
+  {
+    "ticker": "PIBTL",
+    "domain": "pibt.com.pk",
+    "source": "https://dps.psx.com.pk/company/PIBTL"
+  },
+  {
+    "ticker": "PICT",
+    "domain": "pict.com.pk",
+    "source": "https://dps.psx.com.pk/company/PICT"
+  },
+  {
+    "ticker": "PIL",
+    "domain": "picicinsurance.com",
+    "source": "https://dps.psx.com.pk/company/PIL"
+  },
+  {
+    "ticker": "PIM",
+    "domain": "popularislamicmodaraba.com",
+    "source": "https://dps.psx.com.pk/company/PIM"
+  },
+  {
+    "ticker": "PINL",
+    "domain": "pil.com.pk",
+    "source": "https://dps.psx.com.pk/company/PINL"
+  },
+  {
+    "ticker": "PIOC",
+    "domain": "pioneercement.com",
+    "source": "https://dps.psx.com.pk/company/PIOC"
+  },
+  {
+    "ticker": "PKGI",
+    "domain": "pgi.com.pk",
+    "source": "https://dps.psx.com.pk/company/PKGI"
+  },
+  {
+    "ticker": "PKGP",
+    "domain": "pakgenpower.com",
+    "source": "https://dps.psx.com.pk/company/PKGP"
+  },
+  {
+    "ticker": "PKGS",
+    "domain": "packages.com.pk",
+    "source": "https://dps.psx.com.pk/company/PKGS"
+  },
+  {
+    "ticker": "PMI",
+    "domain": "firstprudentialmodaraba.com",
+    "source": "https://dps.psx.com.pk/company/PMI"
+  },
+  {
+    "ticker": "PMRS",
+    "domain": "premiergrouppk.com",
+    "source": "https://dps.psx.com.pk/company/PMRS"
+  },
+  {
+    "ticker": "POML",
+    "domain": "punjaboilmills.com",
+    "source": "https://dps.psx.com.pk/company/POML"
+  },
+  {
+    "ticker": "POWER",
+    "domain": "powercement.com.pk",
+    "source": "https://dps.psx.com.pk/company/POWER"
+  },
+  {
+    "ticker": "PPP",
+    "domain": "pakpaper.com",
+    "source": "https://dps.psx.com.pk/company/PPP"
+  },
+  {
+    "ticker": "PPVC",
+    "domain": "shavyl.com",
+    "source": "https://dps.psx.com.pk/company/PPVC"
+  },
+  {
+    "ticker": "PQGTL",
+    "domain": "pqgtl.com.pk",
+    "source": "https://dps.psx.com.pk/company/PQGTL"
+  },
+  {
+    "ticker": "PREMA",
+    "domain": "at-tahur.com",
+    "source": "https://dps.psx.com.pk/company/PREMA"
+  },
+  {
+    "ticker": "PRET",
+    "domain": "premiumtextile.com",
+    "source": "https://dps.psx.com.pk/company/PRET"
+  },
+  {
+    "ticker": "PRL",
+    "domain": "prl.com.pk",
+    "source": "https://dps.psx.com.pk/company/PRL"
+  },
+  {
+    "ticker": "PRWM",
+    "domain": "nagina.com",
+    "source": "https://dps.psx.com.pk/company/PRWM"
+  },
+  {
+    "ticker": "PSEL",
+    "domain": "psl.com.pk",
+    "source": "https://dps.psx.com.pk/company/PSEL"
+  },
+  {
+    "ticker": "PSYL",
+    "domain": "pslpet.com",
+    "source": "https://dps.psx.com.pk/company/PSYL"
+  },
+  {
+    "ticker": "PTL",
+    "domain": "panthertyres.com",
+    "source": "https://dps.psx.com.pk/company/PTL"
+  },
+  {
+    "ticker": "QTECH",
+    "domain": "chakwalspinningmills.com",
+    "source": "https://dps.psx.com.pk/company/QTECH"
+  },
+  {
+    "ticker": "QUET",
+    "domain": "quettagroup.com",
+    "source": "https://dps.psx.com.pk/company/QUET"
+  },
+  {
+    "ticker": "QUICE",
+    "domain": "quice.com.pk",
+    "source": "https://dps.psx.com.pk/company/QUICE"
+  },
+  {
+    "ticker": "RCML",
+    "domain": "sapphire.com.pk",
+    "source": "https://dps.psx.com.pk/company/RCML"
+  },
+  {
+    "ticker": "REDCO",
+    "domain": "redcotextiles.com",
+    "source": "https://dps.psx.com.pk/company/REDCO"
+  },
+  {
+    "ticker": "REWM",
+    "domain": "fatima-group.com",
+    "source": "https://dps.psx.com.pk/company/REWM"
+  },
+  {
+    "ticker": "RICL",
+    "domain": "relianceins.com",
+    "source": "https://dps.psx.com.pk/company/RICL"
+  },
+  {
+    "ticker": "RPL",
+    "domain": "roshanpackages.com.pk",
+    "source": "https://dps.psx.com.pk/company/RPL"
+  },
+  {
+    "ticker": "RUBY",
+    "domain": "rubytextile.com.pk",
+    "source": "https://dps.psx.com.pk/company/RUBY"
+  },
+  {
+    "ticker": "RUPL",
+    "domain": "rupaligroup.com",
+    "source": "https://dps.psx.com.pk/company/RUPL"
+  },
+  {
+    "ticker": "SAIF",
+    "domain": "saiftextile.com",
+    "source": "https://dps.psx.com.pk/company/SAIF"
+  },
+  {
+    "ticker": "SANE",
+    "domain": "sntextile.com",
+    "source": "https://dps.psx.com.pk/company/SANE"
+  },
+  {
+    "ticker": "SANSM",
+    "domain": "sangharsugarmills.com",
+    "source": "https://dps.psx.com.pk/company/SANSM"
+  },
+  {
+    "ticker": "SAPT",
+    "domain": "sapphire.com.pk",
+    "source": "https://dps.psx.com.pk/company/SAPT"
+  },
+  {
+    "ticker": "SARC",
+    "domain": "sardarchemicals.com",
+    "source": "https://dps.psx.com.pk/company/SARC"
+  },
+  {
+    "ticker": "SASML",
+    "domain": "sasmltd.com",
+    "source": "https://dps.psx.com.pk/company/SASML"
+  },
+  {
+    "ticker": "SBL",
+    "domain": "samba.com.pk",
+    "source": "https://dps.psx.com.pk/company/SBL"
+  },
+  {
+    "ticker": "SCL",
+    "domain": "shield.com.pk",
+    "source": "https://dps.psx.com.pk/company/SCL"
+  },
+  {
+    "ticker": "SEARL",
+    "domain": "searlecompany.com",
+    "source": "https://dps.psx.com.pk/company/SEARL"
+  },
+  {
+    "ticker": "SEL",
+    "domain": "sitara.pk",
+    "source": "https://dps.psx.com.pk/company/SEL"
+  },
+  {
+    "ticker": "SEPL",
+    "domain": "security-papers.com",
+    "source": "https://dps.psx.com.pk/company/SEPL"
+  },
+  {
+    "ticker": "SERT",
+    "domain": "sitl.com.pk",
+    "source": "https://dps.psx.com.pk/company/SERT"
+  },
+  {
+    "ticker": "SFAT",
+    "domain": "safatextile.com",
+    "source": "https://dps.psx.com.pk/company/SFAT"
+  },
+  {
+    "ticker": "SFL",
+    "domain": "sapphire.com.pk",
+    "source": "https://dps.psx.com.pk/company/SFL"
+  },
+  {
+    "ticker": "SGF",
+    "domain": "serviceglobalfootwear.com",
+    "source": "https://dps.psx.com.pk/company/SGF"
+  },
+  {
+    "ticker": "SGPL",
+    "domain": "sgabl.com.pk",
+    "source": "https://dps.psx.com.pk/company/SGPL"
+  },
+  {
+    "ticker": "SHCI",
+    "domain": "scil.com.pk",
+    "source": "https://dps.psx.com.pk/company/SHCI"
+  },
+  {
+    "ticker": "SHCM",
+    "domain": "shadman.com.pk",
+    "source": "https://dps.psx.com.pk/company/SHCM"
+  },
+  {
+    "ticker": "SHDT",
+    "domain": "shadabtextile.com",
+    "source": "https://dps.psx.com.pk/company/SHDT"
+  },
+  {
+    "ticker": "SHEZ",
+    "domain": "shezan.com",
+    "source": "https://dps.psx.com.pk/company/SHEZ"
+  },
+  {
+    "ticker": "SHFA",
+    "domain": "shifa.com.pk",
+    "source": "https://dps.psx.com.pk/company/SHFA"
+  },
+  {
+    "ticker": "SHJS",
+    "domain": "shahtajsugar.com",
+    "source": "https://dps.psx.com.pk/company/SHJS"
+  },
+  {
+    "ticker": "SHNI",
+    "domain": "shaheeninsurance.com",
+    "source": "https://dps.psx.com.pk/company/SHNI"
+  },
+  {
+    "ticker": "SHSML",
+    "domain": "shahmuradsugar.co",
+    "source": "https://dps.psx.com.pk/company/SHSML"
+  },
+  {
+    "ticker": "SIBL",
+    "domain": "sibl.com.pk",
+    "source": "https://dps.psx.com.pk/company/SIBL"
+  },
+  {
+    "ticker": "SIEM",
+    "domain": "siemens.com.pk",
+    "source": "https://dps.psx.com.pk/company/SIEM"
+  },
+  {
+    "ticker": "SINDM",
+    "domain": "sindhmodarabaltd.com",
+    "source": "https://dps.psx.com.pk/company/SINDM"
+  },
+  {
+    "ticker": "SITC",
+    "domain": "sitara.com.pk",
+    "source": "https://dps.psx.com.pk/company/SITC"
+  },
+  {
+    "ticker": "SKRS",
+    "domain": "sakrandsugar.com",
+    "source": "https://dps.psx.com.pk/company/SKRS"
+  },
+  {
+    "ticker": "SLCL",
+    "domain": "seclease.com",
+    "source": "https://dps.psx.com.pk/company/SLCL"
+  },
+  {
+    "ticker": "SLL",
+    "domain": "smelease.com",
+    "source": "https://dps.psx.com.pk/company/SLL"
+  },
+  {
+    "ticker": "SLYT",
+    "domain": "sallytextile.com",
+    "source": "https://dps.psx.com.pk/company/SLYT"
+  },
+  {
+    "ticker": "SMCPL",
+    "domain": "safemixlimited.com",
+    "source": "https://dps.psx.com.pk/company/SMCPL"
+  },
+  {
+    "ticker": "SML",
+    "domain": "shakarganj.pk",
+    "source": "https://dps.psx.com.pk/company/SML"
+  },
+  {
+    "ticker": "SNAI",
+    "domain": "sana-industries.com",
+    "source": "https://dps.psx.com.pk/company/SNAI"
+  },
+  {
+    "ticker": "SNBL",
+    "domain": "soneribank.com",
+    "source": "https://dps.psx.com.pk/company/SNBL"
+  },
+  {
+    "ticker": "SNGP",
+    "domain": "sngpl.com.pk",
+    "source": "https://dps.psx.com.pk/company/SNGP"
+  },
+  {
+    "ticker": "SPEL",
+    "domain": "spelgroup.com",
+    "source": "https://dps.psx.com.pk/company/SPEL"
+  },
+  {
+    "ticker": "SPL",
+    "domain": "sitaraperoxide.com.pk",
+    "source": "https://dps.psx.com.pk/company/SPL"
+  },
+  {
+    "ticker": "SPWL",
+    "domain": "saifpower.com",
+    "source": "https://dps.psx.com.pk/company/SPWL"
+  },
+  {
+    "ticker": "SRR",
+    "domain": "arifhabibdolmenreit.com",
+    "source": "https://dps.psx.com.pk/company/SRR"
+  },
+  {
+    "ticker": "SRVI",
+    "domain": "servisgroup.com",
+    "source": "https://dps.psx.com.pk/company/SRVI"
+  },
+  {
+    "ticker": "SSGC",
+    "domain": "ssgc.com.pk",
+    "source": "https://dps.psx.com.pk/company/SSGC"
+  },
+  {
+    "ticker": "SSIC",
+    "domain": "ssic.com.pk",
+    "source": "https://dps.psx.com.pk/company/SSIC"
+  },
+  {
+    "ticker": "SSML",
+    "domain": "saritowspinningmillsltd.com",
+    "source": "https://dps.psx.com.pk/company/SSML"
+  },
+  {
+    "ticker": "SSOM",
+    "domain": "ssgroup.pk",
+    "source": "https://dps.psx.com.pk/company/SSOM"
+  },
+  {
+    "ticker": "STCL",
+    "domain": "stile.com.pk",
+    "source": "https://dps.psx.com.pk/company/STCL"
+  },
+  {
+    "ticker": "STJT",
+    "domain": "shahtaj.com",
+    "source": "https://dps.psx.com.pk/company/STJT"
+  },
+  {
+    "ticker": "STL",
+    "domain": "supernet-technologies.com",
+    "source": "https://dps.psx.com.pk/company/STL"
+  },
+  {
+    "ticker": "STML",
+    "domain": "shams.com.pk",
+    "source": "https://dps.psx.com.pk/company/STML"
+  },
+  {
+    "ticker": "STPL",
+    "domain": "siddiqsonstinplate.com",
+    "source": "https://dps.psx.com.pk/company/STPL"
+  },
+  {
+    "ticker": "STYLERS",
+    "domain": "stylersintl.com",
+    "source": "https://dps.psx.com.pk/company/STYLERS"
+  },
+  {
+    "ticker": "SUHJ",
+    "domain": "sjmlimited.com",
+    "source": "https://dps.psx.com.pk/company/SUHJ"
+  },
+  {
+    "ticker": "SURC",
+    "domain": "suraj.com",
+    "source": "https://dps.psx.com.pk/company/SURC"
+  },
+  {
+    "ticker": "SUTM",
+    "domain": "indus-group.com",
+    "source": "https://dps.psx.com.pk/company/SUTM"
+  },
+  {
+    "ticker": "SYM",
+    "domain": "symmetrygroup.biz",
+    "source": "https://dps.psx.com.pk/company/SYM"
+  },
+  {
+    "ticker": "SZTM",
+    "domain": "shahzadtex.com",
+    "source": "https://dps.psx.com.pk/company/SZTM"
+  },
+  {
+    "ticker": "TATM",
+    "domain": "tatapakistan.com",
+    "source": "https://dps.psx.com.pk/company/TATM"
+  },
+  {
+    "ticker": "TBL",
+    "domain": "treetbattery.com",
+    "source": "https://dps.psx.com.pk/company/TBL"
+  },
+  {
+    "ticker": "TCORP",
+    "domain": "tariqcorp.com",
+    "source": "https://dps.psx.com.pk/company/TCORP"
+  },
+  {
+    "ticker": "TELE",
+    "domain": "telecard.com.pk",
+    "source": "https://dps.psx.com.pk/company/TELE"
+  },
+  {
+    "ticker": "TGL",
+    "domain": "tariqglass.com",
+    "source": "https://dps.psx.com.pk/company/TGL"
+  },
+  {
+    "ticker": "THALL",
+    "domain": "thallimited.com",
+    "source": "https://dps.psx.com.pk/company/THALL"
+  },
+  {
+    "ticker": "THCCL",
+    "domain": "thattacement.com",
+    "source": "https://dps.psx.com.pk/company/THCCL"
+  },
+  {
+    "ticker": "TICL",
+    "domain": "thalindustries.com",
+    "source": "https://dps.psx.com.pk/company/TICL"
+  },
+  {
+    "ticker": "TOMCL",
+    "domain": "tomcl.net",
+    "source": "https://dps.psx.com.pk/company/TOMCL"
+  },
+  {
+    "ticker": "TOWL",
+    "domain": "towellers.com",
+    "source": "https://dps.psx.com.pk/company/TOWL"
+  },
+  {
+    "ticker": "TPL",
+    "domain": "tplcorp.com",
+    "source": "https://dps.psx.com.pk/company/TPL"
+  },
+  {
+    "ticker": "TPLI",
+    "domain": "tplinsurance.com",
+    "source": "https://dps.psx.com.pk/company/TPLI"
+  },
+  {
+    "ticker": "TPLP",
+    "domain": "tplproperty.com",
+    "source": "https://dps.psx.com.pk/company/TPLP"
+  },
+  {
+    "ticker": "TPLRF1",
+    "domain": "tplfunds.com",
+    "source": "https://dps.psx.com.pk/company/TPLRF1"
+  },
+  {
+    "ticker": "TPLT",
+    "domain": "tpltrakker.com",
+    "source": "https://dps.psx.com.pk/company/TPLT"
+  },
+  {
+    "ticker": "TREET",
+    "domain": "treetcorp.com",
+    "source": "https://dps.psx.com.pk/company/TREET"
+  },
+  {
+    "ticker": "TRG",
+    "domain": "trg.com.pk",
+    "source": "https://dps.psx.com.pk/company/TRG"
+  },
+  {
+    "ticker": "TRIPF",
+    "domain": "tripack.com.pk",
+    "source": "https://dps.psx.com.pk/company/TRIPF"
+  },
+  {
+    "ticker": "TRSM",
+    "domain": "trustmodaraba.com",
+    "source": "https://dps.psx.com.pk/company/TRSM"
+  },
+  {
+    "ticker": "TSBL",
+    "domain": "tsbl.com.pk",
+    "source": "https://dps.psx.com.pk/company/TSBL"
+  },
+  {
+    "ticker": "TSML",
+    "domain": "tsmlgroup.com",
+    "source": "https://dps.psx.com.pk/company/TSML"
+  },
+  {
+    "ticker": "UBDL",
+    "domain": "ubrands.biz",
+    "source": "https://dps.psx.com.pk/company/UBDL"
+  },
+  {
+    "ticker": "UBLPETF",
+    "domain": "ublfunds.com.pk",
+    "source": "https://dps.psx.com.pk/company/UBLPETF"
+  },
+  {
+    "ticker": "UCAPM",
+    "domain": "unicapmodaraba.com",
+    "source": "https://dps.psx.com.pk/company/UCAPM"
+  },
+  {
+    "ticker": "UDLI",
+    "domain": "udl.com.pk",
+    "source": "https://dps.psx.com.pk/company/UDLI"
+  },
+  {
+    "ticker": "UDPL",
+    "domain": "udpl.com.pk",
+    "source": "https://dps.psx.com.pk/company/UDPL"
+  },
+  {
+    "ticker": "UNIC",
+    "domain": "theunitedinsurance.com",
+    "source": "https://dps.psx.com.pk/company/UNIC"
+  },
+  {
+    "ticker": "UNITY",
+    "domain": "unityfoods.pk",
+    "source": "https://dps.psx.com.pk/company/UNITY"
+  },
+  {
+    "ticker": "UVIC",
+    "domain": "uic.com.pk",
+    "source": "https://dps.psx.com.pk/company/UVIC"
+  },
+  {
+    "ticker": "WAFI",
+    "domain": "wafi-energy.com",
+    "source": "https://dps.psx.com.pk/company/WAFI"
+  },
+  {
+    "ticker": "WAHN",
+    "domain": "wahnobel.com",
+    "source": "https://dps.psx.com.pk/company/WAHN"
+  },
+  {
+    "ticker": "WASL",
+    "domain": "firstprudentialmodaraba.com",
+    "source": "https://dps.psx.com.pk/company/WASL"
+  },
+  {
+    "ticker": "WAVES",
+    "domain": "waves.net.pk",
+    "source": "https://dps.psx.com.pk/company/WAVES"
+  },
+  {
+    "ticker": "WAVESAPP",
+    "domain": "waves.net.pk",
+    "source": "https://dps.psx.com.pk/company/WAVESAPP"
+  },
+  {
+    "ticker": "WTL",
+    "domain": "worldcall.com.pk",
+    "source": "https://dps.psx.com.pk/company/WTL"
+  },
+  {
+    "ticker": "YOUW",
+    "domain": "yousafweavingmills.com",
+    "source": "https://dps.psx.com.pk/company/YOUW"
+  },
+  {
+    "ticker": "ZAHID",
+    "domain": "zahidjee.com.pk",
+    "source": "https://dps.psx.com.pk/company/ZAHID"
+  },
+  {
+    "ticker": "ZAL",
+    "domain": "zarea.pk",
+    "source": "https://dps.psx.com.pk/company/ZAL"
+  },
+  {
+    "ticker": "ZIL",
+    "domain": "zil.com.pk",
+    "source": "https://dps.psx.com.pk/company/ZIL"
+  },
+  {
+    "ticker": "ZTL",
+    "domain": "zephyrtextiles.com",
+    "source": "https://dps.psx.com.pk/company/ZTL"
+  },
+  {
+    "ticker": "ZUMA",
+    "domain": "zumaresources.ltd",
+    "source": "https://dps.psx.com.pk/company/ZUMA"
+  }
+]

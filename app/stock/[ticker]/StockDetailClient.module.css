@@ -1,0 +1,527 @@
+.premiumTabsShell {
+  position: sticky;
+  top: 10px;
+  z-index: 8;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(255, 255, 255, 0.92) 100%);
+  border: 1px solid #ece8e3;
+  border-radius: 14px;
+  padding: 11px 13px 13px;
+  backdrop-filter: blur(10px);
+  transition: padding 260ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 260ms cubic-bezier(0.22, 1, 0.36, 1), background 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.premiumTabsShellPinned {
+  padding: 8px 12px 10px;
+  border-color: #e7e0d8;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(252, 249, 245, 0.94) 100%);
+  box-shadow: 0 6px 20px rgba(25, 20, 14, 0.07);
+}
+
+.premiumTabsRail {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+.premiumTabsTrack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgba(26, 26, 26, 0.12);
+}
+
+.premiumTabsIndicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: calc(100% / 3);
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(196, 80, 0, 0.96) 0%, rgba(196, 80, 0, 0.52) 100%);
+  box-shadow: 0 1px 8px rgba(196, 80, 0, 0.2);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), width 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.premiumTabButton {
+  position: relative;
+  border: none;
+  background: transparent;
+  color: #6b6b6b;
+  opacity: 0.5;
+  padding: 0 0 10px;
+  font-size: 11px;
+  font-weight: 640;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 220ms ease, color 260ms cubic-bezier(0.22, 1, 0.36, 1), text-shadow 220ms ease;
+  z-index: 1;
+}
+
+.premiumTabButton:hover {
+  opacity: 0.76;
+  color: #7b7068;
+}
+
+.premiumTabButtonActive {
+  opacity: 1;
+  color: #cc5b0a;
+  font-weight: 710;
+  text-shadow: 0 0 0.01px #cc5b0a;
+}
+
+.tabContent {
+  min-height: clamp(360px, 48vh, 520px);
+  transition: opacity 260ms cubic-bezier(0.22, 1, 0.36, 1), transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tabContentVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tabContentHidden {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.contentSubheading {
+  margin: 10px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
+.overviewSummaryStrip {
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px 12px;
+  padding: 5px 2px 3px;
+  border-top: 1px solid #f2ede7;
+  border-bottom: 1px solid #f5f0ea;
+}
+
+.overviewSummaryItem {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-right: 8px;
+  border-right: 1px solid #f4efe9;
+}
+
+.overviewSummaryItem:nth-child(4n) {
+  border-right: none;
+  padding-right: 0;
+}
+
+.overviewSummaryItemPrimary .overviewSummaryValue {
+  color: #1f1a15;
+  position: relative;
+}
+
+.overviewSummaryItemPrimary .overviewSummaryValue::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 34px;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(196, 80, 0, 0.8), rgba(196, 80, 0, 0.18));
+}
+
+.overviewSummaryLabel {
+  font-size: 10px;
+  font-weight: 640;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #b8692f;
+}
+
+.overviewSummaryValue {
+  font-size: 13px;
+  line-height: 1.18;
+  font-weight: 710;
+  color: #28231d;
+}
+
+.overviewSnapshotHeading {
+  margin-top: 8px;
+}
+
+.performanceInsightStrip {
+  border: 1px solid #e9e2d9;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fffdf9 0%, #fcf7f0 100%);
+  padding: 7px 12px 11px;
+}
+
+.performanceInsightText {
+  margin: 0;
+  font-size: 17.5px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #1d1814;
+  letter-spacing: 0.01em;
+  transform: translateY(-2px);
+}
+
+.performanceInsightAccent {
+  display: block;
+  margin-top: 6px;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(196, 80, 0, 0.96), rgba(196, 80, 0, 0.86));
+}
+
+.performanceMetricSlots {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.performanceMetricItem {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  cursor: pointer;
+  padding-left: 8px;
+  border-left: 1px solid #efe8de;
+  position: relative;
+  opacity: 0.88;
+  transform: translateY(0);
+  transition: opacity 230ms ease, transform 230ms ease, color 230ms ease;
+}
+
+.performanceMetricItem:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.performanceMetricPrimary {
+  gap: 3px;
+  opacity: 1;
+}
+
+.performanceMetricPrimary .performanceMetricLabel {
+  color: #c05a0f;
+}
+
+.performanceMetricPrimary .performanceMetricValue {
+  font-size: 16px;
+  color: #1d1a16;
+  position: relative;
+}
+
+.performanceMetricItem:focus-visible {
+  outline: none;
+  opacity: 1;
+}
+
+.performanceMetricItem:focus-visible .performanceMetricLabel {
+  color: #c05a0f;
+}
+
+.performanceMetricItem:focus-visible .performanceMetricValue {
+  color: #1d1a16;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .performanceMetricItem:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+
+  .performanceMetricItem:hover .performanceMetricLabel {
+    color: #c05a0f;
+  }
+
+  .performanceMetricItem:hover .performanceMetricValue {
+    color: #1d1a16;
+    font-size: 15px;
+  }
+
+  .performanceMetricItem:hover .performanceMetricHint {
+    color: #9a4e19;
+  }
+
+  .performanceMetricItem:hover .performanceMetricHelper {
+    color: #7f7368;
+  }
+
+  .performanceMetricItem::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(196, 80, 0, 0.5), rgba(196, 80, 0, 0));
+    opacity: 0;
+    transition: opacity 220ms ease;
+  }
+
+  .performanceMetricItem:hover::after {
+    opacity: 1;
+  }
+
+  .performanceMetricItem:first-child::after {
+    left: 0;
+  }
+}
+
+.performanceMetricPrimary .performanceMetricValue::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 40px;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(196, 80, 0, 0.86), rgba(196, 80, 0, 0.16));
+}
+
+.performanceMetricLabel {
+  font-size: 10px;
+  font-weight: 640;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #8f847a;
+}
+
+.performanceMetricValue {
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 710;
+  color: #231f1a;
+}
+
+.performanceMetricHint {
+  font-size: 10.5px;
+  font-weight: 580;
+  letter-spacing: 0.02em;
+  color: #8f847a;
+}
+
+.performanceMetricPrimary .performanceMetricHint {
+  color: #c05a0f;
+}
+
+.performanceMetricHelper {
+  margin-top: 1px;
+  font-size: 10.5px;
+  line-height: 1.2;
+  color: #9a9087;
+}
+
+.performanceGuide {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #efe6dc;
+}
+
+.performanceGuideHeading {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7c70;
+}
+
+.performanceGuideList {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.performanceGuideRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.performanceGuideLabel {
+  font-size: 11px;
+  font-weight: 640;
+  letter-spacing: 0.02em;
+  color: #be5508;
+}
+
+.performanceGuideText {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #857b72;
+}
+
+.performanceSpectrum {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.performanceSpectrumBand {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 20px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 620;
+  color: #6f665f;
+  border: 1px solid rgba(60, 50, 40, 0.08);
+  transition: color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.performanceSpectrumBandLow {
+  background: rgba(140, 140, 140, 0.2);
+}
+
+.performanceSpectrumBandNormal {
+  background: rgba(76, 175, 80, 0.16);
+}
+
+.performanceSpectrumBandHigh {
+  background: rgba(196, 80, 0, 0.17);
+}
+
+.performanceSpectrumBandVeryHigh {
+  background: rgba(192, 57, 43, 0.16);
+}
+
+.performanceSpectrumBandActive {
+  color: #2f241c;
+  border-color: rgba(196, 80, 0, 0.58);
+  box-shadow: inset 0 -1px 0 rgba(196, 80, 0, 0.66), 0 0 0 1px rgba(196, 80, 0, 0.12);
+}
+
+.performanceVisualPlaceholder {
+  margin-top: 14px;
+  border: 1px solid #efe9e1;
+  border-radius: 12px;
+  background: #fdfcfb;
+  overflow: hidden;
+}
+
+.performanceVisualBody {
+  padding: 3px 4px 1px;
+}
+
+.performanceVisualBodyLite {
+  opacity: 0.8;
+}
+
+.fundamentalsStack {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fundamentalsGroup {
+  padding-top: 6px;
+  border-top: 1px solid #f1ece6;
+}
+
+.fundamentalsGroup:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.fundamentalsGroupHeading {
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b25a18;
+}
+
+.fundamentalsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+}
+
+.fundamentalsItem {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fundamentalsLabel {
+  font-size: 11px;
+  font-weight: 620;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+}
+
+.fundamentalsValue {
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 720;
+  color: #1a1a1a;
+}
+
+@media (max-width: 720px) {
+  .premiumTabsShell {
+    top: 6px;
+    padding: 9px 10px 11px;
+  }
+
+  .premiumTabsShellPinned {
+    padding: 7px 9px 9px;
+  }
+
+  .premiumTabButton {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  .overviewSummaryStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 10px;
+  }
+
+  .overviewSummaryItem {
+    border-right: none;
+    padding-right: 0;
+  }
+
+  .performanceMetricSlots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px 10px;
+  }
+
+  .performanceMetricItem {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .fundamentalsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -44,6 +44,13 @@ export function getPsxChartUrl(ticker: string, range: string): string {
   return `${FALLBACK_PREFIX}/chart/${t}?range=${r}`;
 }
 
+export function getPsxKlinesUrl(ticker: string, timeframe: string): string {
+  const t = encodeURIComponent(ticker);
+  const tf = encodeURIComponent(timeframe);
+  const base = workerBase() ?? "https://soft-resonance-1d40.hmehmood56.workers.dev";
+  return `${base}/klines?ticker=${t}&timeframe=${tf}`;
+}
+
 export function getPsxStatsUrl(type: PsxStatsType): string {
   const t = encodeURIComponent(type);
   const base = workerBase();
