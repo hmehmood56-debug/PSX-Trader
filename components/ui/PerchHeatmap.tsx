@@ -11,6 +11,20 @@ export type HeatmapItem = {
   isOther?: boolean;
 };
 
+type StyledHeatmapItem = HeatmapItem & {
+  tileBackground: string;
+};
+
+type LayoutHeatmapItem = StyledHeatmapItem & {
+  layoutWeight: number;
+};
+
+type HeatmapHierarchyRoot = {
+  children: LayoutHeatmapItem[];
+};
+
+type HeatmapHierarchyDatum = HeatmapHierarchyRoot | LayoutHeatmapItem;
+
 interface PerchHeatmapProps {
   items: HeatmapItem[];
   formatValue?: (value: number) => string;
@@ -120,7 +134,8 @@ export function PerchHeatmap({ items, formatValue = defaultFormatValue, classNam
     const otherLayoutWeightFloor = maxNonOtherWeight > 0 ? maxNonOtherWeight * 0.08 : 0;
     const nonOtherLayoutWeightFloor = maxNonOtherWeight > 0 ? maxNonOtherWeight * 0.05 : 0;
 
-    const root = hierarchy<{ children: Array<(typeof styledEntries)[number]> }>({
+    const root = hierarchy<HeatmapHierarchyDatum>(
+      {
       children: (() => {
         const baseLayoutEntries = styledEntries.map((entry) => {
           let layoutWeight = Math.max(0, entry.weight);
@@ -158,11 +173,12 @@ export function PerchHeatmap({ items, formatValue = defaultFormatValue, classNam
           };
         });
       })(),
-    })
-      .sum((node) => {
-        const layoutWeight = node.layoutWeight;
-        if (!layoutWeight || layoutWeight <= 0) return 0.000001;
-        return layoutWeight;
+      },
+      (datum) => ("children" in datum ? datum.children : undefined)
+    )
+      .sum((datum) => {
+        if (!("layoutWeight" in datum)) return 0;
+        return datum.layoutWeight > 0 ? datum.layoutWeight : 0.000001;
       })
       .sort((a, b) => {
         const aOther = a.data?.isOther === true;
@@ -172,7 +188,7 @@ export function PerchHeatmap({ items, formatValue = defaultFormatValue, classNam
         return (b.value ?? 0) - (a.value ?? 0);
       });
 
-    treemap<{ children: Array<(typeof styledEntries)[number]> }>()
+    treemap<HeatmapHierarchyDatum>()
       .size([width, height])
       .paddingInner(2)
       .paddingOuter(1)
