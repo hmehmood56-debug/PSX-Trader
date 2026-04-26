@@ -697,15 +697,15 @@ export function SimulatedPsxExperience() {
     const abs = Math.abs(value);
     const sign = value < 0 ? "-" : "";
     if (abs >= 1_000_000_000) {
-      return `${sign}Rs. ${(abs / 1_000_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}B`;
+      return `${sign}Rs ${(abs / 1_000_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 })}B`;
     }
     if (abs >= 1_000_000) {
-      return `${sign}Rs. ${(abs / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 1 })}M`;
+      return `${sign}Rs ${(abs / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 1 })}M`;
     }
     if (abs >= 1_000) {
-      return `${sign}Rs. ${(abs / 1_000).toLocaleString("en-US", { maximumFractionDigits: 1 })}K`;
+      return `${sign}Rs ${(abs / 1_000).toLocaleString("en-US", { maximumFractionDigits: 1 })}K`;
     }
-    return `${sign}Rs. ${abs.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+    return `${sign}Rs ${abs.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
   };
 
   const netValueColor = (value: number) =>
@@ -716,6 +716,19 @@ export function SimulatedPsxExperience() {
     if (direction === "outflow") return "Outflow";
     return "Flat";
   };
+
+  const sortedSectorFlow = useMemo(() => {
+    if (!foreignActivity) return [];
+    const entries = [...foreignActivity.sectors];
+    entries.sort((a, b) => {
+      const aIsOther = a.sector.trim().toLowerCase() === "all other sectors";
+      const bIsOther = b.sector.trim().toLowerCase() === "all other sectors";
+      if (aIsOther && !bIsOther) return 1;
+      if (!aIsOther && bIsOther) return -1;
+      return b.totalActivity - a.totalActivity;
+    });
+    return entries;
+  }, [foreignActivity]);
 
   return (
     <div style={{ background: COLORS.bg }}>
@@ -1018,6 +1031,15 @@ export function SimulatedPsxExperience() {
                                   <span style={{ fontSize: 11, fontWeight: 620, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a8a8a" }}>
                                     Foreign Buy
                                   </span>
+                                  <span
+                                    aria-hidden="true"
+                                    style={{
+                                      width: 36,
+                                      height: 1,
+                                      borderRadius: 999,
+                                      background: "linear-gradient(90deg, rgba(196, 80, 0, 0.6), rgba(196, 80, 0, 0.1))",
+                                    }}
+                                  />
                                   <span style={{ fontSize: 16, lineHeight: 1.25, fontWeight: 720, color: COLORS.text }}>
                                     {formatCompactPkr(foreignActivity.foreignBuy)}
                                   </span>
@@ -1026,6 +1048,15 @@ export function SimulatedPsxExperience() {
                                   <span style={{ fontSize: 11, fontWeight: 620, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a8a8a" }}>
                                     Foreign Sell
                                   </span>
+                                  <span
+                                    aria-hidden="true"
+                                    style={{
+                                      width: 36,
+                                      height: 1,
+                                      borderRadius: 999,
+                                      background: "linear-gradient(90deg, rgba(196, 80, 0, 0.6), rgba(196, 80, 0, 0.1))",
+                                    }}
+                                  />
                                   <span style={{ fontSize: 16, lineHeight: 1.25, fontWeight: 720, color: COLORS.text }}>
                                     {formatCompactPkr(foreignActivity.foreignSell)}
                                   </span>
@@ -1034,6 +1065,15 @@ export function SimulatedPsxExperience() {
                                   <span style={{ fontSize: 11, fontWeight: 620, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a8a8a" }}>
                                     Foreign Net
                                   </span>
+                                  <span
+                                    aria-hidden="true"
+                                    style={{
+                                      width: 36,
+                                      height: 1,
+                                      borderRadius: 999,
+                                      background: "linear-gradient(90deg, rgba(196, 80, 0, 0.6), rgba(196, 80, 0, 0.1))",
+                                    }}
+                                  />
                                   <span
                                     style={{
                                       fontSize: 16,
@@ -1049,6 +1089,15 @@ export function SimulatedPsxExperience() {
                                   <span style={{ fontSize: 11, fontWeight: 620, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a8a8a" }}>
                                     Latest Session
                                   </span>
+                                  <span
+                                    aria-hidden="true"
+                                    style={{
+                                      width: 36,
+                                      height: 1,
+                                      borderRadius: 999,
+                                      background: "linear-gradient(90deg, rgba(196, 80, 0, 0.6), rgba(196, 80, 0, 0.1))",
+                                    }}
+                                  />
                                   <span style={{ fontSize: 16, lineHeight: 1.25, fontWeight: 720, color: COLORS.text }}>
                                     {foreignActivity.sessionDate}
                                   </span>
@@ -1070,15 +1119,42 @@ export function SimulatedPsxExperience() {
                                 Sector Flow
                               </div>
                               <div
+                                aria-hidden="true"
+                                style={{
+                                  marginBottom: 8,
+                                  width: 36,
+                                  height: 1,
+                                  borderRadius: 999,
+                                  background: "linear-gradient(90deg, rgba(196, 80, 0, 0.6), rgba(196, 80, 0, 0.1))",
+                                }}
+                              />
+                              <div
                                 style={{
                                   display: "grid",
-                                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                                  gap: "8px 18px",
+                                  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                                  gap: "10px 12px",
                                 }}
                               >
-                                {foreignActivity.sectors.map((row) => (
-                                  <div key={row.sector} style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
-                                    <span style={{ fontSize: 11, fontWeight: 620, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a8a8a" }}>
+                                {sortedSectorFlow.map((row) => {
+                                  const isAllOtherSectors =
+                                    row.sector.trim().toLowerCase() === "all other sectors";
+                                  return (
+                                  <div
+                                    key={row.sector}
+                                    style={{
+                                      minWidth: 0,
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      gap: 4,
+                                      opacity: isAllOtherSectors ? 0.76 : 1,
+                                      padding: "9px 10px",
+                                      border: "1px solid #ece6df",
+                                      borderRadius: 10,
+                                      background: isAllOtherSectors ? "#fdfaf6" : "#fffdf9",
+                                      minHeight: 88,
+                                    }}
+                                  >
+                                    <span style={{ fontSize: 11, fontWeight: 660, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a8a8a" }}>
                                       {row.sector}
                                     </span>
                                     <span
@@ -1095,7 +1171,8 @@ export function SimulatedPsxExperience() {
                                       {formatDirection(row.direction)}
                                     </span>
                                   </div>
-                                ))}
+                                );
+                                })}
                               </div>
                             </section>
                           </div>

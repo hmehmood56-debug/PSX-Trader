@@ -12,7 +12,8 @@
     "generate:psx-sectors": "node scripts/generate-psx-sector-map.mjs",
     "generate:psx-company": "node scripts/generate-psx-company-metadata.mjs",
     "generate:logo-domains": "node scripts/generate-psx-logo-domain-candidates.mjs",
-    "fetch:nccpl-foreign-activity": "node scripts/fetch-nccpl-foreign-activity.mjs"
+    "fetch:nccpl-foreign-activity": "node scripts/fetch-nccpl-foreign-activity.mjs",
+    "fetch:nccpl-foreign-activity:force": "node scripts/fetch-nccpl-foreign-activity.mjs --force"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

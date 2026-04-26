@@ -1,0 +1,92 @@
+{
+  "sessionDate": "2026-04-13",
+  "updatedAt": "2026-04-26T05:06:16.392Z",
+  "sourceName": "NCCPL",
+  "sourceUrl": "https://beta.nccpl.com.pk/market-information",
+  "foreignBuy": 9255375540,
+  "foreignSell": 11408121731,
+  "foreignNet": -2152746191,
+  "currency": "PKR",
+  "sectors": [
+    {
+      "sector": "Commercial Banks",
+      "buy": 604741018,
+      "sell": 1130496954,
+      "net": -525755936,
+      "totalActivity": 1735237972,
+      "direction": "outflow"
+    },
+    {
+      "sector": "All other Sectors",
+      "buy": 896802713,
+      "sell": 701304986,
+      "net": 195497727,
+      "totalActivity": 1598107699,
+      "direction": "inflow"
+    },
+    {
+      "sector": "Oil and Gas Exploration Companies",
+      "buy": 530149898,
+      "sell": 449470793,
+      "net": 80679105,
+      "totalActivity": 979620691,
+      "direction": "inflow"
+    },
+    {
+      "sector": "Power Generation and Distribution",
+      "buy": 247201453,
+      "sell": 328346816,
+      "net": -81145363,
+      "totalActivity": 575548269,
+      "direction": "outflow"
+    },
+    {
+      "sector": "Fertilizer",
+      "buy": 182575796,
+      "sell": 320840720,
+      "net": -138264924,
+      "totalActivity": 503416516,
+      "direction": "outflow"
+    },
+    {
+      "sector": "Technology and Communication",
+      "buy": 145972711,
+      "sell": 308644840,
+      "net": -162672129,
+      "totalActivity": 454617551,
+      "direction": "outflow"
+    },
+    {
+      "sector": "Cement",
+      "buy": 170049283,
+      "sell": 244379737,
+      "net": -74330454,
+      "totalActivity": 414429020,
+      "direction": "outflow"
+    },
+    {
+      "sector": "Oil and Gas Marketing Companies",
+      "buy": 177811885,
+      "sell": 210521065,
+      "net": -32709180,
+      "totalActivity": 388332950,
+      "direction": "outflow"
+    },
+    {
+      "sector": "Food and Personal Care Products",
+      "buy": 71485838,
+      "sell": 79552905,
+      "net": -8067067,
+      "totalActivity": 151038743,
+      "direction": "outflow"
+    },
+    {
+      "sector": "Textile Composite",
+      "buy": 58334579,
+      "sell": 29148421,
+      "net": 29186158,
+      "totalActivity": 87483000,
+      "direction": "inflow"
+    }
+  ]
+}

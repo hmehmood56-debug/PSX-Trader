@@ -11,6 +11,14 @@ const PRIMARY_SECTIONS = {
   fipiNormal: "FIPI Normal",
   fipiSectorWise: "FIPI Sector Wise",
 };
+const DISALLOWED_SECTOR_NAMES = new Set([
+  "OVERSEAS PAKISTANI",
+  "FOREIGN CORPORATES",
+  "FOREIGN INDIVIDUAL",
+  "TOTAL",
+  "GRAND TOTAL",
+  "---",
+]);
 const OUTPUT_PATH = path.join(
   process.cwd(),
   "public/data/nccpl/foreign-investor-activity.latest.json"
@@ -94,15 +102,32 @@ function buildNormalizedPayload({ sessionDate, foreignBuy, foreignSell, sectors 
   };
 }
 
-function findSectionTableHtml(html, sectionLabel) {
+function findSectionTableHtml(html, sectionLabel, validator) {
   const lowered = html.toLowerCase();
-  const labelIndex = lowered.indexOf(sectionLabel.toLowerCase());
-  if (labelIndex < 0) return null;
-  const tableStart = lowered.indexOf("<table", labelIndex);
-  if (tableStart < 0) return null;
-  const tableEnd = lowered.indexOf("</table>", tableStart);
-  if (tableEnd < 0) return null;
-  return html.slice(tableStart, tableEnd + "</table>".length);
+  const labelNeedle = sectionLabel.toLowerCase();
+  let searchIndex = 0;
+
+  while (searchIndex < lowered.length) {
+    const labelIndex = lowered.indexOf(labelNeedle, searchIndex);
+    if (labelIndex < 0) break;
+
+    const tableStart = lowered.indexOf("<table", labelIndex);
+    if (tableStart < 0) break;
+    const tableEnd = lowered.indexOf("</table>", tableStart);
+    if (tableEnd < 0) break;
+
+    const tableHtml = html.slice(tableStart, tableEnd + "</table>".length);
+    if (!validator || validator(tableHtml)) {
+      return tableHtml;
+    }
+    searchIndex = tableEnd + "</table>".length;
+  }
+
+  return null;
+}
+
+function extractAllTableHtml(html) {
+  return html.match(/<table[\s\S]*?<\/table>/gi) ?? [];
 }
 
 function parseHtmlTable(tableHtml) {
@@ -156,11 +181,28 @@ function parseFipiNormalTable(parsedTable) {
   return { foreignBuy, foreignSell };
 }
 
+function isFipiNormalTable(tableHtml) {
+  const parsed = parseHtmlTable(tableHtml);
+  if (!parsed) return false;
+  const hasBuyValue = parsed.headers.some((h) => h.includes("buy value") && h.includes("pkr"));
+  const hasSellValue = parsed.headers.some((h) => h.includes("sell value") && h.includes("pkr"));
+  const hasSectorName = parsed.headers.some((h) => h.includes("sector name"));
+  return hasBuyValue && hasSellValue && !hasSectorName;
+}
+
+function isFipiSectorWiseTable(tableHtml) {
+  const parsed = parseHtmlTable(tableHtml);
+  if (!parsed) return false;
+  const hasSecCode = parsed.headers.some((h) => h.includes("sec code"));
+  const hasSectorName = parsed.headers.some((h) => h.includes("sector name"));
+  const hasBuyValue = parsed.headers.some((h) => h.includes("buy value") && h.includes("pkr"));
+  const hasSellValue = parsed.headers.some((h) => h.includes("sell value") && h.includes("pkr"));
+  return hasSecCode && hasSectorName && hasBuyValue && hasSellValue;
+}
+
 function parseFipiSectorWiseTable(parsedTable) {
   const sectorIdx = findColumnIndex(parsedTable.headers, [
-    (h) => h.includes("sector"),
-    (h) => h.includes("client type"),
-    (h) => h.includes("investor type"),
+    (h) => h.includes("sector name"),
   ]);
   const buyIdx = findColumnIndex(parsedTable.headers, [
     (h) => h.includes("buy value") && h.includes("pkr"),
@@ -175,7 +217,9 @@ function parseFipiSectorWiseTable(parsedTable) {
   const aggregates = new Map();
   for (const row of parsedTable.rows) {
     const rawSector = (row[sectorIdx] ?? "").trim();
-    if (!rawSector || /total/i.test(rawSector)) continue;
+    if (!rawSector) continue;
+    const normalizedSector = rawSector.toUpperCase();
+    if (DISALLOWED_SECTOR_NAMES.has(normalizedSector) || /total/i.test(normalizedSector)) continue;
     const buy = parseNumber(row[buyIdx] ?? "");
     const sell = parseNumber(row[sellIdx] ?? "");
     if (buy == null || sell == null) continue;
@@ -206,20 +250,45 @@ function parseFromKnownSections(html, options = { debug: false }) {
   const detectedHeadings = Object.values(PRIMARY_SECTIONS).filter((label) =>
     html.toLowerCase().includes(label.toLowerCase())
   );
-  const fipiNormalTableHtml = findSectionTableHtml(html, PRIMARY_SECTIONS.fipiNormal);
-  const fipiSectorTableHtml = findSectionTableHtml(html, PRIMARY_SECTIONS.fipiSectorWise);
+  const fipiNormalTableHtml = findSectionTableHtml(
+    html,
+    PRIMARY_SECTIONS.fipiNormal,
+    isFipiNormalTable
+  );
+  const fipiSectorTableHtml = findSectionTableHtml(
+    html,
+    PRIMARY_SECTIONS.fipiSectorWise,
+    isFipiSectorWiseTable
+  );
 
   if (options.debug) {
     log(`Detected headings: ${detectedHeadings.length > 0 ? detectedHeadings.join(", ") : "none"}`);
     log(`Associated tables found: FIPI Normal=${fipiNormalTableHtml ? 1 : 0}, FIPI Sector Wise=${fipiSectorTableHtml ? 1 : 0}`);
   }
+  let selectedNormalTableHtml = fipiNormalTableHtml;
+  let selectedSectorTableHtml = fipiSectorTableHtml;
+  if (!selectedNormalTableHtml || !selectedSectorTableHtml) {
+    const allTables = extractAllTableHtml(html);
+    if (options.debug) {
+      log(`Falling back to global table scan. Total tables found: ${allTables.length}`);
+    }
+    if (!selectedNormalTableHtml) {
+      selectedNormalTableHtml = allTables.find((tableHtml) => isFipiNormalTable(tableHtml)) ?? null;
+    }
+    if (!selectedSectorTableHtml) {
+      selectedSectorTableHtml = allTables.find((tableHtml) => isFipiSectorWiseTable(tableHtml)) ?? null;
+    }
+    if (options.debug) {
+      log(`Global table scan matched: FIPI Normal=${selectedNormalTableHtml ? 1 : 0}, FIPI Sector Wise=${selectedSectorTableHtml ? 1 : 0}`);
+    }
+  }
 
-  if (!fipiNormalTableHtml || !fipiSectorTableHtml) {
+  if (!selectedNormalTableHtml || !selectedSectorTableHtml) {
     return { normalized: null, reason: "Required FIPI sections/tables were not found in HTML." };
   }
 
-  const parsedNormalTable = parseHtmlTable(fipiNormalTableHtml);
-  const parsedSectorTable = parseHtmlTable(fipiSectorTableHtml);
+  const parsedNormalTable = parseHtmlTable(selectedNormalTableHtml);
+  const parsedSectorTable = parseHtmlTable(selectedSectorTableHtml);
   if (!parsedNormalTable || !parsedSectorTable) {
     return { normalized: null, reason: "Unable to parse required table structures for FIPI sections." };
   }
@@ -228,6 +297,13 @@ function parseFromKnownSections(html, options = { debug: false }) {
   const sectors = parseFipiSectorWiseTable(parsedSectorTable);
   if (!normalTotals || !sectors || sectors.length === 0) {
     return { normalized: null, reason: "Could not parse PKR buy/sell values from FIPI Normal or FIPI Sector Wise tables." };
+  }
+
+  const invalidSector = sectors.find((row) =>
+    DISALLOWED_SECTOR_NAMES.has(row.sector.toUpperCase())
+  );
+  if (invalidSector) {
+    return { normalized: null, reason: `Invalid sector label parsed: ${invalidSector.sector}` };
   }
 
   if (options.debug) {
