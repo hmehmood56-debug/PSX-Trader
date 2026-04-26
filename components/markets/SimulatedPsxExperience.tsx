@@ -8,6 +8,7 @@ import { formatCompactPKR, formatPKRWithSymbol } from "@/lib/format";
 import { getDisplaySectorForTicker } from "@/lib/psxSymbolMetadata";
 import { TICKER_DOMAIN_MAP } from "@/lib/tickerDomainMap";
 import { StockLogo } from "@/components/common/StockLogo";
+import { PerchHeatmap } from "@/components/ui/PerchHeatmap";
 import { ChartLine, ChartLineUp, TrendDown } from "phosphor-react";
 import { Circle } from "lucide-react";
 import styles from "./SimulatedPsxExperience.module.css";
@@ -1020,6 +1021,26 @@ export function SimulatedPsxExperience() {
                               >
                                 Foreign Activity
                               </div>
+                              <PerchHeatmap
+                                items={foreignActivity.sectors.map((s) => ({
+                                  label: s.sector,
+                                  value: s.net,
+                                  weight: s.totalActivity,
+                                  direction: s.net > 0 ? "positive" : s.net < 0 ? "negative" : "neutral",
+                                  isOther: s.sector.toLowerCase().includes("other"),
+                                }))}
+                                formatValue={formatCompactPkr}
+                              />
+                              <div
+                                aria-hidden="true"
+                                style={{
+                                  marginTop: 10,
+                                  marginBottom: 10,
+                                  width: "100%",
+                                  height: 1,
+                                  background: "rgba(196, 80, 0, 0.12)",
+                                }}
+                              />
                               <div
                                 style={{
                                   display: "grid",
