@@ -202,6 +202,25 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
     }, 350);
   }, [persistQuotesCache]);
 
+  const fetchWithFallback = useCallback(
+    async (primaryUrl: string, fallbackPath: string): Promise<{ response: Response | null; usedFallback: boolean }> => {
+      try {
+        const primary = await fetch(primaryUrl, { cache: "no-store" });
+        if (primary.ok) return { response: primary, usedFallback: false };
+      } catch {
+        // Fall through to same-origin fallback.
+      }
+      try {
+        const fallback = await fetch(fallbackPath, { cache: "no-store" });
+        if (fallback.ok) return { response: fallback, usedFallback: true };
+        return { response: fallback, usedFallback: true };
+      } catch {
+        return { response: null, usedFallback: true };
+      }
+    },
+    []
+  );
+
   const applyTick = useCallback(
     (
       symbol: string,
@@ -228,8 +247,8 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
 
   const loadSnapshot = useCallback(async () => {
     try {
-      const response = await fetch(getMarketSnapshotUrl(), { cache: "no-store" });
-      if (!response.ok) return;
+      const { response, usedFallback } = await fetchWithFallback(getMarketSnapshotUrl(), "/api/psx-terminal/market");
+      if (!response?.ok) return;
       const payload = (await response.json()) as {
         data?: Array<{
           symbol: string;
@@ -259,11 +278,11 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
           }
         );
       });
-      setConnectionLabel(payload.degraded ? "degraded" : "live");
+      setConnectionLabel(payload.degraded || usedFallback ? "degraded" : "live");
     } catch {
       // Preserve last-known-good quotes in refs.
     }
-  }, [applyTick]);
+  }, [applyTick, fetchWithFallback]);
 
   const ensureQuote = useCallback(
     async (ticker: string) => {
@@ -276,8 +295,11 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
       }
       quoteLoadStateRef.current[key] = "loading";
       try {
-        const response = await fetch(getPsxQuoteUrl(key), { cache: "no-store" });
-        if (!response.ok) {
+        const { response, usedFallback } = await fetchWithFallback(
+          getPsxQuoteUrl(key),
+          `/api/psx-terminal/quote/${encodeURIComponent(key)}`
+        );
+        if (!response?.ok) {
           quoteLoadStateRef.current[key] = "unavailable";
           quoteRetryAfterRef.current[key] = Date.now() + 25_000;
           return;
@@ -313,12 +335,13 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
           }
         );
         quoteLoadStateRef.current[key] = "loaded";
+        if (usedFallback) setConnectionLabel("degraded");
       } catch {
         quoteLoadStateRef.current[key] = "unavailable";
         quoteRetryAfterRef.current[key] = Date.now() + 25_000;
       }
     },
-    [applyTick]
+    [applyTick, fetchWithFallback]
   );
 
   const loadHistory = useCallback(async (ticker: string) => {
@@ -326,8 +349,11 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
     if (state === "loading" || state === "loaded" || state === "unavailable") return;
     historyLoadStateRef.current[ticker] = "loading";
     try {
-      const response = await fetch(getPsxHistoryUrl(ticker), { cache: "no-store" });
-      if (!response.ok) {
+      const { response, usedFallback } = await fetchWithFallback(
+        getPsxHistoryUrl(ticker),
+        `/api/psx-terminal/history/${encodeURIComponent(ticker)}`
+      );
+      if (!response?.ok) {
         historyLoadStateRef.current[ticker] = "unavailable";
         return;
       }
@@ -339,10 +365,11 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
       historyRef.current[ticker] = payload.data.slice(-120);
       historyLoadStateRef.current[ticker] = "loaded";
       setTickId((prev) => prev + 1);
+      if (usedFallback) setConnectionLabel("degraded");
     } catch {
       historyLoadStateRef.current[ticker] = "unavailable";
     }
-  }, []);
+  }, [fetchWithFallback]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -394,14 +421,15 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
     let canceled = false;
     const loadSymbols = async () => {
       try {
-        const response = await fetch(getPsxSymbolsUrl(), { cache: "no-store" });
-        if (!response.ok) return;
+        const { response, usedFallback } = await fetchWithFallback(getPsxSymbolsUrl(), "/api/psx-terminal/symbols");
+        if (!response?.ok) return;
         const payload = (await response.json()) as { data?: string[] };
         if (!Array.isArray(payload.data) || payload.data.length === 0) return;
         if (canceled) return;
         const curatedByTicker = new Map(CURATED_PROFILES.map((profile) => [profile.ticker.toUpperCase(), profile]));
         const merged = payload.data.map((symbol) => curatedByTicker.get(symbol.toUpperCase()) ?? buildFallbackProfile(symbol.toUpperCase()));
         setProfiles(merged);
+        if (usedFallback) setConnectionLabel("degraded");
       } catch {
         // Keep curated fallback universe.
       }

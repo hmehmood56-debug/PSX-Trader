@@ -2,14 +2,18 @@
 """
 Scrape AKD Securities Result/Earnings Review reports via LinkedIn post links.
 
-This script supports two discovery paths:
+This script supports three discovery paths:
 1) Crawl AKD LinkedIn company posts page and collect post URLs (best effort).
 2) Read explicit LinkedIn post URLs from a seed text file (one URL per line).
+3) Read direct PDF candidates from a CSV seed with post titles.
 
 From each post page, it extracts outbound links and keeps PDF-style links.
 Then it downloads each PDF and accepts only reports that match:
   - broker: AKD Securities
   - report type: Result Review (strict)
+
+Additional strict gate:
+  - Post title must match "results review" style (including common typo "resutls review").
 
 Install:
   pip install requests beautifulsoup4 pymupdf
@@ -46,12 +50,14 @@ OUTPUT_TXT = OUTPUT_DIR / "akd_result_earning_reviews_combined.txt"
 OUTPUT_ACCEPTED_CSV = OUTPUT_DIR / "akd_result_earning_reviews_accepted.csv"
 OUTPUT_REJECTED_CSV = OUTPUT_DIR / "akd_result_earning_reviews_rejected.csv"
 OUTPUT_DISCOVERED_LINKS = OUTPUT_DIR / "akd_linkedin_discovered_links.csv"
+OUTPUT_DIRECT_SEED_TRACE = OUTPUT_DIR / "akd_direct_seed_trace.csv"
 
 LINK_RE = re.compile(r"https?://[^\s\"'<>]+", re.IGNORECASE)
 PDFISH_RE = re.compile(r"\.pdf(?:$|[?#])", re.IGNORECASE)
 AKD_BROKER_RE = re.compile(r"\b(akd securities|akd research|akdsl)\b", re.IGNORECASE)
 RESULT_REVIEW_RE = re.compile(r"\bresult review\b", re.IGNORECASE)
 TICKER_RE = re.compile(r"\b[A-Z]{3,6}\b")
+POST_TITLE_RESULTS_RE = re.compile(r"\b(res(?:u|ut)?lts?)\s+review(s)?\b", re.IGNORECASE)
 
 
 @dataclass
@@ -63,6 +69,14 @@ class AcceptedReport:
     ticker_guess: str
     title_guess: str
     text: str
+
+
+@dataclass
+class PdfCandidate:
+    pdf_url: str
+    source_post_url: str
+    post_title: str
+    source_kind: str
 
 
 def maybe_sleep() -> None:
@@ -174,15 +188,28 @@ def read_seed_post_urls(seed_path: Optional[Path]) -> Set[str]:
 
 def discover_pdf_candidates_from_posts(
     s: requests.Session, post_urls: Set[str], max_pdfs: int
-) -> Tuple[List[Tuple[str, str]], List[Dict[str, str]]]:
-    candidates: List[Tuple[str, str]] = []
+) -> Tuple[List[PdfCandidate], List[Dict[str, str]]]:
+    candidates: List[PdfCandidate] = []
     traces: List[Dict[str, str]] = []
     seen_pdf: Set[str] = set()
 
     for post_url in sorted(post_urls):
         html = get_text(s, post_url)
         if not html:
-            traces.append({"source_post_url": post_url, "candidate_url": "", "status": "post_fetch_failed"})
+            traces.append(
+                {"source_post_url": post_url, "post_title": "", "candidate_url": "", "status": "post_fetch_failed"}
+            )
+            continue
+        post_title = extract_post_title(html)
+        if not post_title_is_results_review(post_title):
+            traces.append(
+                {
+                    "source_post_url": post_url,
+                    "post_title": post_title,
+                    "candidate_url": "",
+                    "status": "post_title_not_results_review",
+                }
+            )
             continue
         links = extract_links_from_html(post_url, html)
         for link in links:
@@ -191,12 +218,67 @@ def discover_pdf_candidates_from_posts(
             if link in seen_pdf:
                 continue
             seen_pdf.add(link)
-            candidates.append((link, post_url))
-            traces.append({"source_post_url": post_url, "candidate_url": link, "status": "candidate"})
+            candidates.append(
+                PdfCandidate(
+                    pdf_url=link,
+                    source_post_url=post_url,
+                    post_title=post_title,
+                    source_kind="linkedin_post_page",
+                )
+            )
+            traces.append(
+                {"source_post_url": post_url, "post_title": post_title, "candidate_url": link, "status": "candidate"}
+            )
             if len(candidates) >= max_pdfs:
                 return candidates, traces
 
     return candidates, traces
+
+
+def read_direct_pdf_seed(seed_path: Optional[Path]) -> Tuple[List[PdfCandidate], List[Dict[str, str]]]:
+    if seed_path is None or not seed_path.exists():
+        return [], []
+    out: List[PdfCandidate] = []
+    trace: List[Dict[str, str]] = []
+    with seed_path.open("r", encoding="utf-8") as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            post_title = str(row.get("post_title", "")).strip()
+            pdf_url = normalize_url(str(row.get("pdf_url", "")).strip())
+            source_post_url = normalize_url(str(row.get("source_post_url", "")).strip()) or "Not stated"
+
+            if not post_title or not pdf_url:
+                trace.append(
+                    {
+                        "source_post_url": source_post_url,
+                        "post_title": post_title,
+                        "candidate_url": pdf_url,
+                        "status": "invalid_row_missing_post_title_or_pdf_url",
+                    }
+                )
+                continue
+            if not post_title_is_results_review(post_title):
+                trace.append(
+                    {
+                        "source_post_url": source_post_url,
+                        "post_title": post_title,
+                        "candidate_url": pdf_url,
+                        "status": "post_title_not_results_review",
+                    }
+                )
+                continue
+            out.append(
+                PdfCandidate(
+                    pdf_url=pdf_url,
+                    source_post_url=source_post_url,
+                    post_title=post_title,
+                    source_kind="direct_pdf_seed",
+                )
+            )
+            trace.append(
+                {"source_post_url": source_post_url, "post_title": post_title, "candidate_url": pdf_url, "status": "candidate"}
+            )
+    return out, trace
 
 
 def extract_pdf_text(data: bytes) -> str:
@@ -236,9 +318,25 @@ def compact_text(s: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", s).strip()
 
 
+def post_title_is_results_review(title: str) -> bool:
+    return bool(POST_TITLE_RESULTS_RE.search(title or ""))
+
+
+def extract_post_title(html: str) -> str:
+    soup = BeautifulSoup(html, "html.parser")
+    og = soup.find("meta", attrs={"property": "og:title"})
+    if og and og.get("content"):
+        return str(og.get("content")).strip()
+    title_tag = soup.find("title")
+    if title_tag:
+        return title_tag.get_text(" ", strip=True)
+    return ""
+
+
 def run(
     company_posts_url: str,
     seed_file: Optional[Path],
+    direct_pdf_seed_file: Optional[Path],
     max_posts: int,
     max_pdfs: int,
     max_reports: int,
@@ -254,16 +352,32 @@ def run(
     print(f"[INFO] seeded posts from file: {len(seeded_posts)}")
     print(f"[INFO] total post URLs to scan: {len(all_posts)}")
 
-    pdf_candidates, traces = discover_pdf_candidates_from_posts(s, all_posts, max_pdfs=max_pdfs)
-    print(f"[INFO] candidate links discovered from posts: {len(pdf_candidates)}")
+    post_candidates, traces = discover_pdf_candidates_from_posts(s, all_posts, max_pdfs=max_pdfs)
+    direct_seed_candidates, direct_seed_trace = read_direct_pdf_seed(direct_pdf_seed_file)
+    traces.extend(direct_seed_trace)
+
+    merged_candidates: List[PdfCandidate] = []
+    seen_pdf_urls: Set[str] = set()
+    for c in post_candidates + direct_seed_candidates:
+        if c.pdf_url in seen_pdf_urls:
+            continue
+        seen_pdf_urls.add(c.pdf_url)
+        merged_candidates.append(c)
+
+    pdf_candidates = merged_candidates[:max_pdfs]
+    print(f"[INFO] candidate links discovered from posts: {len(post_candidates)}")
+    print(f"[INFO] candidate links from direct seed: {len(direct_seed_candidates)}")
+    print(f"[INFO] total candidate links after merge/dedupe: {len(pdf_candidates)}")
 
     accepted: List[AcceptedReport] = []
     rejected: List[Dict[str, str]] = []
 
-    for idx, (pdf_url, source_post_url) in enumerate(pdf_candidates, start=1):
+    for idx, c in enumerate(pdf_candidates, start=1):
         if len(accepted) >= max_reports:
             break
 
+        pdf_url = c.pdf_url
+        source_post_url = c.source_post_url
         data = get_pdf_bytes(s, pdf_url)
         if not data:
             rejected.append(
@@ -352,9 +466,15 @@ def run(
             w.writerow(r)
 
     with OUTPUT_DISCOVERED_LINKS.open("w", encoding="utf-8", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=["source_post_url", "candidate_url", "status"])
+        w = csv.DictWriter(fh, fieldnames=["source_post_url", "post_title", "candidate_url", "status"])
         w.writeheader()
         for t in traces:
+            w.writerow(t)
+
+    with OUTPUT_DIRECT_SEED_TRACE.open("w", encoding="utf-8", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=["source_post_url", "post_title", "candidate_url", "status"])
+        w.writeheader()
+        for t in direct_seed_trace:
             w.writerow(t)
 
     print("\n[SUMMARY]")
@@ -366,6 +486,7 @@ def run(
     print(f"accepted csv: {OUTPUT_ACCEPTED_CSV}")
     print(f"rejected csv: {OUTPUT_REJECTED_CSV}")
     print(f"discovered links csv: {OUTPUT_DISCOVERED_LINKS}")
+    print(f"direct seed trace csv: {OUTPUT_DIRECT_SEED_TRACE}")
 
 
 def parse_args() -> argparse.Namespace:
@@ -376,6 +497,12 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=None,
         help="Optional text file with LinkedIn post URLs (one per line).",
+    )
+    p.add_argument(
+        "--direct-pdf-seed-file",
+        type=Path,
+        default=None,
+        help="Optional CSV with columns: post_title,pdf_url,source_post_url.",
     )
     p.add_argument("--max-posts", type=int, default=DEFAULT_MAX_POSTS)
     p.add_argument("--max-pdfs", type=int, default=DEFAULT_MAX_PDFS)
@@ -388,6 +515,7 @@ if __name__ == "__main__":
     run(
         company_posts_url=args.company_posts_url,
         seed_file=args.seed_posts_file,
+        direct_pdf_seed_file=args.direct_pdf_seed_file,
         max_posts=args.max_posts,
         max_pdfs=args.max_pdfs,
         max_reports=args.max_reports,
