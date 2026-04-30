@@ -1,0 +1,508 @@
+--- Page 1 ---
+ 
+ 
+P a g e  1 | 3 
+ 
+AHL Technical 
+Pakistan 
+Stock Market 
+June 13, 2023 
+Technical Analysis       
+Strategy: Local market witnessed a volatile session on Monday with the Kse-100 index oscillating 
+between 42,029 points intra-day high (up by 124 points) and 41,715 points intra-day low level (down 
+by 188 points) and finally the index closed at a level of 41,782.92 with a decline of 121.28 points. The 
+benchmark Kse-100 finally concluded the session at a level of 41,782.92 with a net decline of 121.28 
+points. This scenario now unveils the index levels to be in between 41,718 – 41,648 as the next 
+possible level to be seen. The same area also acts as the immediate support for now.  In case, the 
+aforementioned support fails to hold, further price attrition towards 41,540 – 41,452 and later 41,300 
+cannot be ruled out. On the other side any upside move from here would, face strong resistance in 
+b/w 41,852 – 41,920 and strong move above 41,920 would helps the Bulls to continue the rally 
+towards 42,006 – 42,140. 
+Support
+Resistance
+S1
+41,712.00
+    
+R1
+41,852.00
+            
+S2
+41,648.00
+    
+R2
+41,920.00
+            
+S3
+41,540.00
+    
+R3
+42,006.00
+            
+S4
+41,452.00
+    
+R4
+42,140.00
+            
+Indicator
+Reading
+14 - Day RSI
+55.01
+                   
+Stochastic Oscillator
+41.80
+                   
+Moving Avg. Reading
+Moving Avg. Reading
+10 - DMA
+41,668.96
+    
+100 - DMA
+40,896.29
+            
+30 - DMA
+41,582.60
+    
+200 - DMA
+41,264.53
+            
+Open
+41,915.65
+    
+Close
+41,782.92
+            
+High
+42,029.14
+    
+Change
+(121.28)
+                
+Low
+41,715.31
+    
+Volume(mn)
+83.27
+                   
+Index
+Value
+Change
+Volume
+All Share
+28,334.06
+    
+80.37
+              
+179,118,281
+         
+KSE- 100
+41,782.92
+    
+(121.28)
+            
+83,268,798
+           
+KSE- 30
+14,747.15
+    
+(56.68)
+             
+59,531,496
+           
+KMI -30
+72,122.85
+    
+(163.78)
+            
+55,646,808
+           
+AHL Technical
+D: +92 21 32460047
+UAN: +92 21 111 245 111, Ext: 308
+technical@arifhabibltd.com
+KSE100 Index
+Market at a Glance
+Market Indicies
+www.arifhabibltd.com
+
+--- Page 2 ---
+ 
+ 
+P a g e  2 | 3 
+ 
+AHL Technical 
+Pakistan 
+Stock Market 
+June 13, 2023 
+ 14-Days RSI 
+  Stochastic Oscillator 
+ 
+Symbol
+Close
+Change
+Volume
+HASCOL
+5.69
+            
+0.30
+                
+16,367,000
+           
+TPLP
+13.52
+           
+0.20
+                
+13,004,193
+           
+PRL
+14.67
+           
+0.22
+                
+10,796,483
+           
+BOP
+3.60
+            
+-
+                  
+8,519,000
+            
+WAVES
+6.84
+            
+0.19
+                
+8,077,500
+            
+WTL
+1.17
+            
+(0.02)
+               
+5,852,188
+            
+FABL
+20.98
+           
+(1.35)
+               
+5,649,254
+            
+BIPL
+16.97
+           
+0.81
+                
+5,397,617
+            
+MLCF
+28.58
+           
+0.01
+                
+4,591,597
+            
+UNITY
+15.24
+           
+(0.26)
+               
+4,372,900
+            
+www.arifhabibltd.com
+Volume leader
+
+--- Page 3 ---
+ 
+ 
+P a g e  3 | 3 
+ 
+AHL Technical 
+Pakistan 
+Stock Market 
+June 13, 2023 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Disclaimer: This document has been prepared by Technical analysts at Arif Habib Limited (AHL).  This document does not constitute an offer or solicitation for the purchase or sale of any security. This publication is intended only for distribution to the clients of the 
+Company who are assumed to be reasonably sophisticated investors that understand the risks involved in investing in equity securities. The information contained herein is based upon publicly available data and sources believed to be reliable. While every care 
+was taken to ensure accuracy and objectivity, AHL does not represent that it is accurate or complete and it should not be relied on as such. In particular, the report takes no account of the investment objectives, financial situation and particular needs of investors. 
+The information given in this document is as of the date of this report and there can be no assurance that future results or events will be consistent with this information. This information is subject to change without any prior notice. AHL reserves the right to make 
+modifications and alterations to this statement as may be required from time to time. However, AHL is under no obligation to update or keep the information current. AHL is committed to providing independent and transparent recommendation to its client and 
+would be happy to provide any information in response to specific client queries. Past performance is not necessarily a guide to future performance. This document is provided for assistance only and is not intended to be and must not alone be taken as the basis 
+for any investment decision. The user assumes the entire risk of any use made of this information. Each recipient of this document should make such investigation as it deems necessary to arrive at an independent evaluation of an investment in the securities of 
+companies referred to in this document (including the merits and risks involved), and should consult his or her own advisors to determine the merits and risks of such investment. AHL or any of its affiliates shall not be in any way responsible for any loss or damage 
+that may be arise to any person from any inadvertent error in the information contained in this report. 
+Symbol
+S1
+S2
+S3
+R1
+R2
+R3
+TPLP
+13.52
+           
+13.39
+         
+13.25
+            
+13.10
+            
+13.75
+            
+13.95
+            
+14.20
+            
+61.26
+            
+12.41
+            
+12.67
+            
+14.31
+            
+16.62
+            
+PRL
+14.67
+           
+14.55
+         
+14.42
+            
+14.29
+            
+14.85
+            
+15.05
+            
+15.30
+            
+60.33
+            
+14.42
+            
+14.06
+            
+13.26
+            
+14.84
+            
+BOP
+3.60
+            
+3.55
+          
+3.50
+              
+3.45
+              
+3.66
+              
+3.73
+              
+3.80
+              
+36.31
+            
+3.67
+              
+3.73
+              
+4.19
+              
+4.71
+              
+WAVES
+6.84
+            
+6.72
+          
+6.64
+              
+6.50
+              
+7.00
+              
+7.15
+              
+7.27
+              
+45.42
+            
+6.66
+              
+7.09
+              
+7.48
+              
+8.95
+              
+WTL
+1.17
+            
+1.16
+          
+1.14
+              
+1.12
+              
+1.19
+              
+1.21
+              
+1.24
+              
+49.89
+            
+1.18
+              
+1.16
+              
+1.19
+              
+1.26
+              
+FABL
+20.98
+           
+20.80
+         
+20.65
+            
+20.50
+            
+21.20
+            
+21.33
+            
+21.50
+            
+38.61
+            
+21.39
+            
+22.18
+            
+22.67
+            
+24.77
+            
+BIPL
+16.97
+           
+16.73
+         
+16.40
+            
+16.24
+            
+17.20
+            
+17.60
+            
+17.80
+            
+69.22
+            
+15.70
+            
+15.49
+            
+12.76
+            
+12.64
+            
+MLCF
+28.58
+           
+28.27
+         
+28.05
+            
+27.80
+            
+28.84
+            
+29.20
+            
+29.40
+            
+59.09
+            
+28.46
+            
+27.98
+            
+25.19
+            
+25.64
+            
+UNITY
+15.24
+           
+15.05
+         
+14.85
+            
+14.65
+            
+15.42
+            
+15.55
+            
+15.70
+            
+76.01
+            
+13.85
+            
+13.09
+            
+13.30
+            
+16.22
+            
+ILP
+54.44
+           
+54.15
+         
+53.95
+            
+53.40
+            
+54.90
+            
+55.74
+            
+56.56
+            
+73.20
+            
+50.27
+            
+49.28
+            
+49.61
+            
+54.70
+            
+Last Price
+Support
+Resistance
+Source (s): PSX, AHL Technical
+14 Days-RSI
+10-DMA
+30-DMA
+100-DMA
+200-DMA

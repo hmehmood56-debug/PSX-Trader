@@ -79,6 +79,8 @@ type QuoteState = {
 };
 
 const CURATED_PROFILES = REPLAY_DATASET.map((item) => item.profile);
+const QUOTE_CACHE_KEY = "perch.psx.lastKnownQuotes.v1";
+const QUOTE_CACHE_MAX_ITEMS = 1200;
 
 const PriceContext = createContext<PriceContextValue | null>(null);
 
@@ -144,6 +146,27 @@ function buildLiveQuote(
   };
 }
 
+function isValidLiveQuote(value: unknown): value is LiveQuote {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<LiveQuote>;
+  return (
+    typeof candidate.price === "number" &&
+    Number.isFinite(candidate.price) &&
+    candidate.price > 0 &&
+    typeof candidate.change === "number" &&
+    Number.isFinite(candidate.change) &&
+    typeof candidate.changePercent === "number" &&
+    Number.isFinite(candidate.changePercent) &&
+    typeof candidate.volume === "number" &&
+    Number.isFinite(candidate.volume) &&
+    candidate.volume >= 0 &&
+    typeof candidate.previousClose === "number" &&
+    Number.isFinite(candidate.previousClose) &&
+    typeof candidate.date === "string" &&
+    candidate.date.length > 0
+  );
+}
+
 export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
   const [tickId, setTickId] = useState(0);
   const [stateTimestamp, setStateTimestamp] = useState(new Date().toISOString());
@@ -157,6 +180,27 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
   const quoteRetryAfterRef = useRef<Record<string, number>>({});
   const reconnectTimerRef = useRef<number | null>(null);
   const reconnectAttemptRef = useRef(0);
+  const persistTimerRef = useRef<number | null>(null);
+
+  const persistQuotesCache = useCallback(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const entries = Object.entries(quotesRef.current).slice(0, QUOTE_CACHE_MAX_ITEMS);
+      const cachePayload = Object.fromEntries(entries.map(([ticker, state]) => [ticker, state.quote]));
+      window.localStorage.setItem(QUOTE_CACHE_KEY, JSON.stringify(cachePayload));
+    } catch {
+      // Best effort cache persistence.
+    }
+  }, []);
+
+  const scheduleQuotesCachePersist = useCallback(() => {
+    if (typeof window === "undefined") return;
+    if (persistTimerRef.current) window.clearTimeout(persistTimerRef.current);
+    persistTimerRef.current = window.setTimeout(() => {
+      persistQuotesCache();
+      persistTimerRef.current = null;
+    }, 350);
+  }, [persistQuotesCache]);
 
   const applyTick = useCallback(
     (
@@ -177,8 +221,9 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
       setStateTimestamp(new Date().toISOString());
       setTickId((prevId) => prevId + 1);
       setIsPlaceholderData(false);
+      scheduleQuotesCachePersist();
     },
-    []
+    [scheduleQuotesCachePersist]
   );
 
   const loadSnapshot = useCallback(async () => {
@@ -196,6 +241,7 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
           low?: number;
           value?: number;
         }>;
+        degraded?: boolean;
       };
       if (!Array.isArray(payload.data) || payload.data.length === 0) return;
       payload.data.forEach((item) => {
@@ -213,7 +259,7 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
           }
         );
       });
-      setConnectionLabel("live");
+      setConnectionLabel(payload.degraded ? "degraded" : "live");
     } catch {
       // Preserve last-known-good quotes in refs.
     }
@@ -299,13 +345,49 @@ export function PsxLiveMarketProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(QUOTE_CACHE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      let restoredCount = 0;
+      Object.entries(parsed).forEach(([ticker, maybeQuote]) => {
+        if (!isValidLiveQuote(maybeQuote)) return;
+        const key = ticker.toUpperCase();
+        const restoredQuote = maybeQuote;
+        quotesRef.current[key] = { quote: restoredQuote };
+        const history = historyRef.current[key] ?? [];
+        historyRef.current[key] = [
+          ...history.slice(-119),
+          { date: restoredQuote.date, price: restoredQuote.price, volume: restoredQuote.volume },
+        ];
+        restoredCount += 1;
+      });
+      if (restoredCount > 0) {
+        setIsPlaceholderData(false);
+        setTickId((prev) => prev + 1);
+        setStateTimestamp(new Date().toISOString());
+      }
+    } catch {
+      // Ignore malformed local cache and continue with network fetches.
+    }
+  }, []);
+
+  useEffect(() => {
     void loadSnapshot();
     const pollId = window.setInterval(() => {
       if (connectionLabel !== "live") {
         void loadSnapshot();
       }
     }, 20_000);
-    return () => window.clearInterval(pollId);
+    return () => {
+      window.clearInterval(pollId);
+      if (persistTimerRef.current) {
+        window.clearTimeout(persistTimerRef.current);
+        persistQuotesCache();
+        persistTimerRef.current = null;
+      }
+    };
   }, [connectionLabel, loadSnapshot]);
 
   useEffect(() => {

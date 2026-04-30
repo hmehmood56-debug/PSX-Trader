@@ -1,0 +1,8 @@
+[project]
+name = "psx-paper-trading-tools"
+version = "0.1.0"
+description = "Utility scripts for PSX data workflows"
+requires-python = ">=3.11"
+dependencies = [
+    "psxdata",
+]

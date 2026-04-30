@@ -41,6 +41,7 @@ function SearchHero({
   sessionState: string;
 }) {
   const isLive = sessionState === "live";
+  const isDegraded = sessionState === "degraded";
   return (
     <section
       style={{
@@ -67,6 +68,24 @@ function SearchHero({
               >
                 <span style={{ width: 7, height: 7, borderRadius: 999, background: "#4b8a63", display: "inline-block" }} />
                 Live Market
+              </span>
+            ) : isDegraded ? (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  borderRadius: 999,
+                  background: "#fff3df",
+                  color: "#8a5a12",
+                  padding: "4px 10px",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  lineHeight: 1,
+                }}
+              >
+                <span style={{ width: 7, height: 7, borderRadius: 999, background: "#c28a34", display: "inline-block" }} />
+                Feed Degraded
               </span>
             ) : null}
           </div>

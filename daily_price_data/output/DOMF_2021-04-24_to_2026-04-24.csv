@@ -1,0 +1,3 @@
+date,open,high,low,close,volume,is_anomaly,ticker
+2021-10-25,0.0,0.0,0.0,0.34,0,True,DOMF
+2021-10-29,0.0,0.0,0.0,0.34,0,True,DOMF

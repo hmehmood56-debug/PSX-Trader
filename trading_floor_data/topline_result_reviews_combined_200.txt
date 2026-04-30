@@ -1,0 +1,1120 @@
+Topline Result/Earnings Review Combined Text
+Generated at: 2026-04-30T07:40:09.170268Z
+Start listing pages: ['https://www.topline.com.pk/page-quarterly', 'https://www.topline.com.pk/page-half-yearly']
+Requested max reports: 200
+========================================================================================
+
+## REPORT 1
+Title: Quarterly Financials -Sept 25
+Year Guess: unknown
+Tickers (title heuristic): SEPT
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-SEPT-25.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 2
+Title: Quarterly Financials - MAR 2025
+Year Guess: 2025
+Tickers (title heuristic): Not stated
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-_MAR-25.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 3
+Title: Half Yearly FS DEC 2023
+Year Guess: 2023
+Tickers (title heuristic): HALF, YEARLY
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-half-yearly
+PDF URL: https://www.topline.com.pk/uploads/files/HALF_YEALY_FS-_DEC_2023_UNAUDITED.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 4
+Title: Quarterly Financial Highlights (March 2014 – March 2019)
+Year Guess: 2014
+Tickers (title heuristic): MARCH
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/Topline_Financial_Highlights.pdf
+
+--- Page 1 ---
+2013‐2014
+Mar, 31
+Sep, 30
+Dec, 31
+Mar, 31
+Sep, 30
+Dec, 31
+Mar, 31
+Sep, 30
+Dec, 31
+Mar, 31
+Sep, 30
+Dec, 31
+Mar, 31
+Sep, 30
+Dec, 31
+Mar, 31
+A S S E T S
+Non‐Current Assets
+87,262
+                              
+86,917
+              
+86,127
+             
+85,930
+            
+109,511
+         
+109,082
+    
+108,885
+    
+78,032
+      
+77,612
+       
+57,183
+           
+63,467
+      
+63,610
+          
+63,834
+          
+41,683
+          
+32,496
+      
+37,920
+      
+Current Assets
+247,585
+                            
+328,913
+           
+354,792
+          
+379,053
+         
+327,480
+         
+350,149
+    
+436,763
+    
+687,533
+    
+856,625
+     
+1,007,606
+     
+912,051
+    
+944,867
+       
+1,106,697
+    
+958,888
+       
+905,289
+    
+839,322
+    
+Total Assets
+334,847
+                            
+415,830
+           
+440,919
+          
+464,983
+         
+436,991
+         
+459,231
+    
+545,648
+    
+765,565
+    
+934,237
+     
+1,064,789
+     
+975,518
+    
+1,008,477
+    
+1,170,531
+    
+1,000,571
+    
+937,785
+    
+877,242
+    
+E Q U I T Y    &    L I A B I L I T E S
+Share Capital and Reserves
+223,969
+                            
+259,201
+           
+278,052
+          
+308,259
+         
+360,854
+         
+393,795
+    
+410,431
+    
+463,776
+    
+504,511
+     
+582,160
+        
+630,847
+    
+646,212
+       
+664,344
+       
+688,190
+       
+701,867
+    
+710,933
+    
+Non‐Current Liabilities
+95
+                                      
+293
+                   
+293
+                  
+293
+                 
+‐
+                  
+‐
+             
+‐
+             
+‐
+             
+‐
+              
+‐
+                 
+‐
+             
+‐
+                
+‐
+                
+319
+               
+319
+            
+319
+            
+Current Liabilities
+110,783
+                            
+156,336
+           
+162,574
+          
+156,432
+         
+76,137
+            
+65,436
+      
+135,216
+    
+301,789
+    
+429,726
+     
+482,628
+        
+344,671
+    
+362,265
+       
+506,187
+       
+312,062
+       
+235,599
+    
+165,990
+    
+Total Liabilities
+110,878
+                            
+156,629
+           
+162,867
+          
+156,724
+         
+76,137
+            
+65,436
+      
+135,217
+    
+301,789
+    
+429,726
+     
+482,629
+        
+344,671
+    
+362,265
+       
+506,187
+       
+312,381
+       
+235,918
+    
+166,309
+    
+Total Equity and Liabilities
+334,847
+                            
+415,830
+           
+440,919
+          
+464,983
+         
+436,991
+         
+459,231
+    
+545,648
+    
+765,565
+    
+934,237
+     
+1,064,789
+     
+975,518
+    
+1,008,477
+    
+1,170,531
+    
+1,000,571
+    
+937,785
+    
+877,242
+    
+2013‐2014
+Jul‐Mar
+Jul‐Sep
+Jul‐Dec
+Jul‐Mar
+Jul‐Sep
+Jul‐Dec
+Jul‐Mar
+Jul‐Sep
+Jul‐Dec
+Jul‐Mar
+Jul‐Sep
+Jul‐Dec
+Jul‐Mar
+Jul‐Sep
+Jul‐Dec
+Jul‐Mar
+Total Revenue
+88,118
+                              
+39,607
+              
+104,720
+          
+194,857
+         
+78,816
+            
+173,744
+    
+246,113
+    
+88,113
+      
+208,692
+     
+467,154
+        
+86,197
+      
+158,259
+       
+231,985
+       
+59,306
+          
+137,228
+    
+195,218
+    
+Total Expense
+43,396
+                              
+21,366
+              
+59,544
+             
+104,641
+         
+37,835
+            
+84,995
+      
+127,762
+    
+55,280
+      
+119,444
+     
+257,934
+        
+48,502
+      
+97,035
+          
+142,842
+       
+37,810
+          
+87,079
+      
+130,862
+    
+Profit / (loss) Before Taxation
+44,722
+                              
+18,241
+              
+45,176
+             
+90,216
+            
+40,981
+            
+88,749
+      
+118,351
+    
+32,833
+      
+89,248
+       
+209,220
+        
+37,695
+      
+61,224
+          
+89,143
+          
+21,496
+          
+50,149
+      
+64,356
+      
+Taxation
+16,100
+                              
+6,244
+                
+14,328
+             
+29,162
+            
+12,148
+            
+26,976
+      
+39,941
+      
+9,839
+         
+25,519
+       
+49,644
+           
+11,400
+      
+19,959
+          
+29,745
+          
+6,254
+            
+14,548
+      
+22,760
+      
+Profit / (loss) After Taxation
+28,622
+                              
+11,997
+              
+30,848
+             
+61,054
+            
+28,833
+            
+61,773
+      
+78,410
+      
+22,994
+      
+63,729
+       
+159,576
+        
+26,295
+      
+41,265
+          
+59,398
+          
+15,242
+          
+35,601
+      
+41,596
+      
+Profit and Loss Statement (Rupees in "000")
+2014‐2015
+2015‐2016
+2016‐2017
+2017‐2018
+2018‐2019
+Topline Securities Limited
+Quarterly & Half Yearly Financial Highlights
+Balance Sheet (Rupees in "000")
+2014‐2015
+2015‐2016
+2016‐2017
+2017‐2018
+2018‐2019
+
+----------------------------------------------------------------------------------------
+
+## REPORT 5
+Title: Quarterly Financials SEPT 2024
+Year Guess: 2024
+Tickers (title heuristic): SEPT
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY FINANCIALS- SEPT-24.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 6
+Title: Quarterly Financials - SEP 2022
+Year Guess: 2022
+Tickers (title heuristic): Not stated
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-_SEPT-22.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 7
+Title: Half Yearly Dec FS 2021
+Year Guess: 2021
+Tickers (title heuristic): HALF, YEARLY
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-half-yearly
+PDF URL: https://www.topline.com.pk/uploads/files/HALF_YEALY_FS-_DEC-21.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 8
+Title: Quarterly Financials - MAR 2020
+Year Guess: 2020
+Tickers (title heuristic): Not stated
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-_MAR-20.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 9
+Title: Half Yearly FS Dec 2019
+Year Guess: 2019
+Tickers (title heuristic): HALF, YEARLY
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-half-yearly
+PDF URL: https://www.topline.com.pk/uploads/files/HALF_YEALY_FS-_DEC19.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 10
+Title: Half Yearly FS DEC 2025
+Year Guess: 2025
+Tickers (title heuristic): HALF, YEARLY
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-half-yearly
+PDF URL: https://www.topline.com.pk/uploads/files/HALF_YEALY_Updated_FS-Dec-25.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+--- Page 6 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 11
+Title: Quarterly Financials - MAR 2024
+Year Guess: 2024
+Tickers (title heuristic): Not stated
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-_MAR-24.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 12
+Title: Quarterly Financials - SEP 2023
+Year Guess: 2023
+Tickers (title heuristic): Not stated
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-_SEPT-23.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 13
+Title: Half Yearly Dec FS 2022
+Year Guess: 2022
+Tickers (title heuristic): HALF, YEARLY
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-half-yearly
+PDF URL: https://www.topline.com.pk/uploads/files/HALF_YEALY_FS-_DEC-22.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 14
+Title: Quarterly Financials - MAR 2021
+Year Guess: 2021
+Tickers (title heuristic): Not stated
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-_MAR-21.pdf
+
+--- Page 1 ---
+TOPLINE SECURITIES LIMITED 
+CONDENSED INTERIM FINANCIAL POSITION (UN-AUDITED) 
+AS AT MARCH 31, 2021 
+Note is 
+Un-audited 
+Audited 
+Rupees 
+Rupees 
+ASSETS 
+Non-current assets 
+Property and equipment 
+ntangible assets 
+Long term deposits 
+17,020,834 
+11,265,652 
+5,200,000 
+5,323,211 
+2,689,451 
+3,485,517 
+24,910,285 
+20,074,380 
+0 
+Current assets 
+Trade debts -considered good 
+Receivables against Margin Financing 
+Receivables against margin trading 
+Receivables against murabaha share financing 
+Loans and advances 
+Taxation-net of provision 
+Trade deposits and short term prepayments 
+Other receivables 
+Short term investments 
+Cash and bank balances 
+Total assets 
+EQUITY AND LIABILITIES 
+Share capital and reserves 
+Authorized capital 
+150,000,000 (2020: 150,000,000 at Rs.2 each) ordinary shares of Rs.2 each 
+300,000,000 
+300,000,000 
+Issued, subscribed and paid up capital 
+Reserves 
+Total equity 
+1,002,847,496 
+869,361,209 
+LIABILITIES 
+Non-current liabilities 
+Deferred taxation 
+424,246 
+424,246 
+Current liabilities 
+Trade and other payables 
+Taxaton-Net 
+Short term borrowings - secured 
+Mark-up accrued 
+5 
+Toatal liabilities 
+Total equities and liabilities 
+217,092,729 
+49,817,119 
+280,247,744 
+96,213,459 
+40,930 
+22,807,800 
+- 
+58,203,133 
+194,542 
+253,887 
+- 
+3,285,968 
+32,277,660 
+97,928,729 
+255,777 
+3,282,991 
+439,290,801 
+277,472,478 
+337,195,248 
+405,490,974 
+1,306,595,431 
+1,014,756,538 
+1,331,505,716 
+1,034,830,917 
+150,000,000 
+852,847,496 
+328,233,974 
+150,000,000 
+719,361,209 
+317,329,552 
+164,740,558 
+9,285,656 
+- 
+o, 
+a 
+1,618,767 
+304,904 
+165,045,463 
+328,658,220 
+165,469,709 
+1,331,505,716 
+1,034,830,917 
+MMITMENTS 
+ti-? 
+Director 
+
+--- Page 2 ---
+TOPLINE SECURITIES LIMITED 
+CONDENSED INTERIM STATEMENT OF PROFIT AND LOSS ACCOUNT(UN-AUDITED) 
+FOR THE NINE MONTHS ENDED MARCH 31, 2021 
+Nine Months Period Ended March 31, 
+Three Months Period Ended March 31, 
+-------------------------------------------- - - Ru pees-------------------------------------------- 
+s [ 
+ws 
+[ 
+w 
+"[ wo 
+Operating revenue 
+Capital gain on sale of investments - net 
+Gain on re-measurement on HFT portfolio 
+Operating and administrative expenses 
+Operating profit 
+Finance cost 
+Other income 
+Profit before taxation 
+Taxation 
+Profit for the period 
+Earnings per share - basic and diluted 
+270,700,663 
+188,319,306 
+110,688,557 
+81,016,678 
+31,046,649 
+50,098,954 
+20,721,734 
+30,817,414 
+(2,392,018) 
+(8,242,391) 
+(5,043,639) 
+(16,596,865) 
+299,355,294 
+230,175,869 
+126,366,652 
+95,237,227 
+(155,654,956) 
+(134,264,124) 
+(62,625,197) 
+(56,911,045) 
+143,700,338 
+95,911,745 
+63,741,455 
+38,326,182 
+(6,186,166) 
+(10,420,956) 
+(1,712,485) 
+(3,976,060) 
+137,514,172 
+85,490,789 
+62,028,970 
+34,350,122 
+41,445,447 
+39,191,914 
+15,533,275 
+17,201,666 
+178,959,618 
+124,682,702 
+77,562,244 
+51,551,788 
+(45,473,332) 
+(24,421,266) 
+(17,981,568) 
+(9,940,304) 
+133,486,287 
+100,261,437 
+59,580,677 
+41,611,484 
+1.78 
+1.34 
+0.79 
+0.55 
+Chier fsecutive Officer 
+! 
+
+--- Page 3 ---
+TOPLINE SECURITIES LIMITED 
+CONDENSED INTERIM STATEMENT OF COMPREHENSIVE INCOME(UN-AUDITED) 
+FOR THE NINE MONTHS ENDED MARCH 31, 2021 
+.7 
+Profit for the Period 
+133,486,287 
+Other comprehensive income 
+Total comprehensive income for the Period 
+100,261,437 
+133,486,287 
+Chief Executive Officer 
+100,261,437 
+)r 
+Director 
+: 
+
+--- Page 4 ---
+TOPLINE SECURITIES LIMITED 
+CONDENSED INTERIM STATEMENT OF CHANGES IN EQUITY(UN-AUDITED) 
+FOR THE NINE MONTHS ENDED MARCH 31, 2021 
+Issued, 
+Subscribed 
+Unappropriated 
+Total 
+Profit 
+[ 
+and paid up 
+capital 
+---- ----------------------- Rupe es --------------------- - - - - 
+Balance as at June 30, 2019 
+150,000,000 
+587,115,948 
+Total comprehensive income for the period 
+100,261,437 
+737,115,948 
+100,261,437 
+Balance as at March 31,2020 
+Balance as at June 30, 2020 
+Total comprehensive income for the period 
+Balance as at March 31,2021 
+150,000,000 
+687,377,385 
+837,377,385 
+150,000,000 
+719,361,209 
+133,486,287 
+869,361,209 
+133,486,287 
+150,000,000 
+852,847,496 
+1,002,847,496 
+Chief Executive Officer 
+4 
+li 
+
+--- Page 5 ---
+TO PLINE SECURITIES LIMITED 
+OTES TO THE CONDENSED INTERIM FINANCIAL STATEMENTS(UN-AUDITED) 
+FOR THE NINE 
+MONTHS ENDED MARCH 31, 2021 
+i 
+Status and Nature of Business 
+Topline Securities Limited was incorporated in Karachi as a private limited company on June 27,200 I under the Companies Ordinance, 1984.The Company's private 
+limited status was converted into a public limited company on April 07,20 I 6 by the Securities and Exchange Commission of Pakistan. The registered office of the 
+Company is situated at 8th Floor,Horizon Tower ,Plot 2/Block 3,Clifton ,Karachi. 
+The principal activity of the company is to carry on the business of stockbrokrage.commodity brokrage.underwriting.Consultancy,book building and advisory services. 
+2 
+Basis of Preparation 
+These financial statements have been prepared in accordance with approved accounting standards as applicable in Pakistan and the requirements of the Companies 
+Act,2017.Approved accounting standards comprise of such International Accounting Standard /International Financial Reporting Standards as notified under the 
+provisions of the Companies Act,2017.Whenever the requirements of the Companies Act,2017 or directives issued by the Securities and Exchange Commission of 
+Pakistan differ with the requirements of these standards. the requirements of the Com panes Act,2017 or the requirements of the said directives take precedence. 
+3 
+Significant Accounting Policies 
+The accounting policies adopted by the Company in the preparation of these financial statements are the same as those applied in the preparation of the preceding 
+annual audited financial statements of the Company for the year ended 30 June 2020. 
+J- 
+counting Estimates and Judgments 
+e#,, reparation of this financial statements in conformity with approved accounting standards requires management to make estimates. assumptions and use judgment 
+that affect the application of policies and reported amount of assets and liabilities, income and expenses.Estimates,assumptions and judgments are continually 
+evaluated and are based on the historical experience and other factors, including reasonable expectations of future events. Revision lo the accounting estimates are 
+recognized prospectively commencing from the period of revision. 
+In preparing this financial statements, the significant judgments made by the management in applying the Company's accounting policies and key sources of estimation 
+uncertaininity were the same as those that applied in the preceding audited financial statements of the Companv as at the end for the year ended 30 June 2020. 
+5 
+Trade and other payables 
+Trade payables 
+Accrued expenses 
+Other payables 
+Un-audited 
+March 31,2021 
+249,942,331 
+31,661,645 
+35,725,576 
+Audited 
+June 30,2020 
+103.225.529 
+37,646.603 
+23,868.426 
+317,329,552 
+1 64,740,558 
+6 
+Non- Adjusting Events After Reporting Date 
+The Board of Directors of Company in its meeting held on April 30, 202 1 proposed first interim cash dividend of Re.0.67/- per share 
+7 
+Date of Authrisation 
+These condensed interim consolidated financial statements have been authorized for issue on April 30, 202 1 by the Board of Directors. 
+8-General 
+Fi,..re, h,~ ~,dod off«> the nearest rupee 
+> 
+Chief Executive Officer 
+Director
+
+----------------------------------------------------------------------------------------
+
+## REPORT 15
+Title: Half Yearly Dec FS 2020
+Year Guess: 2020
+Tickers (title heuristic): HALF, YEARLY
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-half-yearly
+PDF URL: https://www.topline.com.pk/uploads/files/HALF_YEALY_FS-_DEC20.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 16
+Title: Quarterly Financials - SEP 2019
+Year Guess: 2019
+Tickers (title heuristic): Not stated
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-_SEPT-19.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 17
+Title: Quarterly Financials - MAR 2023
+Year Guess: 2023
+Tickers (title heuristic): Not stated
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-_MAR-23.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+
+## REPORT 18
+Title: Quarterly Financials - MAR 2022
+Year Guess: 2022
+Tickers (title heuristic): Not stated
+Sectors (title heuristic): Not stated
+Source URL: https://www.topline.com.pk/page-quarterly
+PDF URL: https://www.topline.com.pk/uploads/files/QTRLY_FINANCIALS-_MAR-22.pdf
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+----------------------------------------------------------------------------------------
+

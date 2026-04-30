@@ -1,0 +1,3 @@
+date,open,high,low,close,volume,is_anomaly,ticker
+2025-08-07,100.9,100.9,100.9,100.9,62500000,False,P10VRR090135
+2025-12-22,101.36,101.36,101.36,101.36,125000000,False,P10VRR090135

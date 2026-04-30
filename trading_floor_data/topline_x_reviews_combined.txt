@@ -1,0 +1,7 @@
+Topline X Strict Reviews Combined
+Generated at: 2026-04-30T07:45:58.646433Z
+Input URL count (capped): 21
+Accepted: 0
+Rejected: 21
+================================================================================
+

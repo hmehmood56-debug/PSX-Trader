@@ -1,0 +1,6 @@
+SCS Strict Result/Earnings Reviews Combined
+Generated at: 2026-04-30T08:00:47.684812Z
+Allowed types: Result Review, Earnings Review, Earnings Report
+Accepted: 0 | Rejected: 8
+==========================================================================================
+

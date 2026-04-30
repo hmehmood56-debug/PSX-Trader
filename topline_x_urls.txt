@@ -1,0 +1,9 @@
+# One Topline X status URL per line.
+# Keep only post URLs (not profile/home links).
+# Script will process max 200 lines.
+#
+# Example format:
+# https://x.com/toplinesec/status/1917726623641847939
+#
+# Paste your URLs below:
+https://x.com/toplinesec/status/1917726623641847939

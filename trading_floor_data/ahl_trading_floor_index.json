@@ -1,0 +1,211 @@
+[
+  {
+    "item_id": "69f203ab9730304360d1ec01",
+    "title": "From the Trading Floor 29-Apr-2026",
+    "category": "From Trading Floor",
+    "created_at": "2026-04-29T13:12:11.718Z",
+    "report_date_guess": "29-Apr-2026",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=0&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/69f203ab9730304360d1ec01.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_29-Apr-2026.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_29-Apr-2026.txt"
+  },
+  {
+    "item_id": "69cbb280b56b444d53b18b79",
+    "title": "From the Trading Floor 31-Mar-2026",
+    "category": "From Trading Floor",
+    "created_at": "2026-03-31T11:39:44.179Z",
+    "report_date_guess": "31-Mar-2026",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=0&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/69cbb280b56b444d53b18b79.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_31-Mar-2026.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_31-Mar-2026.txt"
+  },
+  {
+    "item_id": "69a16761d33a93d06bd3efe2",
+    "title": "From the Trading Floor 27-Feb-2026",
+    "category": "From Trading Floor",
+    "created_at": "2026-02-27T09:44:01.154Z",
+    "report_date_guess": "27-Feb-2026",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=0&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/69a16761d33a93d06bd3efe2.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_27-Feb-2026.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_27-Feb-2026.txt"
+  },
+  {
+    "item_id": "697cab182c2a6a5d491b3d46",
+    "title": "From the Trading Floor 30-Jan-2026",
+    "category": "From Trading Floor",
+    "created_at": "2026-01-30T12:59:04.874Z",
+    "report_date_guess": "30-Jan-2026",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=0&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/697cab182c2a6a5d491b3d46.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_30-Jan-2026.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_30-Jan-2026.txt"
+  },
+  {
+    "item_id": "69551db8b34f60500c520cf2",
+    "title": "From the Trading Floor 31-Dec-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-12-31T12:57:28.831Z",
+    "report_date_guess": "31-Dec-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=0&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/69551db8b34f60500c520cf2.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_31-Dec-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_31-Dec-2025.txt"
+  },
+  {
+    "item_id": "69292c32ae4e0b8d02452fb8",
+    "title": "From the Trading Floor 27-Nov-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-11-28T04:59:30.199Z",
+    "report_date_guess": "27-Nov-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=0&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/69292c32ae4e0b8d02452fb8.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_27-Nov-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_27-Nov-2025.txt"
+  },
+  {
+    "item_id": "6904ac1886a7908245691efa",
+    "title": "From the Trading Floor 31-Oct-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-10-31T12:31:20.513Z",
+    "report_date_guess": "31-Oct-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=100&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/6904ac1886a7908245691efa.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_31-Oct-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_31-Oct-2025.txt"
+  },
+  {
+    "item_id": "68da6de2b34e1089ab24644f",
+    "title": "From the Trading Floor 29-Sep-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-09-29T11:30:42.753Z",
+    "report_date_guess": "29-Sep-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=100&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/68da6de2b34e1089ab24644f.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_29-Sep-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_29-Sep-2025.txt"
+  },
+  {
+    "item_id": "68b199cbd345d03b22d17d8f",
+    "title": "From the Trading Floor 29-Aug-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-08-29T12:15:07.973Z",
+    "report_date_guess": "29-Aug-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=100&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/68b199cbd345d03b22d17d8f.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_29-Aug-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_29-Aug-2025.txt"
+  },
+  {
+    "item_id": "688b5348aa3685d1183f16f0",
+    "title": "From the Trading Floor 31-Jul-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-07-31T11:28:08.463Z",
+    "report_date_guess": "31-Jul-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=100&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/688b5348aa3685d1183f16f0.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_31-Jul-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_31-Jul-2025.txt"
+  },
+  {
+    "item_id": "685ec894720f2c38da2e9cc6",
+    "title": "From the Trading Floor 27-Jun-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-06-27T16:36:36.765Z",
+    "report_date_guess": "27-Jun-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=100&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/685ec894720f2c38da2e9cc6.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_27-Jun-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_27-Jun-2025.txt"
+  },
+  {
+    "item_id": "6839a3e263c892346282e91c",
+    "title": "From the Trading Floor 30-May-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-05-30T12:26:10.709Z",
+    "report_date_guess": "30-May-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=200&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/6839a3e263c892346282e91c.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_30-May-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_30-May-2025.txt"
+  },
+  {
+    "item_id": "680a1eef510d5febf3fbcad9",
+    "title": "From the Trading Floor 24-Apr-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-04-24T11:22:23.712Z",
+    "report_date_guess": "24-Apr-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=200&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/680a1eef510d5febf3fbcad9.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_24-Apr-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_24-Apr-2025.txt"
+  },
+  {
+    "item_id": "67e12af05611029bb9f3e1d6",
+    "title": "From the Trading Floor 24-Mar-2025",
+    "category": "From Trading Floor",
+    "created_at": "2025-03-24T09:50:40.33Z",
+    "report_date_guess": "24-Mar-2025",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=200&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/67e12af05611029bb9f3e1d6.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_24-Mar-2025.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_24-Mar-2025.txt"
+  },
+  {
+    "item_id": "67c04ccb881e05effad371ee",
+    "title": "From the Trading Floor 27-Feb-25",
+    "category": "From Trading Floor",
+    "created_at": "2025-02-27T11:30:19.423Z",
+    "report_date_guess": "27-Feb-25",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=200&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/67c04ccb881e05effad371ee.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_27-Feb-25.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_27-Feb-25.txt"
+  },
+  {
+    "item_id": "679cc4bd6ae6aa2b53552c49",
+    "title": "From the Trading Floor - 31-Jan-25",
+    "category": "From Trading Floor",
+    "created_at": "2025-01-31T12:40:29.115Z",
+    "report_date_guess": "31-Jan-25",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=200&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/679cc4bd6ae6aa2b53552c49.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_-_31-Jan-25.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_-_31-Jan-25.txt"
+  },
+  {
+    "item_id": "6773dae9ecfd7de5dde48013",
+    "title": "From the Trading Floor - 31-Dec-24",
+    "category": "From Trading Floor",
+    "created_at": "2024-12-31T11:52:09.143Z",
+    "report_date_guess": "31-Dec-24",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=200&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/6773dae9ecfd7de5dde48013.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_-_31-Dec-24.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_-_31-Dec-24.txt"
+  },
+  {
+    "item_id": "673f3369cf634ae943c6a47d",
+    "title": "From Trading Floor 21-Nov-2024",
+    "category": "From Trading Floor",
+    "created_at": "2024-11-21T13:19:37.872Z",
+    "report_date_guess": "21-Nov-2024",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=200&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/673f3369cf634ae943c6a47d.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_Trading_Floor_21-Nov-2024.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_Trading_Floor_21-Nov-2024.txt"
+  },
+  {
+    "item_id": "672375a88f84bab98c2b9398",
+    "title": "From the Trading Floor 31-Oct-24",
+    "category": "From Trading Floor",
+    "created_at": "2024-10-31T12:18:48.533Z",
+    "report_date_guess": "31-Oct-24",
+    "source_url": "https://www.arifhabibltd.com/api/research/list/res?count=100&offset=200&category=648c118b0ffa16ff64800076",
+    "pdf_url": "https://www.arifhabibltd.com/api/research/open?path=178/672375a88f84bab98c2b9398.pdf",
+    "local_pdf_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/downloads/From_the_Trading_Floor_31-Oct-24.pdf",
+    "local_text_path": "/Users/hamidmehmood/Desktop/psx-paper-trading/trading_floor_data/extracted_text/From_the_Trading_Floor_31-Oct-24.txt"
+  }
+]
